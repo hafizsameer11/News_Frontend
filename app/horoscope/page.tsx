@@ -1,0 +1,31 @@
+import { Metadata } from "next";
+import { HoroscopePageClient } from "./horoscope-client";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+  
+  return {
+    title: "Horoscope - Daily & Weekly Zodiac Signs | NEWS NEXT",
+    description: "Read your daily and weekly horoscope for all 12 zodiac signs. Get insights and predictions for Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, and Pisces.",
+    keywords: "horoscope, zodiac signs, daily horoscope, weekly horoscope, astrology, Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces",
+    openGraph: {
+      title: "Horoscope - Daily & Weekly Zodiac Signs | NEWS NEXT",
+      description: "Read your daily and weekly horoscope for all 12 zodiac signs.",
+      type: "website",
+      url: `${baseUrl}/horoscope`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Horoscope - Daily & Weekly Zodiac Signs | NEWS NEXT",
+      description: "Read your daily and weekly horoscope for all 12 zodiac signs.",
+    },
+    alternates: {
+      canonical: `${baseUrl}/horoscope`,
+    },
+  };
+}
+
+export default function HoroscopePage() {
+  return <HoroscopePageClient />;
+}
+

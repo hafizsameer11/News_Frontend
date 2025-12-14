@@ -1,0 +1,358 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/providers/AuthProvider";
+import { useGetMe } from "@/lib/hooks/useAuth";
+import { useLanguage } from "@/providers/LanguageProvider";
+import { useAds } from "@/lib/hooks/useAds";
+import { AdResponse, Ad } from "@/types/ads.types";
+import { AuthResponse } from "@/types/user.types";
+import { Loading } from "@/components/ui/loading";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { tokenStorage } from "@/lib/helpers/storage";
+import Link from "next/link";
+import { formatDate } from "@/lib/helpers/formatDate";
+import { DashboardCharts } from "@/components/advertiser/dashboard-charts";
+import { RecentTransactions } from "@/components/advertiser/recent-transactions";
+
+export default function AdvertiserDashboard() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user: authUser, isAuthenticated, login } = useAuth();
+  const { language } = useLanguage();
+  const { data: adsData, isLoading: adsLoading, error: adsError } = useAds({});
+  const { data: userData, isLoading: userLoading } = useGetMe(isAuthenticated);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Get current user (from API or auth context)
+  const user = (userData as AuthResponse | undefined)?.data?.user || authUser;
+
+  // Update auth context when user is fetched (if not already set)
+  useEffect(() => {
+    const userFromData = (userData as AuthResponse | undefined)?.data?.user;
+    if (userFromData && !authUser) {
+      // Get token from storage since getMe doesn't return token
+      const storedToken = tokenStorage.get();
+      if (storedToken) {
+        login(storedToken, userFromData);
+      }
+    }
+  }, [userData, authUser, login]);
+
+  useEffect(() => {
+    // Wait for user to load before checking auth
+    if (userLoading) return;
+
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    if (user && user.role !== "ADVERTISER") {
+      // Redirect based on role
+      if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
+        router.push("/admin/dashboard");
+      } else if (user.role === "EDITOR") {
+        router.push("/editor");
+      } else {
+        router.push("/dashboard");
+      }
+      return;
+    }
+
+    // Check for payment success
+    const paymentSuccess = searchParams?.get("payment") === "success";
+    if (paymentSuccess && !showSuccess) {
+      // Use callback to avoid setState in effect warning
+      setShowSuccess(true);
+      // Remove query param from URL
+      router.replace("/advertiser/dashboard");
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+    }
+  }, [isAuthenticated, user, router, searchParams, userLoading, showSuccess]);
+
+  // Show loading while checking authentication or loading user
+  if (userLoading || !isAuthenticated || !user || user.role !== "ADVERTISER") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading />
+      </div>
+    );
+  }
+
+  const ads = (adsData as AdResponse | undefined)?.data?.ads || [];
+  const userAds = ads.filter((ad: Ad) => ad.advertiserId === user.id);
+  const activeAds = userAds.filter((ad: Ad) => ad.status === "ACTIVE").length;
+  const totalImpressions = userAds.reduce((sum, ad) => sum + (ad.impressions || 0), 0);
+  const totalClicks = userAds.reduce((sum, ad) => sum + (ad.clicks || 0), 0);
+
+  return (
+    <div className="space-y-6">
+      {/* Payment Success Message */}
+      {showSuccess && (
+        <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-semibold">
+                {language === "it" ? "Pagamento completato con successo!" : "Payment completed successfully!"}
+              </p>
+              <p className="text-sm mt-1">
+                {language === "it"
+                  ? "Il tuo piano è stato attivato. Puoi ora creare annunci."
+                  : "Your plan has been activated. You can now create ads."}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSuccess(false)}
+              className="text-green-700 hover:text-green-900"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-2xl font-bold mb-4 text-gray-900">
+          {language === "it" ? "Azioni Rapide" : "Quick Actions"}
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <Link
+            href="/advertiser/ads/create"
+            className="bg-red-600 hover:bg-red-700 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 shadow-sm"
+          >
+            <span className="text-3xl">➕</span>
+            <span className="text-sm font-medium text-center">
+              {language === "it" ? "Crea Annuncio" : "Create Ad"}
+            </span>
+          </Link>
+          <Link
+            href="/advertiser/ads"
+            className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 shadow-sm"
+          >
+            <span className="text-3xl">📢</span>
+            <span className="text-sm font-medium text-center">
+              {language === "it" ? "I Miei Annunci" : "My Ads"}
+            </span>
+          </Link>
+          <Link
+            href="/advertiser/analytics"
+            className="bg-green-500 hover:bg-green-600 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 shadow-sm"
+          >
+            <span className="text-3xl">📈</span>
+            <span className="text-sm font-medium text-center">
+              {language === "it" ? "Analisi" : "Analytics"}
+            </span>
+          </Link>
+          <Link
+            href="/advertiser/transactions"
+            className="bg-purple-500 hover:bg-purple-600 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 shadow-sm"
+          >
+            <span className="text-3xl">💳</span>
+            <span className="text-sm font-medium text-center">
+              {language === "it" ? "Transazioni" : "Transactions"}
+            </span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-gray-600 mb-2">
+                {language === "it" ? "Annunci Totali" : "Total Ads"}
+              </h3>
+              <p className="text-3xl font-bold text-gray-900">{userAds.length}</p>
+            </div>
+            <div className="text-4xl opacity-20">📊</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-gray-600 mb-2">
+                {language === "it" ? "Annunci Attivi" : "Active Ads"}
+              </h3>
+              <p className="text-3xl font-bold text-green-600">{activeAds}</p>
+            </div>
+            <div className="text-4xl opacity-20">✅</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-gray-600 mb-2">
+                {language === "it" ? "Visualizzazioni Totali" : "Total Impressions"}
+              </h3>
+              <p className="text-3xl font-bold text-purple-600">{totalImpressions.toLocaleString()}</p>
+            </div>
+            <div className="text-4xl opacity-20">👁️</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-gray-600 mb-2">
+                {language === "it" ? "Clic Totali" : "Total Clicks"}
+              </h3>
+              <p className="text-3xl font-bold text-orange-600">{totalClicks.toLocaleString()}</p>
+            </div>
+            <div className="text-4xl opacity-20">🖱️</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-900">
+            {language === "it" ? "Analisi e Statistiche" : "Analytics & Statistics"}
+          </h2>
+          <Link
+            href="/advertiser/analytics"
+            className="text-sm text-red-600 hover:text-red-800 font-medium"
+          >
+            {language === "it" ? "Vedi Dettagli →" : "View Details →"}
+          </Link>
+        </div>
+        <DashboardCharts />
+      </div>
+
+      {/* Recent Transactions */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <RecentTransactions />
+      </div>
+
+      {/* Ads List */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-900">
+              {language === "it" ? "I Miei Annunci" : "My Ads"}
+            </h2>
+            <Link
+              href="/advertiser/ads"
+              className="text-sm text-red-600 hover:text-red-800 font-medium"
+            >
+              {language === "it" ? "Vedi Tutti →" : "View All →"}
+            </Link>
+          </div>
+        </div>
+
+        {adsLoading ? (
+          <div className="p-8">
+            <Loading />
+          </div>
+        ) : adsError ? (
+          <div className="p-8">
+            <ErrorMessage error={adsError} />
+          </div>
+        ) : userAds.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="text-6xl mb-4">📢</div>
+            <p className="text-lg font-medium text-gray-900 mb-2">
+              {language === "it"
+                ? "Non hai ancora creato annunci"
+                : "You haven't created any ads yet"}
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              {language === "it"
+                ? "Inizia a creare il tuo primo annuncio per raggiungere migliaia di utenti"
+                : "Start creating your first ad to reach thousands of users"}
+            </p>
+            <Link
+              href="/advertiser/ads/create"
+              className="inline-block px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold"
+            >
+              {language === "it" ? "Crea il Primo Annuncio" : "Create Your First Ad"}
+            </Link>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    {language === "it" ? "Titolo" : "Title"}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    {language === "it" ? "Tipo" : "Type"}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    {language === "it" ? "Stato" : "Status"}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    {language === "it" ? "Visualizzazioni" : "Impressions"}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    {language === "it" ? "Clic" : "Clicks"}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    {language === "it" ? "Azioni" : "Actions"}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {userAds.slice(0, 10).map((ad) => (
+                  <tr key={ad.id} className="hover:bg-gray-50 transition">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-gray-900">{ad.title}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-600">{ad.type}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          ad.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : ad.status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {ad.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {(ad.impressions || 0).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {(ad.clicks || 0).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Link
+                        href={`/advertiser/ads/${ad.id}`}
+                        className="text-red-600 hover:text-red-900 hover:underline"
+                      >
+                        {language === "it" ? "Visualizza" : "View"}
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {userAds.length > 10 && (
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 text-center">
+                <Link
+                  href="/advertiser/ads"
+                  className="text-sm text-red-600 hover:text-red-800 font-medium"
+                >
+                  {language === "it" ? "Vedi tutti gli annunci" : "View all ads"} ({userAds.length})
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
