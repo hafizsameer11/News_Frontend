@@ -8,7 +8,10 @@ import env from "@/config/env";
  * Loads and compiles Handlebars templates with variable injection
  */
 
-const templatesDir = path.join(process.cwd(), "src", "templates", "emails");
+// Support both development (src) and production (dist) paths
+const templatesDir = fs.existsSync(path.join(process.cwd(), "dist", "templates", "emails"))
+  ? path.join(process.cwd(), "dist", "templates", "emails")
+  : path.join(process.cwd(), "src", "templates", "emails");
 const templateCache: Map<string, HandlebarsTemplateDelegate> = new Map();
 
 /**

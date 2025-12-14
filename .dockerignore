@@ -36,6 +36,9 @@ Thumbs.db
 *.spec.ts
 coverage
 
+# Keep scripts for Docker
+!scripts/start.sh
+
 # Logs
 logs
 *.log

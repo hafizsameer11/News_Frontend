@@ -11,23 +11,55 @@ import { socialTokenRefreshJob } from "@/jobs/social-token-refresh.job";
 import { emailQueueJob } from "@/jobs/email-queue.job";
 
 /**
+ * Retry database connection with exponential backoff
+ */
+const connectDatabase = async (maxRetries = 5, delay = 2000): Promise<boolean> => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await prisma.$connect();
+      logger.info("✅ Database connected successfully");
+      return true;
+    } catch (error: any) {
+      logger.warn(`Database connection attempt ${attempt}/${maxRetries} failed: ${error.message}`);
+      if (attempt < maxRetries) {
+        const waitTime = delay * attempt;
+        logger.info(`Retrying in ${waitTime}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      } else {
+        logger.error("❌ Failed to connect to database after all retries");
+        return false;
+      }
+    }
+  }
+  return false;
+};
+
+/**
  * Start the server
  */
 const startServer = async () => {
-  try {
-    // Test database connection
-    await prisma.$connect();
-    logger.info("✅ Database connected successfully");
+  let dbConnected = false;
 
-    // Register and start scheduled jobs
-    jobScheduler.registerJob(weatherUpdateJob);
-    jobScheduler.registerJob(horoscopeDailyJob);
-    jobScheduler.registerJob(horoscopeWeeklyJob);
-    jobScheduler.registerJob(adExpirationJob);
-    jobScheduler.registerJob(videoProcessingJob);
-    jobScheduler.registerJob(socialTokenRefreshJob);
-    jobScheduler.registerJob(emailQueueJob);
-    jobScheduler.start();
+  try {
+    // Try to connect to database (with retries)
+    dbConnected = await connectDatabase();
+    if (!dbConnected) {
+      logger.warn("⚠️  Starting server without database connection. Some features may not work.");
+    }
+
+    // Register and start scheduled jobs (only if DB is connected)
+    if (dbConnected) {
+      jobScheduler.registerJob(weatherUpdateJob);
+      jobScheduler.registerJob(horoscopeDailyJob);
+      jobScheduler.registerJob(horoscopeWeeklyJob);
+      jobScheduler.registerJob(adExpirationJob);
+      jobScheduler.registerJob(videoProcessingJob);
+      jobScheduler.registerJob(socialTokenRefreshJob);
+      jobScheduler.registerJob(emailQueueJob);
+      jobScheduler.start();
+    } else {
+      logger.warn("⚠️  Scheduled jobs disabled due to database connection failure");
+    }
 
     // Create Express app
     const app = createApp();
@@ -51,13 +83,19 @@ const startServer = async () => {
       logger.info(`${signal} received. Starting graceful shutdown...`);
 
       // Stop all scheduled jobs
-      jobScheduler.stop();
+      if (dbConnected) {
+        jobScheduler.stop();
+      }
 
       server.close(async () => {
         logger.info("HTTP server closed");
 
-        await prisma.$disconnect();
-        logger.info("Database disconnected");
+        try {
+          await prisma.$disconnect();
+          logger.info("Database disconnected");
+        } catch (error) {
+          logger.warn("Error disconnecting database:", error);
+        }
 
         // eslint-disable-next-line no-process-exit
         process.exit(0);

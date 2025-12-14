@@ -28,8 +28,8 @@ FROM node:20-alpine AS production
 # Set working directory
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init and netcat (for database wait script)
+RUN apk add --no-cache dumb-init netcat-openbsd
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -39,15 +39,28 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install only production dependencies
+# Install dependencies (Prisma and tsconfig-paths are needed in production)
 RUN npm ci --only=production && \
     npm cache clean --force
+
+# Ensure Prisma CLI is available (it should be from dependencies, but verify)
+RUN npx prisma --version || echo "Warning: Prisma CLI not found"
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
-# Copy uploads directory (if it exists, create it if not)
+# Copy email templates (needed at runtime)
+COPY --from=builder /app/src/templates ./src/templates
+
+# Copy tsconfig.json (needed for tsconfig-paths to resolve aliases)
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+
+# Copy startup script
+COPY scripts/start.sh ./scripts/start.sh
+RUN chmod +x ./scripts/start.sh
+
+# Create uploads directory
 RUN mkdir -p uploads
 
 # Set ownership
@@ -66,6 +79,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start the application
-CMD ["node", "dist/server.js"]
+# Start the application using startup script
+CMD ["./scripts/start.sh"]
 

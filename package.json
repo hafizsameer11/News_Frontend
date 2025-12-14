@@ -8,7 +8,7 @@
     "build": "tsc",
     "build:check": "tsc --noEmit",
     "prebuild": "npm run lint -- --max-warnings=300 || true",
-    "start": "node dist/server.js",
+    "start": "node -r tsconfig-paths/register dist/server.js",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -53,6 +53,7 @@
     "stripe": "^20.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "tsconfig-paths": "^4.2.0",
     "uuid": "^13.0.0",
     "zod": "^3.23.8"
   },
@@ -75,7 +76,6 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "prettier": "^3.2.5",
-    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   }
