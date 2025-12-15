@@ -1,8 +1,17 @@
 "use client";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { TrendData } from "@/types/stats.types";
-import { formatDate } from "@/lib/helpers/formatDate";
+
 import { useLanguage } from "@/providers/LanguageProvider";
 
 interface ViewsChartProps {
@@ -11,17 +20,17 @@ interface ViewsChartProps {
 }
 
 export function ViewsChart({ data, period }: ViewsChartProps) {
-  const { t } = useLanguage();
-  
+  const { t, formatDate, formatNumber, language } = useLanguage();
+
   const formatXAxis = (date: string) => {
     const d = new Date(date);
     if (period === "daily") {
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      return formatDate(d, "MMM dd");
     } else if (period === "weekly") {
       const weekNumber = Math.ceil(d.getDate() / 7);
-      return `Week ${weekNumber}`;
+      return `${t("admin.weekly")} ${weekNumber}`;
     } else {
-      return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+      return formatDate(d, "MMM yyyy");
     }
   };
 
@@ -45,8 +54,10 @@ export function ViewsChart({ data, period }: ViewsChartProps) {
         />
         <YAxis style={{ fontSize: "12px" }} />
         <Tooltip
-          labelFormatter={(value) => formatDate(value, "MMM dd, yyyy")}
-          formatter={(value: number) => [value.toLocaleString(), "Views"]}
+          labelFormatter={(value) =>
+            formatDate(value, "MMM dd, yyyy")
+          }
+          formatter={(value: number) => [formatNumber(value), t("admin.views")]}
         />
         <Legend />
         <Line
@@ -61,4 +72,3 @@ export function ViewsChart({ data, period }: ViewsChartProps) {
     </ResponsiveContainer>
   );
 }
-

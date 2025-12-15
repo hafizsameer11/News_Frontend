@@ -4,19 +4,27 @@ import { useState } from "react";
 import { useSubscribeNewsletter } from "@/lib/hooks/useNewsletter";
 import { validateEmail } from "@/lib/helpers/form-validation";
 import { useToast } from "@/components/ui/toast";
-import { useBehaviorTracking, trackNewsletterSubscription } from "@/lib/hooks/useBehaviorTracking";
+import {
+  useBehaviorTracking,
+  trackNewsletterSubscription,
+} from "@/lib/hooks/useBehaviorTracking";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface SubscriptionFormProps {
   className?: string;
   onSuccess?: () => void;
 }
 
-export function SubscriptionForm({ className = "", onSuccess }: SubscriptionFormProps) {
+export function SubscriptionForm({
+  className = "",
+  onSuccess,
+}: SubscriptionFormProps) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { showToast } = useToast();
   const { mutate: track } = useBehaviorTracking();
+  const { t } = useLanguage();
 
   const subscribeMutation = useSubscribeNewsletter();
 
@@ -38,18 +46,19 @@ export function SubscriptionForm({ className = "", onSuccess }: SubscriptionForm
       await subscribeMutation.mutateAsync({ email });
       setSuccess(true);
       setEmail("");
-      showToast("Thank you for subscribing to our newsletter!", "success", 7000);
-      
+      showToast(t("toast.registered"), "success", 7000);
+
       // Track newsletter subscription
       trackNewsletterSubscription(track, subscribedEmail, {
         timestamp: new Date().toISOString(),
       });
-      
+
       onSuccess?.();
       // Reset success message after 8 seconds (longer visibility)
       setTimeout(() => setSuccess(false), 8000);
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || "Failed to subscribe. Please try again.";
+      const errorMessage =
+        err?.response?.data?.message || t("toast.actionFailed");
       setError(errorMessage);
       showToast(errorMessage, "error", 6000);
     }
@@ -73,7 +82,7 @@ export function SubscriptionForm({ className = "", onSuccess }: SubscriptionForm
           </svg>
           <div className="flex-1">
             <p className="text-sm font-medium text-green-800">
-              Successfully subscribed! Check your email for confirmation.
+              {t("toast.registered")}
             </p>
           </div>
         </div>
@@ -89,7 +98,7 @@ export function SubscriptionForm({ className = "", onSuccess }: SubscriptionForm
               setError(null);
               setSuccess(false);
             }}
-            placeholder="Enter your email"
+            placeholder={t("footer.newsletter.placeholder")}
             className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition ${
               success
                 ? "border-green-300 focus:ring-green-500 bg-green-50"
@@ -143,25 +152,21 @@ export function SubscriptionForm({ className = "", onSuccess }: SubscriptionForm
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              <span>Subscribing...</span>
+              <span>{t("common.loading")}</span>
             </>
           ) : success ? (
             <>
-              <svg
-                className="w-4 h-4"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                   clipRule="evenodd"
                 />
               </svg>
-              <span>Subscribed!</span>
+              <span>{t("footer.newsletter.subscribe")}!</span>
             </>
           ) : (
-            "Subscribe"
+            t("footer.newsletter.subscribe")
           )}
         </button>
       </div>
@@ -184,4 +189,3 @@ export function SubscriptionForm({ className = "", onSuccess }: SubscriptionForm
     </form>
   );
 }
-

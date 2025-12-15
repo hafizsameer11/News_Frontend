@@ -6,6 +6,7 @@ import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { VideoGrid } from "@/components/tg/video-grid";
 import { useTGVideos } from "@/lib/hooks/useTG";
+import { TGVideosResponse } from "@/lib/api/modules/tg.api";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 
@@ -24,8 +25,9 @@ export default function TGPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useTGVideos({ page, limit: 12 });
 
-  const videos = data?.data?.videos || [];
-  const meta = data?.data?.meta;
+  const videosData = (data as TGVideosResponse | undefined)?.data;
+  const videos = videosData?.videos || [];
+  const meta = videosData?.meta;
 
   return (
     <div className="min-h-screen flex flex-col">

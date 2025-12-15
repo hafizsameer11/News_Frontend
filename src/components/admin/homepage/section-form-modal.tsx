@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { HomepageSection, CreateHomepageSectionInput } from "@/lib/api/modules/homepage.api";
 import { FormField } from "@/components/ui/form-field";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -39,9 +39,13 @@ export function SectionFormModal({
       dataSource: "",
       isActive: true,
     };
-  }, [section, isOpen]);
+  }, [section]);
 
   const [formData, setFormData] = useState<CreateHomepageSectionInput>(initialFormData);
+
+  useEffect(() => {
+    setFormData(initialFormData);
+  }, [initialFormData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

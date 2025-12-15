@@ -1,13 +1,24 @@
 "use client";
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { ConversionMetrics } from "@/types/stats.types";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface ConversionMetricsChartProps {
   data: ConversionMetrics;
 }
 
 export function ConversionMetricsChart({ data }: ConversionMetricsChartProps) {
+  const { t, formatNumber } = useLanguage();
   const chartData = [
     {
       name: "Newsletter Subscriptions",
@@ -36,7 +47,7 @@ export function ConversionMetricsChart({ data }: ConversionMetricsChartProps) {
         />
         <YAxis tick={{ fontSize: 12 }} />
         <Tooltip
-          formatter={(value: number) => [value.toLocaleString(), "Count"]}
+          formatter={(value: number) => [formatNumber(value), t("admin.count")]}
         />
         <Legend />
         <Bar
@@ -49,4 +60,3 @@ export function ConversionMetricsChart({ data }: ConversionMetricsChartProps) {
     </ResponsiveContainer>
   );
 }
-

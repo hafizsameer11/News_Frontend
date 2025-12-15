@@ -24,7 +24,7 @@ export default function AdDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const { user: authUser, isAuthenticated } = useAuth();
-  const { language } = useLanguage();
+  const { language, formatNumber } = useLanguage();
   const { data: userData, isLoading: userLoading } = useGetMe(isAuthenticated);
   const adId = params.id as string;
   const isEditMode = searchParams?.get("edit") === "true";
@@ -36,7 +36,8 @@ export default function AdDetailPage() {
   const user = (userData as AuthResponse | undefined)?.data?.user || authUser;
 
   const { data: adsData, isLoading: adsLoading, error: adsError } = useAds({});
-  const { data: analyticsData, isLoading: analyticsLoading } = useAdAnalytics(adId);
+  const { data: analyticsData, isLoading: analyticsLoading } =
+    useAdAnalytics(adId);
   const deleteMutation = useDeleteAd();
   const updateMutation = useUpdateAd();
 
@@ -52,9 +53,12 @@ export default function AdDetailPage() {
   // Initialize edit mode when ad is loaded
   useEffect(() => {
     if (isEditMode && ad && !editingAd) {
-      // Use a callback to avoid setState in effect warning
-      setEditingAd(ad);
-      setShowEditModal(true);
+      // Use setTimeout to defer state updates
+      const timer = setTimeout(() => {
+        setEditingAd(ad);
+        setShowEditModal(true);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isEditMode, adId, ad, editingAd]);
 
@@ -160,7 +164,10 @@ export default function AdDetailPage() {
   };
 
   const canEdit = ad.status === "PENDING";
-  const ctr = ad.impressions > 0 ? ((ad.clicks / ad.impressions) * 100).toFixed(2) : "0.00";
+  const ctr =
+    ad.impressions > 0
+      ? ((ad.clicks / ad.impressions) * 100).toFixed(2)
+      : "0.00";
 
   return (
     <div className="space-y-6">
@@ -303,9 +310,13 @@ export default function AdDetailPage() {
               {ad.rejectionReason && (
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-red-700 mb-1">
-                    {language === "it" ? "Motivo del Rifiuto" : "Rejection Reason"}
+                    {language === "it"
+                      ? "Motivo del Rifiuto"
+                      : "Rejection Reason"}
                   </label>
-                  <p className="text-red-600 bg-red-50 p-3 rounded">{ad.rejectionReason}</p>
+                  <p className="text-red-600 bg-red-50 p-3 rounded">
+                    {ad.rejectionReason}
+                  </p>
                 </div>
               )}
             </div>
@@ -316,11 +327,7 @@ export default function AdDetailPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               {language === "it" ? "Analisi Dettagliate" : "Detailed Analytics"}
             </h2>
-            {analyticsLoading ? (
-              <Loading />
-            ) : (
-              <AdAnalyticsDetail adId={adId} />
-            )}
+            {analyticsLoading ? <Loading /> : <AdAnalyticsDetail adId={adId} />}
           </div>
         </div>
 
@@ -337,7 +344,7 @@ export default function AdDetailPage() {
                   {language === "it" ? "Visualizzazioni" : "Impressions"}
                 </label>
                 <p className="text-2xl font-bold text-blue-600">
-                  {(ad.impressions || 0).toLocaleString()}
+                  {formatNumber(ad.impressions || 0)}
                 </p>
               </div>
               <div>
@@ -345,12 +352,14 @@ export default function AdDetailPage() {
                   {language === "it" ? "Clic" : "Clicks"}
                 </label>
                 <p className="text-2xl font-bold text-green-600">
-                  {(ad.clicks || 0).toLocaleString()}
+                  {formatNumber(ad.clicks || 0)}
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  {language === "it" ? "Tasso di Click (CTR)" : "Click-Through Rate (CTR)"}
+                  {language === "it"
+                    ? "Tasso di Click (CTR)"
+                    : "Click-Through Rate (CTR)"}
                 </label>
                 <p className="text-2xl font-bold text-red-600">{ctr}%</p>
               </div>
@@ -406,4 +415,3 @@ export default function AdDetailPage() {
     </div>
   );
 }
-

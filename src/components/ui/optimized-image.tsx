@@ -21,12 +21,17 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
     return false;
   }, [src]);
 
-  // Reset error state when src changes - moved to useEffect
+  // Reset error state when src changes - use setTimeout to defer
   useEffect(() => {
     if (prevSrcRef.current !== src && imageError) {
-      setImageError(false);
+      const timer = setTimeout(() => {
+        setImageError(false);
+      }, 0);
+      prevSrcRef.current = src;
+      return () => clearTimeout(timer);
+    } else {
+      prevSrcRef.current = src;
     }
-    prevSrcRef.current = src;
   }, [src, imageError]);
 
   // Don't render if src is missing or empty

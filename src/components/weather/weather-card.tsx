@@ -3,6 +3,7 @@
 import { WeatherData } from "@/types/weather.types";
 import Image from "next/image";
 import { getWeatherIconInfo } from "@/lib/helpers/weather-icons";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface WeatherCardProps {
   weather: WeatherData;
@@ -10,8 +11,15 @@ interface WeatherCardProps {
   compact?: boolean;
 }
 
-export function WeatherCard({ weather, className = "", compact = false }: WeatherCardProps) {
-  const iconInfo = weather.icon ? getWeatherIconInfo(weather.icon, weather.condition) : null;
+export function WeatherCard({
+  weather,
+  className = "",
+  compact = false,
+}: WeatherCardProps) {
+  const { t, formatTime, formatDateTime } = useLanguage();
+  const iconInfo = weather.icon
+    ? getWeatherIconInfo(weather.icon, weather.condition)
+    : null;
 
   if (compact) {
     return (
@@ -19,7 +27,9 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <h3 className="text-lg font-bold text-gray-900 mb-1">
-              {typeof weather.city === "string" ? weather.city : weather.city.name}
+              {typeof weather.city === "string"
+                ? weather.city
+                : weather.city.name}
             </h3>
             <p className="text-xs text-gray-500 mb-2">
               {weather.conditionDescription || weather.description || ""}
@@ -45,7 +55,9 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
           <div>
             <span className="text-gray-500">Feels:</span>
             <span className="ml-1 font-medium">
-              {weather.feelsLike !== undefined ? `${Math.round(weather.feelsLike)}°C` : "N/A"}
+              {weather.feelsLike !== undefined
+                ? `${Math.round(weather.feelsLike)}°C`
+                : "N/A"}
             </span>
           </div>
           <div>
@@ -65,7 +77,9 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
           {weather.visibility && (
             <div>
               <span className="text-gray-500">Visibility:</span>
-              <span className="ml-1 font-medium">{Math.round(weather.visibility / 1000)} km</span>
+              <span className="ml-1 font-medium">
+                {Math.round(weather.visibility / 1000)} km
+              </span>
             </div>
           )}
           {weather.cloudiness !== undefined && (
@@ -81,7 +95,7 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
               <div>
                 <span className="text-gray-500">Sunrise:</span>
                 <span className="ml-1 font-medium">
-                  {new Date(weather.sunrise).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {formatTime(new Date(weather.sunrise), "p")}
                 </span>
               </div>
             )}
@@ -89,7 +103,7 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
               <div>
                 <span className="text-gray-500">Sunset:</span>
                 <span className="ml-1 font-medium">
-                  {new Date(weather.sunset).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {formatTime(new Date(weather.sunset), "p")}
                 </span>
               </div>
             )}
@@ -104,7 +118,9 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-2xl font-bold text-gray-900">
-            {typeof weather.city === "string" ? weather.city : weather.city.name}
+            {typeof weather.city === "string"
+              ? weather.city
+              : weather.city.name}
           </h3>
           <p className="text-sm text-gray-500">
             {weather.conditionDescription || weather.description || ""}
@@ -130,7 +146,9 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
         <div>
           <span className="text-gray-500">Feels like:</span>
           <span className="ml-2 font-medium">
-            {weather.feelsLike !== undefined ? `${Math.round(weather.feelsLike)}°C` : "N/A"}
+            {weather.feelsLike !== undefined
+              ? `${Math.round(weather.feelsLike)}°C`
+              : "N/A"}
           </span>
         </div>
         <div>
@@ -150,7 +168,9 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
         {weather.visibility && (
           <div>
             <span className="text-gray-500">Visibility:</span>
-            <span className="ml-2 font-medium">{weather.visibility / 1000} km</span>
+            <span className="ml-2 font-medium">
+              {weather.visibility / 1000} km
+            </span>
           </div>
         )}
         {weather.cloudiness !== undefined && (
@@ -166,7 +186,7 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
             <div>
               <span className="text-gray-500">Sunrise:</span>
               <span className="ml-2 font-medium">
-                {new Date(weather.sunrise).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {formatTime(new Date(weather.sunrise), "p")}
               </span>
             </div>
           )}
@@ -174,7 +194,7 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
             <div>
               <span className="text-gray-500">Sunset:</span>
               <span className="ml-2 font-medium">
-                {new Date(weather.sunset).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {formatTime(new Date(weather.sunset), "p")}
               </span>
             </div>
           )}
@@ -182,10 +202,9 @@ export function WeatherCard({ weather, className = "", compact = false }: Weathe
       )}
       {weather.updatedAt && (
         <p className="text-xs text-gray-400 mt-4">
-          Updated: {new Date(weather.updatedAt).toLocaleString()}
+          {t("weather.updated")}: {formatDateTime(new Date(weather.updatedAt))}
         </p>
       )}
     </div>
   );
 }
-

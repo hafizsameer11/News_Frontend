@@ -9,11 +9,11 @@ import { UtilityLinksDropdown } from "./utility-links-dropdown";
 
 export function UtilityBar() {
   const { language } = useLanguage();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Update date every minute to keep it current
+  // Update date periodically on client side only to avoid hydration mismatch
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentDate(new Date());
@@ -54,15 +54,15 @@ export function UtilityBar() {
       style={{
         position: "sticky",
         top: 0,
-        zIndex: 40, // Below navbar (z-40) but above content
+        zIndex: 51, // Below navbar (z-40) but above content
       }}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-8">
           {/* Left: Date */}
-          <div className="text-gray-600">
+          <div className="text-gray-600" suppressHydrationWarning>
             {formatDate(
-              currentDate,
+              currentDate || new Date(),
               language === "it" ? "EEEE, d MMMM yyyy" : "EEEE, MMMM d, yyyy"
             )}
           </div>

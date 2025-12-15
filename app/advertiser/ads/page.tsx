@@ -19,7 +19,7 @@ import { formatPrice } from "@/lib/helpers/ad-pricing";
 export default function AdvertiserAdsPage() {
   const router = useRouter();
   const { user: authUser, isAuthenticated } = useAuth();
-  const { language } = useLanguage();
+  const { language, formatNumber } = useLanguage();
   const { data: userData, isLoading: userLoading } = useGetMe(isAuthenticated);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -136,7 +136,9 @@ export default function AdvertiserAdsPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder={language === "it" ? "Cerca per titolo..." : "Search by title..."}
+              placeholder={
+                language === "it" ? "Cerca per titolo..." : "Search by title..."
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
@@ -152,12 +154,24 @@ export default function AdvertiserAdsPage() {
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
             >
-              <option value="">{language === "it" ? "Tutti gli stati" : "All Status"}</option>
-              <option value="PENDING">{language === "it" ? "In Attesa" : "Pending"}</option>
-              <option value="ACTIVE">{language === "it" ? "Attivo" : "Active"}</option>
-              <option value="PAUSED">{language === "it" ? "In Pausa" : "Paused"}</option>
-              <option value="EXPIRED">{language === "it" ? "Scaduto" : "Expired"}</option>
-              <option value="REJECTED">{language === "it" ? "Rifiutato" : "Rejected"}</option>
+              <option value="">
+                {language === "it" ? "Tutti gli stati" : "All Status"}
+              </option>
+              <option value="PENDING">
+                {language === "it" ? "In Attesa" : "Pending"}
+              </option>
+              <option value="ACTIVE">
+                {language === "it" ? "Attivo" : "Active"}
+              </option>
+              <option value="PAUSED">
+                {language === "it" ? "In Pausa" : "Paused"}
+              </option>
+              <option value="EXPIRED">
+                {language === "it" ? "Scaduto" : "Expired"}
+              </option>
+              <option value="REJECTED">
+                {language === "it" ? "Rifiutato" : "Rejected"}
+              </option>
             </select>
           </div>
           <div>
@@ -172,7 +186,9 @@ export default function AdvertiserAdsPage() {
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
             >
-              <option value="">{language === "it" ? "Tutti i tipi" : "All Types"}</option>
+              <option value="">
+                {language === "it" ? "Tutti i tipi" : "All Types"}
+              </option>
               <option value="BANNER_TOP">Banner Top</option>
               <option value="BANNER_SIDE">Banner Side</option>
               <option value="INLINE">Inline</option>
@@ -213,7 +229,9 @@ export default function AdvertiserAdsPage() {
               href="/advertiser/ads/create"
               className="inline-block px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold"
             >
-              {language === "it" ? "Crea il Primo Annuncio" : "Create Your First Ad"}
+              {language === "it"
+                ? "Crea il Primo Annuncio"
+                : "Create Your First Ad"}
             </Link>
           </div>
         ) : (
@@ -263,7 +281,9 @@ export default function AdvertiserAdsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div>
-                          <div className="font-medium text-gray-900">{ad.title}</div>
+                          <div className="font-medium text-gray-900">
+                            {ad.title}
+                          </div>
                           <a
                             href={ad.targetLink}
                             target="_blank"
@@ -275,7 +295,9 @@ export default function AdvertiserAdsPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-sm text-gray-600">{getTypeLabel(ad.type)}</span>
+                        <span className="text-sm text-gray-600">
+                          {getTypeLabel(ad.type)}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -287,10 +309,10 @@ export default function AdvertiserAdsPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
-                        {(ad.impressions || 0).toLocaleString()}
+                        {formatNumber(ad.impressions || 0)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
-                        {(ad.clicks || 0).toLocaleString()}
+                        {formatNumber(ad.clicks || 0)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {ad.price ? formatPrice(Number(ad.price)) : "-"}
@@ -329,8 +351,10 @@ export default function AdvertiserAdsPage() {
             {meta && meta.totalPages > 1 && (
               <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
                 <div className="text-sm text-gray-700">
-                  {language === "it" ? "Mostrando" : "Showing"} {((page - 1) * limit) + 1} {language === "it" ? "a" : "to"}{" "}
-                  {Math.min(page * limit, meta.total)} {language === "it" ? "di" : "of"} {meta.total}{" "}
+                  {language === "it" ? "Mostrando" : "Showing"}{" "}
+                  {(page - 1) * limit + 1} {language === "it" ? "a" : "to"}{" "}
+                  {Math.min(page * limit, meta.total)}{" "}
+                  {language === "it" ? "di" : "of"} {meta.total}{" "}
                   {language === "it" ? "risultati" : "results"}
                 </div>
                 <div className="flex gap-2">
@@ -342,7 +366,9 @@ export default function AdvertiserAdsPage() {
                     {language === "it" ? "Precedente" : "Previous"}
                   </button>
                   <button
-                    onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
+                    onClick={() =>
+                      setPage((p) => Math.min(meta.totalPages, p + 1))
+                    }
                     disabled={page === meta.totalPages}
                     className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -373,4 +399,3 @@ export default function AdvertiserAdsPage() {
     </div>
   );
 }
-

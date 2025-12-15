@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import { useBookmarks, useDeleteBookmark } from "@/lib/hooks/useBookmarks";
+import { BookmarksResponse } from "@/lib/api/modules/bookmarks.api";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { Loading } from "@/components/ui/loading";
@@ -17,22 +18,17 @@ export default function BookmarksPage() {
   const { isAuthenticated } = useAuth();
   const [page, setPage] = useState(1);
   const limit = 12;
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const deleteMutation = useDeleteBookmark();
 
   const { data, isLoading, error } = useBookmarks({ page, limit });
 
-  const bookmarks = data?.data?.bookmarks || [];
-  const pagination = data?.data?.pagination;
+  const bookmarksData = (data as BookmarksResponse | undefined)?.data;
+  const bookmarks = bookmarksData?.bookmarks || [];
+  const pagination = bookmarksData?.pagination;
 
   const handleDelete = async (bookmarkId: string) => {
-    if (
-      confirm(
-        language === "it"
-          ? "Sei sicuro di voler rimuovere questo segnalibro?"
-          : "Are you sure you want to remove this bookmark?"
-      )
-    ) {
+    if (confirm(t("bookmarks.confirmRemove"))) {
       deleteMutation.mutate(bookmarkId);
     }
   };
@@ -44,18 +40,16 @@ export default function BookmarksPage() {
         <main className="flex-grow flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md w-full bg-white shadow rounded-lg p-8 text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              {language === "it" ? "I Miei Segnalibri" : "My Bookmarks"}
+              {t("bookmarks.myBookmarks")}
             </h1>
             <p className="text-gray-600 mb-6">
-              {language === "it"
-                ? "Devi essere autenticato per vedere i tuoi segnalibri"
-                : "You must be logged in to view your bookmarks"}
+              {t("bookmarks.mustBeLoggedIn")}
             </p>
             <Link
               href="/login"
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
             >
-              {language === "it" ? "Accedi" : "Login"}
+              {t("auth.login")}
             </Link>
           </div>
         </main>
@@ -71,7 +65,7 @@ export default function BookmarksPage() {
         <div className="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">
-              {language === "it" ? "I Miei Segnalibri" : "My Bookmarks"}
+              {t("bookmarks.myBookmarks")}
             </h1>
           </div>
 
@@ -82,15 +76,10 @@ export default function BookmarksPage() {
           ) : bookmarks.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600 mb-4">
-                {language === "it"
-                  ? "Non hai ancora salvato nessun articolo"
-                  : "You haven't saved any articles yet"}
+                {t("bookmarks.noBookmarksYet")}
               </p>
-              <Link
-                href="/"
-                className="text-red-600 hover:text-red-800"
-              >
-                {language === "it" ? "Esplora le notizie" : "Explore News"}
+              <Link href="/" className="text-red-600 hover:text-red-800">
+                {t("bookmarks.exploreNews")}
               </Link>
             </div>
           ) : (
@@ -124,9 +113,7 @@ export default function BookmarksPage() {
                           </p>
                         )}
                         <div className="flex items-center justify-between text-xs text-gray-500">
-                          <span>
-                            {formatDate(bookmark.news.createdAt)}
-                          </span>
+                          <span>{formatDate(bookmark.news.createdAt)}</span>
                           <span>
                             {language === "it"
                               ? bookmark.news.category.nameIt
@@ -141,7 +128,7 @@ export default function BookmarksPage() {
                         disabled={deleteMutation.isPending}
                         className="w-full text-sm text-red-600 hover:text-red-800 disabled:opacity-50"
                       >
-                        {language === "it" ? "Rimuovi" : "Remove"}
+                        {t("bookmarks.remove")}
                       </button>
                     </div>
                   </div>
@@ -152,15 +139,9 @@ export default function BookmarksPage() {
               {pagination && pagination.totalPages > 1 && (
                 <div className="mt-8 flex items-center justify-between">
                   <div className="text-sm text-gray-700">
-                    {language === "it"
-                      ? `Mostrando ${(page - 1) * limit + 1} - ${Math.min(
-                          page * limit,
-                          pagination.total
-                        )} di ${pagination.total}`
-                      : `Showing ${(page - 1) * limit + 1} - ${Math.min(
-                          page * limit,
-                          pagination.total
-                        )} of ${pagination.total}`}
+                    {t("common.showing")} {(page - 1) * limit + 1} -{" "}
+                    {Math.min(page * limit, pagination.total)} {t("common.of")}{" "}
+                    {pagination.total}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -168,14 +149,14 @@ export default function BookmarksPage() {
                       disabled={page === 1}
                       className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {language === "it" ? "Precedente" : "Previous"}
+                      {t("common.previous")}
                     </button>
                     <button
                       onClick={() => setPage((p) => p + 1)}
                       disabled={page >= pagination.totalPages}
                       className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {language === "it" ? "Successivo" : "Next"}
+                      {t("common.next")}
                     </button>
                   </div>
                 </div>
@@ -188,4 +169,3 @@ export default function BookmarksPage() {
     </div>
   );
 }
-

@@ -13,14 +13,27 @@ import { cn } from "@/lib/helpers/cn";
 export default function AdminChatPage() {
   const { user } = useAuth();
   const { t, language } = useLanguage();
-  const [selectedPartnerId, setSelectedPartnerId] = useState<string | undefined>();
-  const [viewMode, setViewMode] = useState<"conversations" | "users">("conversations");
+  const [selectedPartnerId, setSelectedPartnerId] = useState<
+    string | undefined
+  >();
+  const [viewMode, setViewMode] = useState<"conversations" | "users">(
+    "conversations"
+  );
   const [showChatWindow, setShowChatWindow] = useState(false); // For mobile: toggle between list and chat
 
-  const { data: conversationsData, isLoading: conversationsLoading, error: conversationsError } = useConversations();
-  const { data: usersData, isLoading: usersLoading, error: usersError } = useChatUsers();
+  const {
+    data: conversationsData,
+    isLoading: conversationsLoading,
+    error: conversationsError,
+  } = useConversations();
+  const {
+    data: usersData,
+    isLoading: usersLoading,
+    error: usersError,
+  } = useChatUsers();
 
-  const conversations = (conversationsData as ConversationsResponse | undefined)?.data || [];
+  const conversations =
+    (conversationsData as ConversationsResponse | undefined)?.data || [];
   const users = (usersData as ChatUsersResponse | undefined)?.data || [];
 
   // If user is selected from users list, switch to conversations view
@@ -37,7 +50,9 @@ export default function AdminChatPage() {
 
   // Get selected partner info
   const selectedPartner = selectedPartnerId
-    ? conversations.find((c: { partner: { id: string } }) => c.partner.id === selectedPartnerId)?.partner ||
+    ? conversations.find(
+        (c: { partner: { id: string } }) => c.partner.id === selectedPartnerId
+      )?.partner ||
       users.find((u: { id: string }) => u.id === selectedPartnerId)
     : null;
 
@@ -48,20 +63,30 @@ export default function AdminChatPage() {
   return (
     <div className="h-full flex flex-col">
       <div className="mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("admin.chat")}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          {t("admin.chat")}
+        </h1>
         <p className="text-sm sm:text-base text-gray-600 mt-1">
-          {language === "it" ? "Comunica con gli utenti" : "Communicate with users"}
+          {t("admin.communicateWithUsers")}
         </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden flex-1 flex flex-col min-h-0" style={{ height: "calc(100vh - 180px)", maxHeight: "calc(100vh - 180px)" }}>
+      <div
+        className="bg-white rounded-lg shadow-md overflow-hidden flex-1 flex flex-col min-h-0"
+        style={{
+          height: "calc(100vh - 180px)",
+          maxHeight: "calc(100vh - 180px)",
+        }}
+      >
         <div className="flex h-full flex-1 min-h-0">
           {/* Sidebar - Hidden on mobile when chat is open */}
-          <div className={cn(
-            "border-r border-gray-200 flex flex-col transition-all duration-300",
-            "w-full lg:w-80",
-            showChatWindow && selectedPartnerId ? "hidden lg:flex" : "flex"
-          )}>
+          <div
+            className={cn(
+              "border-r border-gray-200 flex flex-col transition-all duration-300",
+              "w-full lg:w-80",
+              showChatWindow && selectedPartnerId ? "hidden lg:flex" : "flex"
+            )}
+          >
             {/* Tabs */}
             <div className="flex border-b border-gray-200 flex-shrink-0">
               <button
@@ -73,7 +98,7 @@ export default function AdminChatPage() {
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 )}
               >
-                {language === "it" ? "Conversazioni" : "Conversations"}
+                {t("chat.conversations")}
               </button>
               <button
                 onClick={() => setViewMode("users")}
@@ -84,7 +109,7 @@ export default function AdminChatPage() {
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 )}
               >
-                {language === "it" ? "Tutti gli Utenti" : "All Users"}
+                {t("admin.allUsers")}
               </button>
             </div>
 
@@ -111,10 +136,12 @@ export default function AdminChatPage() {
           </div>
 
           {/* Chat Window - Full width on mobile when selected */}
-          <div className={cn(
-            "flex-1 flex flex-col min-h-0",
-            showChatWindow && selectedPartnerId ? "flex" : "hidden lg:flex"
-          )}>
+          <div
+            className={cn(
+              "flex-1 flex flex-col min-h-0",
+              showChatWindow && selectedPartnerId ? "flex" : "hidden lg:flex"
+            )}
+          >
             {selectedPartnerId && selectedPartner ? (
               <>
                 {/* Mobile back button */}
@@ -125,10 +152,20 @@ export default function AdminChatPage() {
                       setSelectedPartnerId(undefined);
                     }}
                     className="p-2 hover:bg-gray-100 rounded-md transition"
-                    aria-label={language === "it" ? "Torna alle conversazioni" : "Back to conversations"}
+                    aria-label={t("aria.backToConversations")}
                   >
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <svg
+                      className="w-5 h-5 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
                     </svg>
                   </button>
                   <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -144,9 +181,11 @@ export default function AdminChatPage() {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 truncate">{selectedPartner.name}</p>
+                      <p className="font-medium text-gray-900 truncate">
+                        {selectedPartner.name}
+                      </p>
                       <p className="text-xs text-gray-500">
-                        {language === "it" ? "Online" : "Online"}
+                        {t("common.online")}
                       </p>
                     </div>
                   </div>
@@ -165,12 +204,10 @@ export default function AdminChatPage() {
               <div className="flex-1 flex items-center justify-center bg-gray-50">
                 <div className="text-center text-gray-500 px-4">
                   <p className="text-base sm:text-lg font-medium mb-2">
-                    {language === "it" ? "Seleziona una conversazione" : "Select a conversation"}
+                    {t("chat.selectConversation")}
                   </p>
                   <p className="text-xs sm:text-sm">
-                    {language === "it" 
-                      ? "Scegli un utente dall'elenco per iniziare a chattare" 
-                      : "Choose a user from the list to start chatting"}
+                    {t("chat.selectConversationHint")}
                   </p>
                 </div>
               </div>

@@ -5,6 +5,7 @@ import { SignInfo, signDataMap } from "./sign-info";
 import { HoroscopeShare } from "./horoscope-share";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface SignDetailProps {
   horoscope: Horoscope | null;
@@ -21,6 +22,8 @@ export function SignDetail({
   viewType,
   onViewTypeChange,
 }: SignDetailProps) {
+  const { t, formatDate } = useLanguage();
+
   if (isLoading) {
     return <Loading />;
   }
@@ -32,12 +35,13 @@ export function SignDetail({
   if (!horoscope) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
-        <p className="text-gray-600">Horoscope data not available.</p>
+        <p className="text-gray-600">{t("horoscope.noHoroscopeData")}</p>
       </div>
     );
   }
 
-  const content = viewType === "daily" ? horoscope.dailyContent : horoscope.weeklyContent;
+  const content =
+    viewType === "daily" ? horoscope.dailyContent : horoscope.weeklyContent;
   const signData = signDataMap[horoscope.sign];
 
   return (
@@ -54,7 +58,7 @@ export function SignDetail({
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
-          Daily
+          {t("horoscope.daily")}
         </button>
         <button
           onClick={() => onViewTypeChange("weekly")}
@@ -64,7 +68,7 @@ export function SignDetail({
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
-          Weekly
+          {t("horoscope.weekly")}
         </button>
       </div>
 
@@ -74,24 +78,34 @@ export function SignDetail({
           <div className="flex items-center gap-3">
             <span className="text-4xl">{signData.symbol}</span>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{signData.name.en}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {signData.name.en}
+              </h2>
               <p className="text-sm text-gray-500">
-                {viewType === "daily" ? "Daily" : "Weekly"} Horoscope -{" "}
-                {new Date(horoscope.date).toLocaleDateString()}
+                {viewType === "daily"
+                  ? t("horoscope.dailyHoroscope")
+                  : t("horoscope.weeklyHoroscope")}{" "}
+                - {formatDate(new Date(horoscope.date), "PP")}
               </p>
             </div>
           </div>
-          <HoroscopeShare sign={horoscope.sign} date={horoscope.date} type={viewType} />
+          <HoroscopeShare
+            sign={horoscope.sign}
+            date={horoscope.date}
+            type={viewType}
+          />
         </div>
 
         {content ? (
           <div className="prose max-w-none">
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">{content}</p>
+            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+              {content}
+            </p>
           </div>
         ) : (
           <div className="text-center py-8">
             <p className="text-gray-400 italic">
-              No {viewType} horoscope available for {signData.name.en} yet.
+              {t("horoscope.noHoroscopeData")}
             </p>
           </div>
         )}
@@ -99,4 +113,3 @@ export function SignDetail({
     </div>
   );
 }
-

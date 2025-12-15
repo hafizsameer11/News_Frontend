@@ -9,6 +9,7 @@ import { Footer } from "@/components/ui/footer";
 import { Loading } from "@/components/ui/loading";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useGetMe } from "@/lib/hooks/useAuth";
+import { AuthResponse } from "@/types/user.types";
 import Link from "next/link";
 
 type Tab = "profile" | "password" | "newsletter";
@@ -17,10 +18,10 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const { user, isLoading: authLoading } = useAuth();
   const { data: userData, isLoading: userLoading } = useGetMe();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const isLoading = authLoading || userLoading;
-  const currentUser = userData?.data || user;
+  const currentUser = (userData as AuthResponse | undefined)?.data?.user || user;
 
   if (isLoading) {
     return (
@@ -45,11 +46,8 @@ export default function ProfilePage() {
                 ? "Devi essere autenticato per vedere il tuo profilo"
                 : "You must be logged in to view your profile"}
             </p>
-            <Link
-              href="/login"
-              className="text-red-600 hover:text-red-800"
-            >
-              {language === "it" ? "Accedi" : "Login"}
+            <Link href="/login" className="text-red-600 hover:text-red-800">
+              {t("auth.login")}
             </Link>
           </div>
         </main>
@@ -65,7 +63,7 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">
-              {language === "it" ? "Il Mio Profilo" : "My Profile"}
+              {t("profile.myProfile")}
             </h1>
           </div>
 
@@ -80,7 +78,7 @@ export default function ProfilePage() {
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
-                {language === "it" ? "Profilo" : "Profile"}
+                {t("profile.title")}
               </button>
               <button
                 onClick={() => setActiveTab("password")}
@@ -90,7 +88,7 @@ export default function ProfilePage() {
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
-                {language === "it" ? "Password" : "Password"}
+                {t("auth.password")}
               </button>
               <button
                 onClick={() => setActiveTab("newsletter")}
@@ -100,7 +98,7 @@ export default function ProfilePage() {
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
-                {language === "it" ? "Newsletter" : "Newsletter"}
+                {t("profile.newsletter")}
               </button>
             </nav>
           </div>
@@ -112,14 +110,10 @@ export default function ProfilePage() {
             {activeTab === "newsletter" && (
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  {language === "it"
-                    ? "Stato Newsletter"
-                    : "Newsletter Status"}
+                  {t("profile.newsletterStatus")}
                 </h2>
                 <p className="text-gray-600">
-                  {language === "it"
-                    ? "La gestione della newsletter è disponibile nella pagina principale. Puoi iscriverti o disiscriverti utilizzando il modulo nel footer."
-                    : "Newsletter management is available on the main page. You can subscribe or unsubscribe using the form in the footer."}
+                  {t("profile.newsletterManagementHint")}
                 </p>
               </div>
             )}
@@ -130,4 +124,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

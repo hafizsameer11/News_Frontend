@@ -8,7 +8,7 @@ import { useSearch } from "@/lib/hooks/useSearch";
 import { Loading } from "@/components/ui/loading";
 
 export function SearchDropdown() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,7 +117,7 @@ export function SearchDropdown() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 text-gray-900 hover:text-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded"
-        aria-label={language === "it" ? "Cerca" : "Search"}
+        aria-label={t("aria.search")}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -342,7 +342,7 @@ export function SearchDropdown() {
                   }}
                   className="mt-2 inline-block text-sm text-red-600 hover:text-red-700 font-medium"
                 >
-                  {language === "it" ? "Ricerca avanzata" : "Advanced Search"} →
+                  {t("nav.advancedSearch")} →
                 </Link>
               </div>
             )}

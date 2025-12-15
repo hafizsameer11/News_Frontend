@@ -2,15 +2,14 @@
 
 import { StatsCard } from "@/components/admin/stats-card";
 import { AdminStats } from "@/types/stats.types";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface OverviewStatsProps {
   data: AdminStats;
 }
 
 export function OverviewStats({ data }: OverviewStatsProps) {
-  const formatNumber = (num: number) => {
-    return num.toLocaleString();
-  };
+  const { formatNumber } = useLanguage();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -52,4 +51,3 @@ export function OverviewStats({ data }: OverviewStatsProps) {
     </div>
   );
 }
-

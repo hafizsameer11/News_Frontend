@@ -1,151 +1,302 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useBookmarks } from "@/lib/hooks/useBookmarks";
+import { useConversations } from "@/lib/hooks/useChat";
+import { BookmarksResponse } from "@/lib/api/modules/bookmarks.api";
+import { ConversationsResponse } from "@/types/chat.types";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLanguage } from "@/providers/LanguageProvider";
-import Link from "next/link";
+import { StatsCard } from "@/components/admin/stats-card";
 import { Loading } from "@/components/ui/loading";
+import { ErrorMessage } from "@/components/ui/error-message";
+import Link from "next/link";
+import { formatDate } from "@/lib/helpers/formatDate";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 export default function UserDashboard() {
-  const router = useRouter();
-  const { user, isAuthenticated, logout, isLoading } = useAuth();
-  const { language, t } = useLanguage();
+  const { user } = useAuth();
+  const { t, formatNumber, language } = useLanguage();
 
-  useEffect(() => {
-    // Don't redirect while loading
-    if (isLoading) {
-      return;
-    }
+  // Fetch user data
+  const { data: bookmarksData, isLoading: bookmarksLoading } = useBookmarks({
+    page: 1,
+    limit: 100,
+  });
+  const { data: conversationsData, isLoading: conversationsLoading } =
+    useConversations();
 
-    if (!isAuthenticated) {
-      router.push("/login");
-      return;
-    }
-    // Redirect based on role
-    if (user) {
-      if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
-        router.push("/admin/dashboard");
-        return;
-      } else if (user.role === "EDITOR") {
-        router.push("/editor");
-        return;
-      } else if (user.role === "ADVERTISER") {
-        router.push("/advertiser/dashboard");
-        return;
-      }
-    }
-  }, [isAuthenticated, user, router, isLoading]);
+  const bookmarksDataInner = (bookmarksData as BookmarksResponse | undefined)?.data;
+  const bookmarks = bookmarksDataInner?.bookmarks || [];
+  const conversations = (conversationsData as ConversationsResponse | undefined)?.data || [];
 
-  // Show loading while checking auth state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loading />
-      </div>
-    );
-  }
+  // Calculate stats
+  const totalBookmarks =
+    bookmarksDataInner?.pagination?.total || bookmarks.length;
+  const activeConversations = conversations.length;
+  const recentBookmarks = bookmarks.slice(0, 5);
+  const recentConversations = conversations.slice(0, 3);
 
-  // If not authenticated, show nothing (redirect will happen)
-  if (!isAuthenticated) {
-    return null;
-  }
+  // Get account creation date
+  const memberSince = user?.createdAt
+    ? formatDate(user.createdAt, "MMM dd, yyyy")
+    : null;
 
-  // If user exists but not USER role, show nothing (redirect will happen)
-  if (user && user.role !== "USER") {
-    return null;
-  }
-
-  // If no user yet but authenticated, show loading
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loading />
-      </div>
-    );
-  }
+  const isLoading = bookmarksLoading || conversationsLoading;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Welcome Section */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-center gap-4">
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-16 h-16 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-2xl">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+            )}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {language === "it" ? "La Mia Dashboard" : "My Dashboard"}
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                {t("dashboard.myDashboard")}
               </h1>
-              <p className="text-sm text-gray-600">
-                {language === "it"
-                  ? `Benvenuto, ${user.name}`
-                  : `Welcome, ${user.name}`}
+              <p className="text-sm text-gray-600 mt-1">
+                {t("dashboard.welcome")}, {user?.name}
               </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => {
-                  logout();
-                  router.push("/login");
-                }}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-              >
-                {language === "it" ? "Esci" : "Logout"}
-              </button>
+              {memberSince && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {t("dashboard.memberSince")} {memberSince}
+                </p>
+              )}
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-md p-8 md:p-12">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatsCard
+          title={t("dashboard.stats.totalBookmarks")}
+          value={formatNumber(totalBookmarks)}
+          icon="🔖"
+        />
+        <StatsCard
+          title={t("dashboard.stats.activeConversations")}
+          value={formatNumber(activeConversations)}
+          icon="💬"
+        />
+        <StatsCard
+          title={t("dashboard.stats.recentBookmarks")}
+          value={formatNumber(recentBookmarks.length)}
+          icon="⭐"
+        />
+        <StatsCard
+          title={t("dashboard.stats.accountStatus")}
+          value={t("dashboard.stats.active")}
+          icon="✅"
+        />
+      </div>
+
+      {/* Quick Actions Panel */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-900">
+          {t("dashboard.quickActions")}
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <Link
+            href="/"
+            className="bg-red-600 hover:bg-red-700 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 shadow-sm"
+          >
+            <span className="text-3xl">📰</span>
+            <span className="text-xs sm:text-sm font-medium text-center">
+              {t("dashboard.exploreNews")}
+            </span>
+          </Link>
+          <Link
+            href="/dashboard/chat"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 shadow-sm"
+          >
+            <span className="text-3xl">💬</span>
+            <span className="text-xs sm:text-sm font-medium text-center">
+              {t("dashboard.chatWithAdmin")}
+            </span>
+          </Link>
+          <Link
+            href="/bookmarks"
+            className="bg-green-600 hover:bg-green-700 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 shadow-sm"
+          >
+            <span className="text-3xl">🔖</span>
+            <span className="text-xs sm:text-sm font-medium text-center">
+              {t("nav.bookmarks")}
+            </span>
+          </Link>
+          <Link
+            href="/report"
+            className="bg-orange-600 hover:bg-orange-700 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 shadow-sm"
+          >
+            <span className="text-3xl">⚠️</span>
+            <span className="text-xs sm:text-sm font-medium text-center">
+              {t("report.reportContent")}
+            </span>
+          </Link>
+          <Link
+            href="/register"
+            className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition transform hover:scale-105 shadow-sm"
+          >
+            <span className="text-3xl">📢</span>
+            <span className="text-xs sm:text-sm font-medium text-center">
+              {t("dashboard.becomeAdvertiser")}
+            </span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Bookmarks */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">
+                {t("dashboard.recentActivity.recentBookmarks")}
+              </h2>
+              <Link
+                href="/bookmarks"
+                className="text-sm text-red-600 hover:text-red-800 font-medium"
+              >
+                {t("common.viewAll")}
+              </Link>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">
-              {language === "it" ? "Benvenuto su NEWS NEXT" : "Welcome to NEWS NEXT"}
-            </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              {language === "it"
-                ? "Il tuo account è stato creato con successo. Esplora le ultime notizie e rimani aggiornato."
-                : "Your account has been created successfully. Explore the latest news and stay updated."}
-            </p>
           </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center flex-wrap mt-8">
-            <Link
-              href="/"
-              className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-sm"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-              </svg>
-              {language === "it" ? "Esplora Notizie" : "Explore News"}
-            </Link>
-            <Link
-              href="/dashboard/chat"
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              {language === "it" ? "Chat con Admin" : "Chat with Admin"}
-            </Link>
-            <Link
-              href="/register"
-              className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition font-medium shadow-sm"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              {language === "it" ? "Diventa Inserzionista" : "Become an Advertiser"}
-            </Link>
+          <div className="p-6">
+            {isLoading ? (
+              <Loading />
+            ) : recentBookmarks.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p className="mb-2">
+                  {t("dashboard.recentActivity.noBookmarks")}
+                </p>
+                <Link
+                  href="/"
+                  className="text-red-600 hover:text-red-800 font-medium text-sm"
+                >
+                  {t("dashboard.exploreNews")}
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentBookmarks.map((bookmark) => (
+                  <Link
+                    key={bookmark.id}
+                    href={`/news/${bookmark.news.slug || bookmark.news.id}`}
+                    className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition group"
+                  >
+                    {bookmark.news.mainImage && (
+                      <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden">
+                        <OptimizedImage
+                          src={bookmark.news.mainImage}
+                          alt={bookmark.news.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-red-600 transition">
+                        {bookmark.news.title}
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        {formatDate(bookmark.createdAt, "MMM dd, yyyy")}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </main>
+
+        {/* Recent Conversations */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">
+                {t("dashboard.recentActivity.recentConversations")}
+              </h2>
+              <Link
+                href="/dashboard/chat"
+                className="text-sm text-red-600 hover:text-red-800 font-medium"
+              >
+                {t("common.viewAll")}
+              </Link>
+            </div>
+          </div>
+          <div className="p-6">
+            {isLoading ? (
+              <Loading />
+            ) : recentConversations.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p className="mb-2">
+                  {t("dashboard.recentActivity.noConversations")}
+                </p>
+                <Link
+                  href="/dashboard/chat"
+                  className="text-red-600 hover:text-red-800 font-medium text-sm"
+                >
+                  {t("dashboard.chatWithAdmin")}
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentConversations.map((conv) => (
+                  <Link
+                    key={conv.partner.id}
+                    href="/dashboard/chat"
+                    className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition group"
+                  >
+                    {conv.partner.avatar ? (
+                      <img
+                        src={conv.partner.avatar}
+                        alt={conv.partner.name}
+                        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                        {conv.partner.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-semibold text-gray-900 group-hover:text-red-600 transition">
+                          {conv.partner.name}
+                        </h3>
+                        {conv.unreadCount > 0 && (
+                          <span className="px-2 py-1 bg-red-600 text-white text-xs rounded-full">
+                            {conv.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 truncate">
+                        {conv.lastMessage.message}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatDate(
+                          conv.lastMessage.createdAt,
+                          "MMM dd, HH:mm"
+                        )}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-

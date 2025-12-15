@@ -69,21 +69,26 @@ export const useBreakingNews = (enabled: boolean = true) => {
     const breakingNews = data.data.news.filter((news) => news.isBreaking);
     const currentIds = new Set(breakingNews.map((news) => news.id));
     
-    // Use functional update to avoid dependency on seenIds
-    setSeenIds((prevSeenIds) => {
-      const newItems = breakingNews.filter((news) => !prevSeenIds.has(news.id));
-      
-      if (newItems.length > 0) {
-        // Update new breaking news
-        setNewBreakingNews(newItems);
-        // Update seen IDs
-        const updatedSeenIds = new Set([...prevSeenIds, ...currentIds]);
-        saveSeenIds(updatedSeenIds);
-        return updatedSeenIds;
-      }
-      
-      return prevSeenIds;
-    });
+    // Use setTimeout to defer state updates
+    const timer = setTimeout(() => {
+      // Use functional update to avoid dependency on seenIds
+      setSeenIds((prevSeenIds) => {
+        const newItems = breakingNews.filter((news) => !prevSeenIds.has(news.id));
+        
+        if (newItems.length > 0) {
+          // Update new breaking news
+          setNewBreakingNews(newItems);
+          // Update seen IDs
+          const updatedSeenIds = new Set([...prevSeenIds, ...currentIds]);
+          saveSeenIds(updatedSeenIds);
+          return updatedSeenIds;
+        }
+        
+        return prevSeenIds;
+      });
+    }, 0);
+    
+    return () => clearTimeout(timer);
   }, [data]);
 
   // Clear new breaking news after it's been shown

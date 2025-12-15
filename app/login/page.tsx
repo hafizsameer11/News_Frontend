@@ -12,21 +12,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const loginMutation = useLogin();
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
     if (!email.trim()) {
-      newErrors.email = language === "it" ? "Email richiesta" : "Email is required";
+      newErrors.email = t("validation.emailRequired");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = language === "it" ? "Inserisci un indirizzo email valido" : "Please enter a valid email address";
+      newErrors.email = t("validation.emailInvalid");
     }
 
     if (!password) {
-      newErrors.password = language === "it" ? "Password richiesta" : "Password is required";
+      newErrors.password = t("validation.passwordRequired");
     } else if (password.length < 6) {
-      newErrors.password = language === "it" ? "La password deve essere di almeno 6 caratteri" : "Password must be at least 6 characters";
+      newErrors.password = t("validation.passwordMinLength");
     }
 
     setErrors(newErrors);
@@ -49,12 +49,10 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {language === "it" ? "Accedi" : "Sign In"}
+            {t("auth.signIn")}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            {language === "it" 
-              ? "Accedi al tuo account per continuare" 
-              : "Sign in to your account to continue"}
+            {t("auth.signInToContinue")}
           </p>
         </div>
 
@@ -66,7 +64,7 @@ export default function LoginPage() {
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
-                {language === "it" ? "Indirizzo email" : "Email address"}
+                {t("auth.email")}
               </label>
               <input
                 id="email"
@@ -84,7 +82,7 @@ export default function LoginPage() {
                     ? "border-red-300 text-red-900 placeholder-red-300"
                     : "border-gray-300 text-gray-900 placeholder-gray-500"
                 } rounded-t-md focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm`}
-                placeholder={language === "it" ? "Indirizzo email" : "Email address"}
+                placeholder={t("auth.email")}
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
@@ -92,7 +90,7 @@ export default function LoginPage() {
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                {language === "it" ? "Password" : "Password"}
+                {t("auth.password")}
               </label>
               <input
                 id="password"
@@ -110,7 +108,7 @@ export default function LoginPage() {
                     ? "border-red-300 text-red-900 placeholder-red-300"
                     : "border-gray-300 text-gray-900 placeholder-gray-500"
                 } rounded-b-md focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm`}
-                placeholder={language === "it" ? "Password" : "Password"}
+                placeholder={t("auth.password")}
               />
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
@@ -124,7 +122,7 @@ export default function LoginPage() {
                 href="/forgot-password"
                 className="font-medium text-red-600 hover:text-red-500"
               >
-                {language === "it" ? "Password dimenticata?" : "Forgot your password?"}
+                {t("auth.forgotPassword")}
               </Link>
             </div>
           </div>
@@ -157,22 +155,22 @@ export default function LoginPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  {language === "it" ? "Accesso in corso..." : "Signing in..."}
+                  {t("auth.signingIn")}
                 </span>
               ) : (
-                language === "it" ? "Accedi" : "Sign in"
+                t("auth.signIn")
               )}
             </button>
           </div>
 
           <div className="text-center text-sm text-gray-600">
             <p>
-              {language === "it" ? "Non hai un account?" : "Don't have an account?"}{" "}
+              {t("auth.dontHaveAccount")}{" "}
               <Link
                 href="/register"
                 className="font-medium text-red-600 hover:text-red-500"
               >
-                {language === "it" ? "Registrati qui" : "Register here"}
+                {t("auth.registerHere")}
               </Link>
             </p>
             <div className="mt-4">
@@ -180,7 +178,7 @@ export default function LoginPage() {
                 href="/"
                 className="font-medium text-gray-600 hover:text-gray-900"
               >
-                {language === "it" ? "← Torna alle notizie" : "← Back to News"}
+                {t("auth.backToNews")}
               </Link>
             </div>
           </div>
@@ -189,4 +187,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

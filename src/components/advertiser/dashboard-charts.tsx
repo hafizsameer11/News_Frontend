@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdvertiserAnalytics } from "@/lib/hooks/useAnalytics";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 import {
@@ -19,9 +20,17 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const COLORS = ["#dc2626", "#ea580c", "#f59e0b", "#eab308", "#84cc16", "#22c55e"];
+const COLORS = [
+  "#dc2626",
+  "#ea580c",
+  "#f59e0b",
+  "#eab308",
+  "#84cc16",
+  "#22c55e",
+];
 
 export function DashboardCharts() {
+  const { formatNumber } = useLanguage();
   const { data, isLoading, error } = useAdvertiserAnalytics();
 
   if (isLoading) {
@@ -47,7 +56,9 @@ export function DashboardCharts() {
 
   // Backend doesn't return impressionsOverTime/clicksOverTime by default
   // Check if time series data exists
-  const hasTimeSeriesData = analytics.ads?.some((ad: any) => ad.impressionsOverTime || ad.clicksOverTime);
+  const hasTimeSeriesData = analytics.ads?.some(
+    (ad: any) => ad.impressionsOverTime || ad.clicksOverTime
+  );
 
   // Prepare data for charts - only if time series data exists
   let impressionsData: Record<string, number> = {};
@@ -85,11 +96,14 @@ export function DashboardCharts() {
         .slice(-30) // Last 30 days
     : [];
 
-  const adTypeDistribution = analytics.ads.reduce((acc: Record<string, number>, ad) => {
-    // We need to get ad type from somewhere - for now using a placeholder
-    acc["Total"] = (acc["Total"] || 0) + 1;
-    return acc;
-  }, {});
+  const adTypeDistribution = analytics.ads.reduce(
+    (acc: Record<string, number>, ad) => {
+      // We need to get ad type from somewhere - for now using a placeholder
+      acc["Total"] = (acc["Total"] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
 
   const pieData = Object.entries(adTypeDistribution).map(([name, value]) => ({
     name,
@@ -101,7 +115,9 @@ export function DashboardCharts() {
       {/* Impressions Chart */}
       {hasTimeSeriesData && impressionsChartData.length > 0 ? (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Impressions Over Time</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Impressions Over Time
+          </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={impressionsChartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -121,7 +137,9 @@ export function DashboardCharts() {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Impressions Over Time</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Impressions Over Time
+          </h3>
           <div className="flex items-center justify-center h-[300px] text-gray-500">
             <p>Time series data not available</p>
           </div>
@@ -131,7 +149,9 @@ export function DashboardCharts() {
       {/* Clicks Chart */}
       {hasTimeSeriesData && clicksChartData.length > 0 ? (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Clicks Over Time</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Clicks Over Time
+          </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={clicksChartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -151,7 +171,9 @@ export function DashboardCharts() {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Clicks Over Time</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Clicks Over Time
+          </h3>
           <div className="flex items-center justify-center h-[300px] text-gray-500">
             <p>Time series data not available</p>
           </div>
@@ -160,15 +182,21 @@ export function DashboardCharts() {
 
       {/* CTR Display */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Performance Metrics
+        </h3>
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Total Impressions:</span>
-            <span className="font-bold text-lg">{analytics.totalImpressions.toLocaleString()}</span>
+            <span className="font-bold text-lg">
+              {formatNumber(analytics.totalImpressions)}
+            </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Total Clicks:</span>
-            <span className="font-bold text-lg">{analytics.totalClicks.toLocaleString()}</span>
+            <span className="font-bold text-lg">
+              {formatNumber(analytics.totalClicks)}
+            </span>
           </div>
           <div className="flex justify-between items-center border-t pt-4">
             <span className="text-gray-600">Average CTR:</span>
@@ -182,7 +210,9 @@ export function DashboardCharts() {
       {/* Ad Distribution */}
       {pieData.length > 0 && (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Ad Distribution</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Ad Distribution
+          </h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -190,13 +220,22 @@ export function DashboardCharts() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }: { name: string; percent?: number }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                label={({
+                  name,
+                  percent,
+                }: {
+                  name: string;
+                  percent?: number;
+                }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
                 {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip />
@@ -207,4 +246,3 @@ export function DashboardCharts() {
     </div>
   );
 }
-

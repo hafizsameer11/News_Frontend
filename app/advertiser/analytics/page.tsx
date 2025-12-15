@@ -35,7 +35,7 @@ const AnalyticsCharts = dynamic(
 export default function AnalyticsPage() {
   const router = useRouter();
   const { user: authUser, isAuthenticated } = useAuth();
-  const { language } = useLanguage();
+  const { language, t, formatNumber } = useLanguage();
   const { data: userData, isLoading: userLoading } = useGetMe(isAuthenticated);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -70,7 +70,8 @@ export default function AnalyticsPage() {
     );
   }
 
-  const analytics = (analyticsData as AdvertiserAnalyticsResponse | undefined)?.data;
+  const analytics = (analyticsData as AdvertiserAnalyticsResponse | undefined)
+    ?.data;
   const adsList = (adsData as AdResponse | undefined)?.data?.ads || [];
   const userAds = adsList.filter((ad) => ad.advertiserId === user.id);
 
@@ -126,7 +127,7 @@ export default function AnalyticsPage() {
                   : "Total Impressions"}
               </h3>
               <p className="text-3xl font-bold text-blue-600">
-                {totalImpressions.toLocaleString()}
+                {formatNumber(totalImpressions)}
               </p>
             </div>
             <div className="text-4xl opacity-20">👁️</div>
@@ -139,7 +140,7 @@ export default function AnalyticsPage() {
                 {language === "it" ? "Clic Totali" : "Total Clicks"}
               </h3>
               <p className="text-3xl font-bold text-green-600">
-                {totalClicks.toLocaleString()}
+                {formatNumber(totalClicks)}
               </p>
             </div>
             <div className="text-4xl opacity-20">🖱️</div>
@@ -247,10 +248,10 @@ export default function AnalyticsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {(ad.impressions || 0).toLocaleString()}
+                        {formatNumber(ad.impressions || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {(ad.clicks || 0).toLocaleString()}
+                        {formatNumber(ad.clicks || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-semibold text-red-600">

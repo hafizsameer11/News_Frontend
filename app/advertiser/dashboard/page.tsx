@@ -20,7 +20,7 @@ export default function AdvertiserDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user: authUser, isAuthenticated, login } = useAuth();
-  const { language } = useLanguage();
+  const { language, t, formatNumber } = useLanguage();
   const { data: adsData, isLoading: adsLoading, error: adsError } = useAds({});
   const { data: userData, isLoading: userLoading } = useGetMe(isAuthenticated);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -64,14 +64,17 @@ export default function AdvertiserDashboard() {
     // Check for payment success
     const paymentSuccess = searchParams?.get("payment") === "success";
     if (paymentSuccess && !showSuccess) {
-      // Use callback to avoid setState in effect warning
-      setShowSuccess(true);
-      // Remove query param from URL
-      router.replace("/advertiser/dashboard");
-      // Hide success message after 5 seconds
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 5000);
+      // Use setTimeout to defer state updates
+      const timer = setTimeout(() => {
+        setShowSuccess(true);
+        // Remove query param from URL
+        router.replace("/advertiser/dashboard");
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 5000);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isAuthenticated, user, router, searchParams, userLoading, showSuccess]);
 
@@ -87,7 +90,10 @@ export default function AdvertiserDashboard() {
   const ads = (adsData as AdResponse | undefined)?.data?.ads || [];
   const userAds = ads.filter((ad: Ad) => ad.advertiserId === user.id);
   const activeAds = userAds.filter((ad: Ad) => ad.status === "ACTIVE").length;
-  const totalImpressions = userAds.reduce((sum, ad) => sum + (ad.impressions || 0), 0);
+  const totalImpressions = userAds.reduce(
+    (sum, ad) => sum + (ad.impressions || 0),
+    0
+  );
   const totalClicks = userAds.reduce((sum, ad) => sum + (ad.clicks || 0), 0);
 
   return (
@@ -98,13 +104,9 @@ export default function AdvertiserDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold">
-                {language === "it" ? "Pagamento completato con successo!" : "Payment completed successfully!"}
+                {t("advertiser.paymentCompleted")}
               </p>
-              <p className="text-sm mt-1">
-                {language === "it"
-                  ? "Il tuo piano è stato attivato. Puoi ora creare annunci."
-                  : "Your plan has been activated. You can now create ads."}
-              </p>
+              <p className="text-sm mt-1">{t("advertiser.planActivated")}</p>
             </div>
             <button
               onClick={() => setShowSuccess(false)}
@@ -119,7 +121,7 @@ export default function AdvertiserDashboard() {
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-bold mb-4 text-gray-900">
-          {language === "it" ? "Azioni Rapide" : "Quick Actions"}
+          {t("advertiser.quickActions")}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <Link
@@ -128,7 +130,7 @@ export default function AdvertiserDashboard() {
           >
             <span className="text-3xl">➕</span>
             <span className="text-sm font-medium text-center">
-              {language === "it" ? "Crea Annuncio" : "Create Ad"}
+              {t("advertiser.createAd")}
             </span>
           </Link>
           <Link
@@ -137,7 +139,7 @@ export default function AdvertiserDashboard() {
           >
             <span className="text-3xl">📢</span>
             <span className="text-sm font-medium text-center">
-              {language === "it" ? "I Miei Annunci" : "My Ads"}
+              {t("advertiser.myAds")}
             </span>
           </Link>
           <Link
@@ -146,7 +148,7 @@ export default function AdvertiserDashboard() {
           >
             <span className="text-3xl">📈</span>
             <span className="text-sm font-medium text-center">
-              {language === "it" ? "Analisi" : "Analytics"}
+              {t("advertiser.analytics")}
             </span>
           </Link>
           <Link
@@ -155,7 +157,7 @@ export default function AdvertiserDashboard() {
           >
             <span className="text-3xl">💳</span>
             <span className="text-sm font-medium text-center">
-              {language === "it" ? "Transazioni" : "Transactions"}
+              {t("advertiser.transactions")}
             </span>
           </Link>
         </div>
@@ -167,9 +169,11 @@ export default function AdvertiserDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">
-                {language === "it" ? "Annunci Totali" : "Total Ads"}
+                {t("advertiser.totalAds")}
               </h3>
-              <p className="text-3xl font-bold text-gray-900">{userAds.length}</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {formatNumber(userAds.length)}
+              </p>
             </div>
             <div className="text-4xl opacity-20">📊</div>
           </div>
@@ -178,7 +182,7 @@ export default function AdvertiserDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">
-                {language === "it" ? "Annunci Attivi" : "Active Ads"}
+                {t("advertiser.activeAds")}
               </h3>
               <p className="text-3xl font-bold text-green-600">{activeAds}</p>
             </div>
@@ -189,9 +193,11 @@ export default function AdvertiserDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">
-                {language === "it" ? "Visualizzazioni Totali" : "Total Impressions"}
+                {t("advertiser.totalImpressions")}
               </h3>
-              <p className="text-3xl font-bold text-purple-600">{totalImpressions.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-purple-600">
+                {formatNumber(totalImpressions)}
+              </p>
             </div>
             <div className="text-4xl opacity-20">👁️</div>
           </div>
@@ -200,9 +206,11 @@ export default function AdvertiserDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">
-                {language === "it" ? "Clic Totali" : "Total Clicks"}
+                {t("advertiser.totalClicks")}
               </h3>
-              <p className="text-3xl font-bold text-orange-600">{totalClicks.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-orange-600">
+                {formatNumber(totalClicks)}
+              </p>
             </div>
             <div className="text-4xl opacity-20">🖱️</div>
           </div>
@@ -213,13 +221,13 @@ export default function AdvertiserDashboard() {
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-900">
-            {language === "it" ? "Analisi e Statistiche" : "Analytics & Statistics"}
+            {t("advertiser.analyticsStatistics")}
           </h2>
           <Link
             href="/advertiser/analytics"
             className="text-sm text-red-600 hover:text-red-800 font-medium"
           >
-            {language === "it" ? "Vedi Dettagli →" : "View Details →"}
+            {t("advertiser.viewDetails")}
           </Link>
         </div>
         <DashboardCharts />
@@ -235,13 +243,13 @@ export default function AdvertiserDashboard() {
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-gray-900">
-              {language === "it" ? "I Miei Annunci" : "My Ads"}
+              {t("advertiser.myAds")}
             </h2>
             <Link
               href="/advertiser/ads"
               className="text-sm text-red-600 hover:text-red-800 font-medium"
             >
-              {language === "it" ? "Vedi Tutti →" : "View All →"}
+              {t("advertiser.viewAll")}
             </Link>
           </div>
         </div>
@@ -258,20 +266,16 @@ export default function AdvertiserDashboard() {
           <div className="p-12 text-center">
             <div className="text-6xl mb-4">📢</div>
             <p className="text-lg font-medium text-gray-900 mb-2">
-              {language === "it"
-                ? "Non hai ancora creato annunci"
-                : "You haven't created any ads yet"}
+              {t("advertiser.noAdsYet")}
             </p>
             <p className="text-sm text-gray-500 mb-6">
-              {language === "it"
-                ? "Inizia a creare il tuo primo annuncio per raggiungere migliaia di utenti"
-                : "Start creating your first ad to reach thousands of users"}
+              {t("advertiser.startCreatingAd")}
             </p>
             <Link
               href="/advertiser/ads/create"
               className="inline-block px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold"
             >
-              {language === "it" ? "Crea il Primo Annuncio" : "Create Your First Ad"}
+              {t("advertiser.createFirstAd")}
             </Link>
           </div>
         ) : (
@@ -280,22 +284,22 @@ export default function AdvertiserDashboard() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    {language === "it" ? "Titolo" : "Title"}
+                    {t("admin.title")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    {language === "it" ? "Tipo" : "Type"}
+                    {t("admin.type")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    {language === "it" ? "Stato" : "Status"}
+                    {t("admin.status")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    {language === "it" ? "Visualizzazioni" : "Impressions"}
+                    {t("advertiser.impressions")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    {language === "it" ? "Clic" : "Clicks"}
+                    {t("advertiser.clicks")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    {language === "it" ? "Azioni" : "Actions"}
+                    {t("admin.actions")}
                   </th>
                 </tr>
               </thead>
@@ -303,7 +307,9 @@ export default function AdvertiserDashboard() {
                 {userAds.slice(0, 10).map((ad) => (
                   <tr key={ad.id} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">{ad.title}</div>
+                      <div className="font-medium text-gray-900">
+                        {ad.title}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-600">{ad.type}</span>
@@ -314,25 +320,25 @@ export default function AdvertiserDashboard() {
                           ad.status === "ACTIVE"
                             ? "bg-green-100 text-green-800"
                             : ad.status === "PENDING"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {ad.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {(ad.impressions || 0).toLocaleString()}
+                      {formatNumber(ad.impressions || 0)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {(ad.clicks || 0).toLocaleString()}
+                      {formatNumber(ad.clicks || 0)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <Link
                         href={`/advertiser/ads/${ad.id}`}
                         className="text-red-600 hover:text-red-900 hover:underline"
                       >
-                        {language === "it" ? "Visualizza" : "View"}
+                        {t("advertiser.view")}
                       </Link>
                     </td>
                   </tr>
@@ -345,7 +351,10 @@ export default function AdvertiserDashboard() {
                   href="/advertiser/ads"
                   className="text-sm text-red-600 hover:text-red-800 font-medium"
                 >
-                  {language === "it" ? "Vedi tutti gli annunci" : "View all ads"} ({userAds.length})
+                  {language === "it"
+                    ? "Vedi tutti gli annunci"
+                    : "View all ads"}{" "}
+                  ({userAds.length})
                 </Link>
               </div>
             )}
@@ -355,4 +364,3 @@ export default function AdvertiserDashboard() {
     </div>
   );
 }
-

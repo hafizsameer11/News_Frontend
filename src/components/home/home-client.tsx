@@ -182,9 +182,7 @@ export function HomeClient({
                 )}
                 {!hasNextPage && allNews.length > 20 && (
                   <div className="text-center py-8 text-gray-500">
-                    {language === "it"
-                      ? "Hai visto tutti gli articoli"
-                      : "You've seen all articles"}
+                    {t("news.youveSeenAllArticles")}
                   </div>
                 )}
               </div>
@@ -209,7 +207,7 @@ export function HomeClient({
                 <>
                   <FeaturedGrid
                     news={newsData.featuredGrid}
-                    title={language === "it" ? "In Evidenza" : "Featured"}
+                    title={t("news.inEvidenza")}
                     columns={3}
                   />
 
@@ -239,7 +237,7 @@ export function HomeClient({
               {newsData.moreStories.length > 0 && (
                 <div className="container mx-auto px-4 py-6">
                   <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900">
-                    {language === "it" ? "Altre Notizie" : "More News"}
+                    {t("news.altreNotizie")}
                   </h2>
                   <div className="space-y-0">
                     {newsData.moreStories.map((story) => (
@@ -262,11 +260,7 @@ export function HomeClient({
                           !newsData.heroStory || n.id !== newsData.heroStory.id
                       )
                       .slice(15, 24)}
-                    title={
-                      language === "it"
-                        ? "Continua a Leggere"
-                        : "Continue Reading"
-                    }
+                    title={t("news.continueReading")}
                     columns={4}
                   />
                 </>
@@ -281,9 +275,7 @@ export function HomeClient({
                 )}
                 {!hasNextPage && allNews.length > 20 && (
                   <div className="text-center py-8 text-gray-500">
-                    {language === "it"
-                      ? "Hai visto tutti gli articoli"
-                      : "You've seen all articles"}
+                    {t("news.youveSeenAllArticles")}
                   </div>
                 )}
               </div>

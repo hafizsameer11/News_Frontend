@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useAds } from "@/lib/hooks/useAds";
+import { AdResponse } from "@/types/ads.types";
 import { Loading } from "@/components/ui/loading";
 import Link from "next/link";
 
@@ -18,9 +19,14 @@ export default function PaymentSuccessPage() {
   const [ad, setAd] = useState<any>(null);
 
   useEffect(() => {
-    if (adsData?.data?.ads && adId) {
-      const foundAd = adsData.data.ads.find((a) => a.id === adId);
-      setAd(foundAd || null);
+    const adsList = (adsData as AdResponse | undefined)?.data?.ads || [];
+    if (adsList.length > 0 && adId) {
+      // Use setTimeout to defer state update
+      const timer = setTimeout(() => {
+        const foundAd = adsList.find((a) => a.id === adId);
+        setAd(foundAd || null);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [adsData, adId]);
 

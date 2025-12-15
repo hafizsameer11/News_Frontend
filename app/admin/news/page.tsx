@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useNews, useCreateNews, useUpdateNews, useDeleteNews } from "@/lib/hooks/useNews";
+import {
+  useNews,
+  useCreateNews,
+  useUpdateNews,
+  useDeleteNews,
+} from "@/lib/hooks/useNews";
 import { useCategories } from "@/lib/hooks/useCategories";
 import { usePostToSocial } from "@/lib/hooks/useSocial";
 import { Loading } from "@/components/ui/loading";
@@ -10,7 +15,12 @@ import { NewsFormModal } from "@/components/admin/news-form-modal";
 import { NewsPreviewModal } from "@/components/admin/news-preview-modal";
 import { DeleteConfirmModal } from "@/components/admin/delete-confirm-modal";
 import { SocialPostResults } from "@/components/admin/social-post-results";
-import { News, CreateNewsInput, UpdateNewsInput, NewsResponse } from "@/types/news.types";
+import {
+  News,
+  CreateNewsInput,
+  UpdateNewsInput,
+  NewsResponse,
+} from "@/types/news.types";
 import { CategoryResponse } from "@/types/category.types";
 import { SocialPlatform, SocialPostLog } from "@/types/social.types";
 import { formatDate } from "@/lib/helpers/formatDate";
@@ -20,7 +30,12 @@ import { ClearFilterButton } from "@/components/ui/clear-filter-button";
 import { useLanguage } from "@/providers/LanguageProvider";
 import Link from "next/link";
 
-type NewsStatus = "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "ARCHIVED" | "REJECTED";
+type NewsStatus =
+  | "DRAFT"
+  | "PENDING_REVIEW"
+  | "PUBLISHED"
+  | "ARCHIVED"
+  | "REJECTED";
 
 export default function AdminNewsPage() {
   const [page, setPage] = useState(1);
@@ -35,7 +50,9 @@ export default function AdminNewsPage() {
     platforms: SocialPlatform[];
     scheduledFor?: string;
   } | null>(null);
-  const [socialPostResults, setSocialPostResults] = useState<SocialPostLog[] | null>(null);
+  const [socialPostResults, setSocialPostResults] = useState<
+    SocialPostLog[] | null
+  >(null);
   const { showToast } = useToast();
   const { t } = useLanguage();
 
@@ -85,21 +102,32 @@ export default function AdminNewsPage() {
     }
   };
 
-  const handleSocialPost = (_newsId: string, platforms: SocialPlatform[], scheduledFor?: string) => {
+  const handleSocialPost = (
+    _newsId: string,
+    platforms: SocialPlatform[],
+    scheduledFor?: string
+  ) => {
     // Store platforms and scheduled time to use after news creation/update (newsId will be available then)
     setPendingSocialPost({ platforms, scheduledFor });
   };
 
   const handleSubmit = (formData: CreateNewsInput | UpdateNewsInput) => {
     if (editingNews) {
-          updateMutation.mutate(
+      updateMutation.mutate(
         { id: editingNews.id, data: formData },
         {
           onSuccess: (response) => {
             setIsCreateModalOpen(false);
             setEditingNews(null);
             // Post to social if requested
-            if (pendingSocialPost && response && "data" in response && response.data && typeof response.data === "object" && "id" in response.data) {
+            if (
+              pendingSocialPost &&
+              response &&
+              "data" in response &&
+              response.data &&
+              typeof response.data === "object" &&
+              "id" in response.data
+            ) {
               postToSocialMutation.mutate(
                 {
                   newsId: String(response.data.id),
@@ -111,22 +139,37 @@ export default function AdminNewsPage() {
                     const results = result?.data?.data || [];
                     setSocialPostResults(results);
                     setPendingSocialPost(null);
-                    
-                    const successCount = results.filter((r) => r.status === "SUCCESS").length;
-                    const failureCount = results.filter((r) => r.status === "FAILED").length;
-                    
+
+                    const successCount = results.filter(
+                      (r) => r.status === "SUCCESS"
+                    ).length;
+                    const failureCount = results.filter(
+                      (r) => r.status === "FAILED"
+                    ).length;
+
                     if (successCount > 0 && failureCount === 0) {
-                      showToast(`Successfully posted to ${successCount} platform(s)`, "success");
+                      showToast(
+                        t("toast.successfullyPosted").replace(
+                          "{count}",
+                          String(successCount)
+                        ),
+                        "success"
+                      );
                     } else if (successCount > 0 && failureCount > 0) {
-                      showToast(`Posted to ${successCount} platform(s), ${failureCount} failed`, "warning");
+                      showToast(
+                        t("toast.postedWithFailures")
+                          .replace("{success}", String(successCount))
+                          .replace("{failures}", String(failureCount)),
+                        "warning"
+                      );
                     } else {
-                      showToast("Failed to post to social media", "error");
+                      showToast(t("toast.failedToPost"), "error");
                     }
                   },
                   onError: (error: any) => {
                     setPendingSocialPost(null);
                     showToast(
-                      error?.response?.data?.message || "Failed to post to social media",
+                      error?.response?.data?.message || t("toast.failedToPost"),
                       "error"
                     );
                   },
@@ -141,7 +184,14 @@ export default function AdminNewsPage() {
         onSuccess: (response) => {
           setIsCreateModalOpen(false);
           // Post to social if requested
-          if (pendingSocialPost && response && "data" in response && response.data && typeof response.data === "object" && "id" in response.data) {
+          if (
+            pendingSocialPost &&
+            response &&
+            "data" in response &&
+            response.data &&
+            typeof response.data === "object" &&
+            "id" in response.data
+          ) {
             postToSocialMutation.mutate(
               {
                 newsId: String(response.data.id),
@@ -153,14 +203,24 @@ export default function AdminNewsPage() {
                   const results = result?.data?.data || [];
                   setSocialPostResults(results);
                   setPendingSocialPost(null);
-                  
-                  const successCount = results.filter((r) => r.status === "SUCCESS").length;
-                  const failureCount = results.filter((r) => r.status === "FAILED").length;
-                  
+
+                  const successCount = results.filter(
+                    (r) => r.status === "SUCCESS"
+                  ).length;
+                  const failureCount = results.filter(
+                    (r) => r.status === "FAILED"
+                  ).length;
+
                   if (successCount > 0 && failureCount === 0) {
-                    showToast(`Successfully posted to ${successCount} platform(s)`, "success");
+                    showToast(
+                      `Successfully posted to ${successCount} platform(s)`,
+                      "success"
+                    );
                   } else if (successCount > 0 && failureCount > 0) {
-                    showToast(`Posted to ${successCount} platform(s), ${failureCount} failed`, "warning");
+                    showToast(
+                      `Posted to ${successCount} platform(s), ${failureCount} failed`,
+                      "warning"
+                    );
                   } else {
                     showToast("Failed to post to social media", "error");
                   }
@@ -168,7 +228,8 @@ export default function AdminNewsPage() {
                 onError: (error: any) => {
                   setPendingSocialPost(null);
                   showToast(
-                    error?.response?.data?.message || "Failed to post to social media",
+                    error?.response?.data?.message ||
+                      "Failed to post to social media",
                     "error"
                   );
                 },
@@ -210,7 +271,9 @@ export default function AdminNewsPage() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t("admin.newsManagement")}</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {t("admin.newsManagement")}
+        </h1>
         <button
           onClick={handleCreate}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
@@ -223,7 +286,9 @@ export default function AdminNewsPage() {
       <div className="bg-white rounded-lg shadow-md p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.search")}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("admin.search")}
+            </label>
             <InputWithClear
               type="text"
               value={search}
@@ -240,7 +305,9 @@ export default function AdminNewsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.status")}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("admin.status")}
+            </label>
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -258,7 +325,9 @@ export default function AdminNewsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.category")}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("admin.category")}
+            </label>
             <select
               value={categoryFilter}
               onChange={(e) => {
@@ -268,11 +337,13 @@ export default function AdminNewsPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">{t("admin.allCategories")}</option>
-              {(categoriesData as CategoryResponse | undefined)?.data?.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.nameEn}
-                </option>
-              ))}
+              {(categoriesData as CategoryResponse | undefined)?.data?.map(
+                (cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.nameEn}
+                  </option>
+                )
+              )}
             </select>
           </div>
           <div className="flex items-end">
@@ -302,7 +373,10 @@ export default function AdminNewsPage() {
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             {newsList.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                {t("news.noNews")}. {search || statusFilter || categoryFilter ? t("admin.filterBy") : t("admin.createNews")}
+                {t("news.noNews")}.{" "}
+                {search || statusFilter || categoryFilter
+                  ? t("admin.filterBy")
+                  : t("admin.createNews")}
               </div>
             ) : (
               <>
@@ -341,7 +415,9 @@ export default function AdminNewsPage() {
                         <tr key={news.id} className="hover:bg-gray-50">
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-gray-900">{news.title}</span>
+                              <span className="font-medium text-gray-900">
+                                {news.title}
+                              </span>
                               {news.isBreaking && (
                                 <span className="px-2 py-0.5 text-xs bg-red-500 text-white rounded">
                                   Breaking
@@ -369,7 +445,10 @@ export default function AdminNewsPage() {
                                 (news as any).scheduledFor
                               )}`}
                             >
-                              {getStatusLabel(news.status, (news as any).scheduledFor)}
+                              {getStatusLabel(
+                                news.status,
+                                (news as any).scheduledFor
+                              )}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600">
@@ -381,13 +460,18 @@ export default function AdminNewsPage() {
                           <td className="px-4 py-3 text-sm text-gray-600">
                             {(news as any).scheduledFor ? (
                               <span className="text-purple-600 font-medium">
-                                {formatDate((news as any).scheduledFor, "MMM dd, yyyy HH:mm")}
+                                {formatDate(
+                                  (news as any).scheduledFor,
+                                  "MMM dd, yyyy HH:mm"
+                                )}
                               </span>
                             ) : (
                               <span className="text-gray-400">-</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{news.views || 0}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {news.views || 0}
+                          </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <button
@@ -430,8 +514,9 @@ export default function AdminNewsPage() {
                 {meta && meta.totalPages > 1 && (
                   <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200">
                     <div className="text-sm text-gray-700">
-                      Showing {(page - 1) * limit + 1} to {Math.min(page * limit, meta.total)} of{" "}
-                      {meta.total} results
+                      Showing {(page - 1) * limit + 1} to{" "}
+                      {Math.min(page * limit, meta.total)} of {meta.total}{" "}
+                      results
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -464,7 +549,9 @@ export default function AdminNewsPage() {
       {isCreateModalOpen && (
         <NewsFormModal
           news={editingNews}
-          categories={(categoriesData as CategoryResponse | undefined)?.data || []}
+          categories={
+            (categoriesData as CategoryResponse | undefined)?.data || []
+          }
           onSubmit={handleSubmit}
           onClose={() => {
             setIsCreateModalOpen(false);
@@ -481,10 +568,15 @@ export default function AdminNewsPage() {
       {previewNews && (
         <NewsPreviewModal
           news={previewNews}
-          categories={(categoriesData as CategoryResponse | undefined)?.data || []}
+          categories={
+            (categoriesData as CategoryResponse | undefined)?.data || []
+          }
           onClose={() => setPreviewNews(null)}
           onOpenInNewTab={() => {
-            window.open(`/news/${previewNews.slug || previewNews.id}`, "_blank");
+            window.open(
+              `/news/${previewNews.slug || previewNews.id}`,
+              "_blank"
+            );
           }}
         />
       )}

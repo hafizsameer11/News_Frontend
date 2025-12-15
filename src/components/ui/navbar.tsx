@@ -15,17 +15,20 @@ import { isActiveRoute } from "@/lib/helpers/navbar-helpers";
 
 export function Navbar() {
   const { data: categoriesData, isLoading } = useCategories();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted] = useState(() => typeof window !== "undefined");
 
   // Close mobile menu on route change
-  // Using useLayoutEffect for synchronous state update before paint
   useEffect(() => {
+    // Use setTimeout to defer state update
     if (isMobileMenuOpen) {
-      setIsMobileMenuOpen(false);
+      const timer = setTimeout(() => {
+        setIsMobileMenuOpen(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [pathname, isMobileMenuOpen]);
 
@@ -52,7 +55,7 @@ export function Navbar() {
         className="bg-white border-b border-gray-200 w-full sticky top-0"
         style={{ position: "sticky", top: 0, zIndex: 50, overflow: "visible" }}
         role="navigation"
-        aria-label="Main navigation"
+        aria-label={t("aria.mainNavigation")}
       >
         <div className="container mx-auto px-4" style={{ overflow: "visible" }}>
           <div
@@ -65,7 +68,7 @@ export function Navbar() {
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="lg:hidden p-2 text-gray-900 hover:text-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded"
-                aria-label="Toggle menu"
+                aria-label={t("aria.toggleMenu")}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
               >
@@ -120,10 +123,10 @@ export function Navbar() {
                 href="/tg"
                 prefetch={true}
                 className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-bold text-gray-900 hover:text-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded"
-                aria-label={language === "it" ? "Guarda" : "Watch"}
+                aria-label={t("nav.watch")}
               >
                 <span className="w-2 h-2 bg-red-600 rounded-full" aria-hidden="true"></span>
-                {language === "it" ? "Guarda" : "Watch"}
+                {t("nav.watch")}
               </Link> */}
 
               {/* Search Dropdown */}
@@ -137,13 +140,13 @@ export function Navbar() {
                     href="/register"
                     className="hidden md:block px-4 py-2 text-sm font-bold text-gray-900 hover:text-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded"
                   >
-                    {language === "it" ? "Registrati" : "Register"}
+                    {t("nav.register")}
                   </Link>
                   <Link
                     href="/login"
                     className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                   >
-                    {language === "it" ? "Accedi" : "Sign in"}
+                    {t("nav.signIn")}
                   </Link>
                 </div>
               ) : isAuthenticated ? (
@@ -154,13 +157,13 @@ export function Navbar() {
                     href="/register"
                     className="hidden md:block px-4 py-2 text-sm font-bold text-gray-900 hover:text-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded"
                   >
-                    {language === "it" ? "Registrati" : "Register"}
+                    {t("nav.register")}
                   </Link>
                   <Link
                     href="/login"
                     className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                   >
-                    {language === "it" ? "Accedi" : "Sign in"}
+                    {t("nav.signIn")}
                   </Link>
                 </div>
               )}

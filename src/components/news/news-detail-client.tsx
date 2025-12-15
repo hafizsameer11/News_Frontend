@@ -36,14 +36,15 @@ export function NewsDetailClient({
 }: NewsDetailClientProps) {
   const params = useParams();
   const idOrSlug = params?.id as string;
-  const { language, t } = useLanguage();
+  const { language, t, formatNumber } = useLanguage();
 
   // Use initial data or fetch if needed
   const { data: newsData, isLoading, error } = useNewsDetail(idOrSlug);
   const news = newsData?.data || initialNews;
 
   // Fetch structured data for news article
-  const [structuredData, setStructuredData] = useState<StructuredDataType | null>(initialStructuredData || null);
+  const [structuredData, setStructuredData] =
+    useState<StructuredDataType | null>(initialStructuredData || null);
 
   useEffect(() => {
     const fetchStructuredData = async () => {
@@ -78,12 +79,15 @@ export function NewsDetailClient({
 
   // Check media status for main image
   const mainImageUrl = news?.mainImage;
-  const isMediaLibraryUrl = mainImageUrl?.startsWith("/uploads/") || mainImageUrl?.includes("/uploads/");
+  const isMediaLibraryUrl =
+    mainImageUrl?.startsWith("/uploads/") ||
+    mainImageUrl?.includes("/uploads/");
   const { data: mediaStatusData } = useMediaStatus(
     isMediaLibraryUrl ? mainImageUrl : null
   );
   const mediaStatus = mediaStatusData?.data?.data?.status;
-  const shouldShowFallback = mediaStatus === "FAILED" || mediaStatus === "PENDING";
+  const shouldShowFallback =
+    mediaStatus === "FAILED" || mediaStatus === "PENDING";
 
   // Fetch related news by same author
   const { data: authorNewsData } = useNews({
@@ -92,9 +96,9 @@ export function NewsDetailClient({
   });
 
   const relatedByAuthor = news?.author?.id
-    ? authorNewsData?.data?.news?.filter(
-        (n) => n.id !== news?.id && n.author?.id === news.author.id
-      ).slice(0, 4) || []
+    ? authorNewsData?.data?.news
+        ?.filter((n) => n.id !== news?.id && n.author?.id === news.author.id)
+        .slice(0, 4) || []
     : [];
 
   if (isLoading && !initialNews) {
@@ -113,7 +117,7 @@ export function NewsDetailClient({
         <main className="flex-grow container mx-auto px-4 py-8 text-center">
           {error && <ErrorMessage error={error} className="mb-4" />}
           <h1 className="text-4xl font-bold mb-4 text-gray-900">
-            {language === "it" ? "Articolo Non Trovato" : "News Not Found"}
+            {t("news.noNews")}
           </h1>
           <p className="text-gray-600 mb-6">
             {language === "it"
@@ -131,12 +135,16 @@ export function NewsDetailClient({
     );
   }
 
-  const categoryName = language === "it" ? news.category?.nameIt : news.category?.nameEn;
-  const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+  const categoryName =
+    language === "it" ? news.category?.nameIt : news.category?.nameEn;
+  const frontendUrl =
+    process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 
   return (
     <>
-      {structuredData && <StructuredData data={structuredData} id="news-structured-data" />}
+      {structuredData && (
+        <StructuredData data={structuredData} id="news-structured-data" />
+      )}
       <div className="min-h-screen flex flex-col">
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -158,7 +166,9 @@ export function NewsDetailClient({
                     <span>/</span>
                   </>
                 )}
-                <span className="text-gray-900 font-medium line-clamp-1">{news.title}</span>
+                <span className="text-gray-900 font-medium line-clamp-1">
+                  {news.title}
+                </span>
               </div>
 
               {/* Category and Date */}
@@ -172,13 +182,18 @@ export function NewsDetailClient({
                   </Link>
                 )}
                 <span className="text-gray-600">
-                  {formatDate(news.publishedAt || news.createdAt, "MMMM dd, yyyy")} •{" "}
-                  {formatRelativeTime(news.publishedAt || news.createdAt)}
+                  {formatDate(
+                    news.publishedAt || news.createdAt,
+                    "MMMM dd, yyyy"
+                  )}{" "}
+                  • {formatRelativeTime(news.publishedAt || news.createdAt)}
                 </span>
               </div>
 
               {/* Title */}
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">{news.title}</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
+                {news.title}
+              </h1>
 
               {/* Social Share Buttons and Bookmark */}
               <div className="mb-6 flex items-center gap-4">
@@ -192,7 +207,9 @@ export function NewsDetailClient({
 
               {/* Summary */}
               {news.summary && (
-                <p className="text-xl text-gray-600 mb-6 leading-relaxed">{news.summary}</p>
+                <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+                  {news.summary}
+                </p>
               )}
 
               {/* Breaking Badge */}
@@ -205,19 +222,21 @@ export function NewsDetailClient({
               )}
 
               {/* Main Image */}
-              {news.mainImage && news.mainImage.trim() !== "" && !shouldShowFallback && (
-                <div className="relative w-full h-96 md:h-[500px] mb-8 rounded-lg overflow-hidden">
-                  <OptimizedImage
-                    src={news.mainImage}
-                    alt={news.title}
-                    fill
-                    className="object-cover"
-                    priority
-                    loading="eager"
-                    quality={90}
-                  />
-                </div>
-              )}
+              {news.mainImage &&
+                news.mainImage.trim() !== "" &&
+                !shouldShowFallback && (
+                  <div className="relative w-full h-96 md:h-[500px] mb-8 rounded-lg overflow-hidden">
+                    <OptimizedImage
+                      src={news.mainImage}
+                      alt={news.title}
+                      fill
+                      className="object-cover"
+                      priority
+                      loading="eager"
+                      quality={90}
+                    />
+                  </div>
+                )}
               {/* Fallback for rejected/pending media */}
               {news.mainImage && shouldShowFallback && (
                 <div className="relative w-full h-96 md:h-[500px] mb-8 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
@@ -241,15 +260,19 @@ export function NewsDetailClient({
                           ? "Immagine non disponibile (rifiutata)"
                           : "Image not available (rejected)"
                         : language === "it"
-                          ? "Immagine in attesa di approvazione"
-                          : "Image pending approval"}
+                        ? "Immagine in attesa di approvazione"
+                        : "Image pending approval"}
                     </p>
                   </div>
                 </div>
               )}
 
               {/* Image Gallery */}
-              <ImageGallery content={news.content} mainImage={news.mainImage} className="mb-8" />
+              <ImageGallery
+                content={news.content}
+                mainImage={news.mainImage}
+                className="mb-8"
+              />
 
               {/* Content */}
               <div
@@ -267,13 +290,15 @@ export function NewsDetailClient({
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
                     <p className="text-gray-600 text-sm mb-1">
-                      {language === "it" ? "Scritto da" : "Written by"}
+                      {t("news.writtenBy")}
                     </p>
-                    <p className="font-semibold text-gray-900">{news.author?.name || "Editor"}</p>
+                    <p className="font-semibold text-gray-900">
+                      {news.author?.name || "Editor"}
+                    </p>
                   </div>
                   {news.views !== undefined && (
                     <div className="text-sm text-gray-500">
-                      {news.views} {language === "it" ? "visualizzazioni" : "views"}
+                      {formatNumber(news.views)} {t("admin.views")}
                     </div>
                   )}
                 </div>
@@ -311,7 +336,7 @@ export function NewsDetailClient({
           {relatedNews.length > 0 && (
             <section className="mt-12 pt-12 border-t border-gray-200">
               <h2 className="text-2xl font-bold mb-6 text-gray-900">
-                {language === "it" ? "Articoli Correlati" : "Related Articles"}
+                {t("news.relatedNews")}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {relatedNews.map((related) => (
@@ -341,4 +366,3 @@ export function NewsDetailClient({
     </>
   );
 }
-

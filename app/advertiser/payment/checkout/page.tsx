@@ -26,11 +26,14 @@ export default function PaymentCheckoutPage() {
       setError("");
 
       try {
-        // Redirect to Stripe Checkout
-        // Note: This is a simplified approach. In production, you might want to use
-        // Stripe Elements for embedded checkout or Stripe Checkout Session API
-        const { error: stripeError } = await stripe.redirectToCheckout({
+        // Confirm Payment Intent with clientSecret
+        // For Payment Intents, use confirmPayment instead of redirectToCheckout
+        // redirectToCheckout is only for Checkout Sessions (sessionId)
+        const { error: stripeError } = await stripe.confirmPayment({
           clientSecret: clientSecret,
+          confirmParams: {
+            return_url: `${window.location.origin}/advertiser/payment/success?adId=${adId}`,
+          },
         });
 
         if (stripeError) {

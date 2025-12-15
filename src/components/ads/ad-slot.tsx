@@ -77,34 +77,38 @@ export function AdSlot({ slot, className = "" }: AdSlotProps) {
 
   // Update ads when filtered ads change
   useEffect(() => {
-    if (filteredAds.length > 0) {
-      setAllAds(filteredAds);
+    // Use setTimeout to defer state updates
+    const timer = setTimeout(() => {
+      if (filteredAds.length > 0) {
+        setAllAds(filteredAds);
 
-      // For single ad display (backward compatibility), use rotation
-      if (filteredAds.length === 1) {
-        setSelectedAd(filteredAds[0]);
-      } else {
-        // Check if we have a cached ad for this slot
-        const cachedAdId = getCachedAd(slot);
-        const cachedAd = cachedAdId
-          ? filteredAds.find((ad) => ad.id === cachedAdId)
-          : null;
-
-        if (cachedAd) {
-          setSelectedAd(cachedAd);
+        // For single ad display (backward compatibility), use rotation
+        if (filteredAds.length === 1) {
+          setSelectedAd(filteredAds[0]);
         } else {
-          // Select a new ad and cache it (for single ad fallback)
-          const ad = selectAdForRotation(filteredAds);
-          if (ad) {
-            setSelectedAd(ad);
-            cacheSelectedAd(slot, ad.id);
+          // Check if we have a cached ad for this slot
+          const cachedAdId = getCachedAd(slot);
+          const cachedAd = cachedAdId
+            ? filteredAds.find((ad) => ad.id === cachedAdId)
+            : null;
+
+          if (cachedAd) {
+            setSelectedAd(cachedAd);
+          } else {
+            // Select a new ad and cache it (for single ad fallback)
+            const ad = selectAdForRotation(filteredAds);
+            if (ad) {
+              setSelectedAd(ad);
+              cacheSelectedAd(slot, ad.id);
+            }
           }
         }
+      } else {
+        setAllAds([]);
+        setSelectedAd(null);
       }
-    } else {
-      setAllAds([]);
-      setSelectedAd(null);
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [filteredAds, slot]);
 
   // Handle mobile-specific slots - only check after mount

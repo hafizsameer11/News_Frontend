@@ -34,21 +34,24 @@ export function WeatherWidget() {
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Initialize city when citiesData changes (after initial load)
+  // Update city when citiesData changes (after initial load)
   useEffect(() => {
-    if (citiesData?.data && citiesData.data.length > 0 && !selectedCityId) {
-      const activeCities = citiesData.data.filter((city) => city.isActive);
-      if (activeCities.length > 0) {
-        const firstCityId = activeCities[0].id;
-        // Use functional update to avoid dependency on selectedCityId
+    if (citiesData?.data && citiesData.data.length > 0) {
+      // Use setTimeout to defer state update
+      const timer = setTimeout(() => {
         setSelectedCityId((prev) => {
           if (!prev) {
-            storage.set(WEATHER_CITY_STORAGE_KEY, firstCityId);
-            return firstCityId;
+            const activeCities = citiesData.data.filter((city) => city.isActive);
+            if (activeCities.length > 0) {
+              const firstCityId = activeCities[0].id;
+              storage.set(WEATHER_CITY_STORAGE_KEY, firstCityId);
+              return firstCityId;
+            }
           }
           return prev;
         });
-      }
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [citiesData]);
 

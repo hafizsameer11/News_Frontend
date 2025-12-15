@@ -122,17 +122,20 @@ export function AdFormModal({
         }
       }
 
-      setFormData({
-        title: ad.title,
-        type: ad.type,
-        imageUrl: ad.imageUrl,
-        targetLink: ad.targetLink,
-        position: ad.position || "",
-        startDate: formatDateForInput(ad.startDate),
-        endDate: formatDateForInput(ad.endDate),
-        price: priceStr,
-        status: ad.status,
-      });
+      // Use setTimeout to defer state update
+      setTimeout(() => {
+        setFormData({
+          title: ad.title,
+          type: ad.type,
+          imageUrl: ad.imageUrl,
+          targetLink: ad.targetLink,
+          position: ad.position || "",
+          startDate: formatDateForInput(ad.startDate),
+          endDate: formatDateForInput(ad.endDate),
+          price: priceStr,
+          status: ad.status,
+        });
+      }, 0);
     } else {
       // Set default dates for new ad
       const now = new Date();
@@ -148,11 +151,14 @@ export function AdFormModal({
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
 
-      setFormData({
-        ...formData,
-        startDate: formatDateForInput(now),
-        endDate: formatDateForInput(future),
-      });
+      // Use setTimeout to defer state update
+      setTimeout(() => {
+        setFormData((prev) => ({
+          ...prev,
+          startDate: formatDateForInput(now),
+          endDate: formatDateForInput(future),
+        }));
+      }, 0);
     }
   }, [ad]);
 

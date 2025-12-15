@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import { useGetMe } from "@/lib/hooks/useAuth";
+import { AuthResponse } from "@/types/user.types";
 import { useRouter } from "next/navigation";
 import { useNews } from "@/lib/hooks/useNews";
+import { NewsResponse } from "@/types/news.types";
 import { useCategories } from "@/lib/hooks/useCategories";
+import { CategoryResponse } from "@/types/category.types";
 import { StatsCard } from "@/components/admin/stats-card";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
@@ -17,13 +20,14 @@ export default function EditorDashboard() {
   const router = useRouter();
   const { user: authUser, isAuthenticated } = useAuth();
   const { data: userData, isLoading: userLoading } = useGetMe(isAuthenticated);
-  const { language } = useLanguage();
+  const { language, t, formatNumber: formatNumberUtil } = useLanguage();
 
   // Get current user with allowed categories
-  const currentUser = userData?.data?.user || authUser;
+  const currentUser = (userData as AuthResponse | undefined)?.data?.user || authUser;
 
   // Only show editor's allowed categories
-  const allowedCategoryIds = currentUser?.allowedCategories?.map((cat) => cat.id) || [];
+  const allowedCategoryIds =
+    currentUser?.allowedCategories?.map((cat) => cat.id) || [];
 
   // Fetch news - will filter client-side to show only from allowed categories
   const { data: newsData, isLoading: newsLoading } = useNews({
@@ -32,12 +36,18 @@ export default function EditorDashboard() {
 
   // Fetch all categories but filter to show only allowed ones
   const { data: categoriesData } = useCategories(true);
+  const categoriesList = (categoriesData as CategoryResponse | undefined)?.data || [];
   const allowedCategories =
-    categoriesData?.data?.filter((cat) => allowedCategoryIds.includes(cat.id)) || [];
+    categoriesList.filter((cat) =>
+      allowedCategoryIds.includes(cat.id)
+    );
 
   // Redirect if not authenticated or not editor
   useEffect(() => {
-    if (!userLoading && (!isAuthenticated || (currentUser && currentUser.role !== "EDITOR"))) {
+    if (
+      !userLoading &&
+      (!isAuthenticated || (currentUser && currentUser.role !== "EDITOR"))
+    ) {
       router.push("/admin-login");
     }
   }, [isAuthenticated, currentUser, userLoading, router]);
@@ -51,39 +61,43 @@ export default function EditorDashboard() {
   }
 
   // Filter news to show only those in allowed categories and created by this editor
+  const newsList = (newsData as NewsResponse | undefined)?.data?.news || [];
   const userNews =
-    newsData?.data?.news?.filter(
+    newsList.filter(
       (news) =>
-        allowedCategoryIds.includes(news.categoryId) && news.authorId === currentUser?.id
-    ) || [];
+        allowedCategoryIds.includes(news.categoryId) &&
+        news.authorId === currentUser?.id
+    );
 
   // Calculate statistics
   const totalNews = userNews.length;
   const publishedNews = userNews.filter((n) => n.status === "PUBLISHED").length;
-  const pendingNews = userNews.filter((n) => n.status === "PENDING_REVIEW").length;
+  const pendingNews = userNews.filter(
+    (n) => n.status === "PENDING_REVIEW"
+  ).length;
   const draftNews = userNews.filter((n) => n.status === "DRAFT").length;
   const rejectedNews = userNews.filter((n) => n.status === "REJECTED").length;
 
-  // Format number with commas
-  const formatNumber = (num: number) => {
-    return num.toLocaleString();
-  };
+  // formatNumber is now from useLanguage context
 
   // Get recent news (last 5)
   const recentNews = userNews
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
     .slice(0, 5);
 
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6 text-gray-900">
-        {language === "it" ? "Dashboard" : "Dashboard"}
+        {t("editor.dashboard")}
       </h1>
 
       {/* Allowed Categories Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
         <h2 className="font-semibold text-blue-900 mb-2">
-          {language === "it" ? "Le Tue Categorie Consentite:" : "Your Allowed Categories:"}
+          {t("admin.allowedCategories")}:
         </h2>
         {allowedCategories.length > 0 ? (
           <div className="flex flex-wrap gap-2">
@@ -108,29 +122,29 @@ export default function EditorDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCard
-          title={language === "it" ? "Totale Notizie" : "Total News"}
-          value={formatNumber(totalNews)}
+          title={t("admin.totalNews")}
+          value={formatNumberUtil(totalNews)}
           icon="📰"
         />
         <StatsCard
-          title={language === "it" ? "Pubblicate" : "Published"}
-          value={formatNumber(publishedNews)}
+          title={t("admin.published")}
+          value={formatNumberUtil(publishedNews)}
           icon="✅"
         />
         <StatsCard
-          title={language === "it" ? "In Revisione" : "Pending Review"}
-          value={formatNumber(pendingNews)}
+          title={t("admin.pendingReview")}
+          value={formatNumberUtil(pendingNews)}
           icon="⏳"
         />
         <StatsCard
-          title={language === "it" ? "Bozze" : "Drafts"}
-          value={formatNumber(draftNews)}
+          title={t("admin.draft")}
+          value={formatNumberUtil(draftNews)}
           icon="📝"
         />
         {rejectedNews > 0 && (
           <StatsCard
-            title={language === "it" ? "Rifiutate" : "Rejected"}
-            value={formatNumber(rejectedNews)}
+            title={t("admin.rejected")}
+            value={formatNumberUtil(rejectedNews)}
             icon="❌"
           />
         )}
@@ -139,7 +153,7 @@ export default function EditorDashboard() {
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-2xl font-bold mb-4 text-gray-900">
-          {language === "it" ? "Azioni Rapide" : "Quick Actions"}
+          {t("admin.quickActions")}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
@@ -148,14 +162,14 @@ export default function EditorDashboard() {
           >
             <span className="text-3xl">📰</span>
             <span className="text-sm font-medium text-center">
-              {language === "it" ? "Le Mie Notizie" : "My News"}
+              {t("editor.news")}
             </span>
           </Link>
           {allowedCategories.length === 0 ? (
             <div className="bg-gray-400 text-white rounded-lg p-4 flex flex-col items-center justify-center gap-2 cursor-not-allowed opacity-50 shadow-sm">
               <span className="text-3xl">➕</span>
               <span className="text-sm font-medium text-center">
-                {language === "it" ? "Crea Notizia" : "Create News"}
+                {t("admin.createNews")}
               </span>
             </div>
           ) : (
@@ -165,7 +179,7 @@ export default function EditorDashboard() {
             >
               <span className="text-3xl">➕</span>
               <span className="text-sm font-medium text-center">
-                {language === "it" ? "Crea Notizia" : "Create News"}
+                {t("admin.createNews")}
               </span>
             </Link>
           )}
@@ -175,7 +189,7 @@ export default function EditorDashboard() {
           >
             <span className="text-3xl">🖼️</span>
             <span className="text-sm font-medium text-center">
-              {language === "it" ? "Libreria Media" : "Media Library"}
+              {t("admin.mediaLibrary")}
             </span>
           </Link>
         </div>
@@ -184,7 +198,7 @@ export default function EditorDashboard() {
       {/* Recent News */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-bold mb-4 text-gray-900">
-          {language === "it" ? "Notizie Recenti" : "Recent News"}
+          {t("admin.recentNews")}
         </h2>
         {recentNews.length > 0 ? (
           <div className="space-y-4">
@@ -201,11 +215,15 @@ export default function EditorDashboard() {
                     >
                       {news.title}
                     </Link>
-                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">{news.summary}</p>
+                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                      {news.summary}
+                    </p>
                     <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                       <span>
                         {language === "it" ? "Categoria" : "Category"}:{" "}
-                        {language === "it" ? news.category?.nameIt : news.category?.nameEn}
+                        {language === "it"
+                          ? news.category?.nameIt
+                          : news.category?.nameEn}
                       </span>
                       <span>•</span>
                       <span>{formatDate(news.createdAt, "MMM dd, yyyy")}</span>
@@ -215,25 +233,19 @@ export default function EditorDashboard() {
                           news.status === "PUBLISHED"
                             ? "bg-green-100 text-green-800"
                             : news.status === "PENDING_REVIEW"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : news.status === "REJECTED"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-gray-100 text-gray-800"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : news.status === "REJECTED"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {news.status === "PUBLISHED"
-                          ? language === "it"
-                            ? "Pubblicato"
-                            : "Published"
+                          ? t("admin.published")
                           : news.status === "PENDING_REVIEW"
-                            ? language === "it"
-                              ? "In Revisione"
-                              : "Pending Review"
-                            : news.status === "REJECTED"
-                              ? language === "it"
-                                ? "Rifiutato"
-                                : "Rejected"
-                              : news.status}
+                          ? t("admin.pendingReview")
+                          : news.status === "REJECTED"
+                          ? t("admin.rejected")
+                          : news.status}
                       </span>
                     </div>
                   </div>
@@ -242,14 +254,9 @@ export default function EditorDashboard() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600">
-            {language === "it"
-              ? "Nessuna notizia disponibile. Crea la tua prima notizia!"
-              : "No news available. Create your first article!"}
-          </p>
+          <p className="text-gray-600">{t("editor.noNewsAvailable")}</p>
         )}
       </div>
     </div>
   );
 }
-

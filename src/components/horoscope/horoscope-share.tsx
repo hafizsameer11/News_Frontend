@@ -12,19 +12,28 @@ interface HoroscopeShareProps {
   className?: string;
 }
 
-export function HoroscopeShare({ sign, date, type, className = "" }: HoroscopeShareProps) {
-  const { language } = useLanguage();
+export function HoroscopeShare({
+  sign,
+  date,
+  type,
+  className = "",
+}: HoroscopeShareProps) {
+  const { language, t, formatDate } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   const signData = signDataMap[sign];
   const signName = language === "it" ? signData.name.it : signData.name.en;
-  
+
   // Get current URL
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const shareUrl = `${baseUrl}/horoscope/${sign.toLowerCase()}`;
-  
-  const shareTitle = `${signName} ${type === "daily" ? "Daily" : "Weekly"} Horoscope - ${new Date(date).toLocaleDateString()}`;
-  const shareText = `Check out the ${type} horoscope for ${signName}! ${shareUrl}`;
+
+  const horoscopeType =
+    type === "daily" ? t("horoscope.daily") : t("horoscope.weekly");
+  const shareTitle = `${signName} ${horoscopeType} ${t(
+    "horoscope.title"
+  )} - ${formatDate(new Date(date), "PP")}`;
+  const shareText = `${t("horoscope.shareHoroscope")} ${signName}! ${shareUrl}`;
 
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(shareTitle);
@@ -54,9 +63,9 @@ export function HoroscopeShare({ sign, date, type, className = "" }: HoroscopeSh
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <span className="text-sm font-semibold text-gray-700">
-        {language === "it" ? "Condividi:" : "Share:"}
+        {t("news.share")}:
       </span>
-      
+
       {/* Facebook */}
       <button
         onClick={() => handleShare("facebook")}
@@ -101,16 +110,35 @@ export function HoroscopeShare({ sign, date, type, className = "" }: HoroscopeSh
         title="Copy link"
       >
         {copied ? (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
           </svg>
         ) : (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
           </svg>
         )}
       </button>
     </div>
   );
 }
-

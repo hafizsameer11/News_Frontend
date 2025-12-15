@@ -9,7 +9,7 @@ import Link from "next/link";
 
 export default function ReportPage() {
   const [submitted, setSubmitted] = useState(false);
-  const { language } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -21,15 +21,9 @@ export default function ReportPage() {
               <>
                 <div className="mb-8">
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {language === "it"
-                      ? "Invia una Segnalazione"
-                      : "Submit a Report"}
+                    {t("report.title")}
                   </h1>
-                  <p className="text-gray-600">
-                    {language === "it"
-                      ? "Hai trovato un problema o vuoi segnalare qualcosa? Compila il modulo qui sotto e ti risponderemo il prima possibile."
-                      : "Found an issue or want to report something? Fill out the form below and we'll get back to you as soon as possible."}
-                  </p>
+                  <p className="text-gray-600">{t("report.description")}</p>
                 </div>
                 <ReportForm
                   onSuccess={() => {
@@ -55,29 +49,21 @@ export default function ReportPage() {
                   </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  {language === "it"
-                    ? "Segnalazione Inviata!"
-                    : "Report Submitted!"}
+                  {t("report.reportSubmitted")}
                 </h2>
-                <p className="text-gray-600 mb-8">
-                  {language === "it"
-                    ? "Grazie per la tua segnalazione. La esamineremo e ti risponderemo presto."
-                    : "Thank you for your report. We'll review it and get back to you soon."}
-                </p>
+                <p className="text-gray-600 mb-8">{t("report.thankYou")}</p>
                 <div className="flex gap-4 justify-center">
                   <Link
                     href="/"
                     className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                   >
-                    {language === "it" ? "Torna alla Home" : "Back to Home"}
+                    {t("report.backToHome")}
                   </Link>
                   <button
                     onClick={() => setSubmitted(false)}
                     className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                   >
-                    {language === "it"
-                      ? "Invia un'altra segnalazione"
-                      : "Submit Another Report"}
+                    {t("report.submitAnother")}
                   </button>
                 </div>
               </div>
@@ -89,4 +75,3 @@ export default function ReportPage() {
     </div>
   );
 }
-

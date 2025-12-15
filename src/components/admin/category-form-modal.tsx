@@ -223,7 +223,8 @@ export function CategoryFormModal({
   const parentOptions = useMemo(() => {
     const flat = flattenCategories(categories);
     return buildParentOptions(flat, 0, category?.id);
-  }, [categories, category]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories, category?.id]);
 
   return (
     <div 

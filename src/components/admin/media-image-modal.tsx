@@ -16,7 +16,7 @@ export function MediaImageModal({
   isOpen,
   onClose,
 }: MediaImageModalProps) {
-  const { language } = useLanguage();
+  const { language, formatDate } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   useEffect(() => {
     if (isOpen) {
@@ -302,11 +302,7 @@ export function MediaImageModal({
                 <div>
                   <p className="text-gray-400 text-xs mb-1">Uploaded</p>
                   <p className="font-medium">
-                    {new Date(media.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    {formatDate(new Date(media.createdAt), "PP", language)}
                   </p>
                 </div>
 
@@ -315,11 +311,7 @@ export function MediaImageModal({
                   <div>
                     <p className="text-gray-400 text-xs mb-1">Last Updated</p>
                     <p className="font-medium">
-                      {new Date(media.updatedAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatDate(new Date(media.updatedAt), "PP", language)}
                     </p>
                   </div>
                 )}

@@ -110,7 +110,7 @@ export function AuditLogFiltersComponent({ filters, onFiltersChange }: AuditLogF
             selectsEnd
             startDate={startDate}
             endDate={endDate}
-            minDate={startDate}
+            minDate={startDate || undefined}
             maxDate={new Date()}
             dateFormat="yyyy-MM-dd"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/helpers/cn";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import { storage } from "@/lib/helpers/storage";
 
-const ADVERTISER_SIDEBAR_COLLAPSED_KEY = "advertiser_sidebar_collapsed";
+const USER_SIDEBAR_COLLAPSED_KEY = "user_sidebar_collapsed";
 
 interface MenuItemWithTooltipProps {
   item: { href: string; label: string; labelIt: string; icon: string };
@@ -178,58 +179,121 @@ function BackLinkWithTooltip({ isCollapsed, label }: BackLinkWithTooltipProps) {
   );
 }
 
-const advertiserMenuItems = [
+interface LogoutButtonWithTooltipProps {
+  isCollapsed: boolean;
+  onLogout: () => void;
+  label: string;
+}
+
+function LogoutButtonWithTooltip({
+  isCollapsed,
+  onLogout,
+  label,
+}: LogoutButtonWithTooltipProps) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    if (isCollapsed && buttonRef.current) {
+      const updatePosition = () => {
+        const rect = buttonRef.current?.getBoundingClientRect();
+        if (rect) {
+          setTooltipPosition({
+            top: rect.top + rect.height / 2,
+            left: rect.right + 8,
+          });
+        }
+      };
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      return () => {
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }
+  }, [isCollapsed]);
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        onClick={onLogout}
+        className={cn(
+          "w-full flex items-center gap-2 px-3 py-2 text-gray-300 hover:bg-red-600 hover:text-white rounded-md transition group relative",
+          isCollapsed && "justify-center px-2"
+        )}
+        title={isCollapsed ? label : undefined}
+        onMouseEnter={() => isCollapsed && setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
+        <span className="flex-shrink-0 text-lg">🚪</span>
+        <span
+          className={cn(
+            "transition-all duration-300 text-sm",
+            isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
+          )}
+        >
+          {label}
+        </span>
+      </button>
+      {isCollapsed &&
+        showTooltip &&
+        tooltipPosition &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed px-3 py-1.5 bg-gray-900 text-white text-sm font-medium rounded-lg shadow-xl pointer-events-none whitespace-nowrap z-[9999] transition-all duration-200 border border-gray-700"
+            style={{
+              top: `${tooltipPosition.top}px`,
+              left: `${tooltipPosition.left}px`,
+              transform: "translateY(-50%)",
+            }}
+          >
+            {label}
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 border-l border-t border-gray-700 rotate-45"></div>
+          </div>,
+          document.body
+        )}
+    </>
+  );
+}
+
+const userMenuItems = [
+  { href: "/dashboard", label: "Dashboard", labelIt: "Dashboard", icon: "📊" },
   {
-    href: "/advertiser/dashboard",
-    label: "Dashboard",
-    labelIt: "Dashboard",
-    icon: "📊",
+    href: "/dashboard/chat",
+    label: "Chat with Admin",
+    labelIt: "Chat con Admin",
+    icon: "💬",
   },
-  {
-    href: "/advertiser/ads",
-    label: "My Ads",
-    labelIt: "I Miei Annunci",
-    icon: "📢",
-  },
-  {
-    href: "/advertiser/ads/create",
-    label: "Create Ad",
-    labelIt: "Crea Annuncio",
-    icon: "➕",
-  },
-  {
-    href: "/advertiser/analytics",
-    label: "Analytics",
-    labelIt: "Analisi",
-    icon: "📈",
-  },
-  {
-    href: "/advertiser/transactions",
-    label: "Transactions",
-    labelIt: "Transazioni",
-    icon: "💳",
-  },
-  { href: "/advertiser/chat", label: "Chat", labelIt: "Chat", icon: "💬" },
+  { href: "/bookmarks", label: "Bookmarks", labelIt: "Preferiti", icon: "🔖" },
 ];
 
-interface AdvertiserSidebarProps {
+interface UserSidebarProps {
   showWrapper?: boolean;
   showHeader?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
-export function AdvertiserSidebar({
+export function UserSidebar({
   showWrapper = true,
   showHeader = true,
   isCollapsed: externalCollapsed,
   onToggleCollapse,
-}: AdvertiserSidebarProps = {}) {
+}: UserSidebarProps = {}) {
   const pathname = usePathname();
-  const { language } = useLanguage();
+  const router = useRouter();
+  const { language, t } = useLanguage();
+  const { logout } = useAuth();
   const [internalCollapsed, setInternalCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
-      return storage.get(ADVERTISER_SIDEBAR_COLLAPSED_KEY) === "true";
+      return storage.get(USER_SIDEBAR_COLLAPSED_KEY) === "true";
     }
     return false;
   });
@@ -241,9 +305,14 @@ export function AdvertiserSidebar({
     const newCollapsed = !isCollapsed;
     if (externalCollapsed === undefined) {
       setInternalCollapsed(newCollapsed);
-      storage.set(ADVERTISER_SIDEBAR_COLLAPSED_KEY, newCollapsed.toString());
+      storage.set(USER_SIDEBAR_COLLAPSED_KEY, newCollapsed.toString());
     }
     onToggleCollapse?.();
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
   };
 
   const menuContent = (
@@ -258,9 +327,7 @@ export function AdvertiserSidebar({
           >
             <h1 className="text-xl font-bold text-red-600">NEWS NEXT</h1>
             <p className="text-gray-400 text-xs">
-              {language === "it"
-                ? "Pannello Inserzionista"
-                : "Advertiser Panel"}
+              {language === "it" ? "Pannello Utente" : "User Panel"}
             </p>
           </div>
           <button
@@ -306,13 +373,14 @@ export function AdvertiserSidebar({
       )}
 
       <nav className="space-y-1 overflow-y-auto flex-1">
-        {advertiserMenuItems.map((item) => {
+        {userMenuItems.map((item) => {
           const isExactMatch = pathname === item.href;
+          // Check if this is a child route (pathname starts with href + "/")
           const isChildRoute = pathname?.startsWith(item.href + "/");
 
           // Find the most specific matching route
           // Sort items by length (longest first) to prioritize more specific routes
-          const sortedItems = [...advertiserMenuItems].sort(
+          const sortedItems = [...userMenuItems].sort(
             (a, b) => b.href.length - a.href.length
           );
           const mostSpecificMatch = sortedItems.find(
@@ -337,10 +405,15 @@ export function AdvertiserSidebar({
         })}
       </nav>
 
-      <div className="mt-4 pt-4 border-t border-gray-800">
+      <div className="mt-4 pt-4 border-t border-gray-800 space-y-1">
         <BackLinkWithTooltip
           isCollapsed={isCollapsed}
           label={language === "it" ? "Torna al Sito" : "Back to Site"}
+        />
+        <LogoutButtonWithTooltip
+          isCollapsed={isCollapsed}
+          onLogout={handleLogout}
+          label={language === "it" ? "Esci" : "Logout"}
         />
       </div>
     </>

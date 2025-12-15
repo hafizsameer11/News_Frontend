@@ -117,9 +117,11 @@ export default function PlansPage() {
         planPrice: plan.price,
       });
       
-      if (response.data?.url) {
-        // Redirect to Stripe checkout
-        window.location.href = response.data.url;
+      const checkoutData = response.data?.data as { url: string; sessionId: string } | undefined;
+      if (checkoutData?.url) {
+        // Redirect to Stripe checkout (external URL, must use window.location)
+        // eslint-disable-next-line react-hooks/immutability
+        window.location.assign(checkoutData.url);
       }
     } catch (error) {
       console.error("Error creating checkout session:", error);

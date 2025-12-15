@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { Transaction } from "@/types/transaction.types";
+import { AuthResponse } from "@/types/user.types";
 import { formatDate } from "@/lib/helpers/formatDate";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { InputWithClear } from "@/components/ui/input-with-clear";
@@ -37,7 +38,7 @@ export default function TransactionsPage() {
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const user = userData?.data?.user || authUser;
+  const user = (userData as AuthResponse | undefined)?.data?.user || authUser;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["transactions", "me"],
@@ -79,10 +80,13 @@ export default function TransactionsPage() {
       newPlanId: string;
       newPlanPrice: number;
     }) => paymentApi.changePlan(transactionId, newPlanId, newPlanPrice),
-    onSuccess: (data) => {
-      if (data?.data?.checkoutUrl) {
+    onSuccess: (response) => {
+      // ApiResponse wraps the data, so access response.data.data.checkoutUrl
+      const responseData = response?.data?.data as { message: string; checkoutUrl: string; sessionId: string } | undefined;
+      if (responseData?.checkoutUrl) {
         // Redirect to checkout
-        window.location.href = data.data.checkoutUrl;
+        // eslint-disable-next-line react-hooks/immutability
+        window.location.href = responseData.checkoutUrl;
       } else {
         queryClient.invalidateQueries({ queryKey: ["transactions", "me"] });
         setShowChangeModal(false);
@@ -121,7 +125,7 @@ export default function TransactionsPage() {
     );
   }
 
-  const transactions: Transaction[] = data?.data || [];
+  const transactions: Transaction[] = (data as { data: { data: Transaction[] } } | undefined)?.data?.data || [];
 
   // Filter transactions
   const filteredTransactions = transactions.filter((transaction) => {

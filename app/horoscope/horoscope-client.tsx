@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { useDailyHoroscope, useWeeklyHoroscope } from "@/lib/hooks/useHoroscope";
+import { HoroscopeResponse } from "@/types/horoscope.types";
 import { HoroscopeCard } from "@/components/horoscope/horoscope-card";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
@@ -22,7 +23,9 @@ export function HoroscopePageClient() {
     error: weeklyError,
   } = useWeeklyHoroscope();
 
-  const horoscopes = viewType === "daily" ? dailyData?.data : weeklyData?.data;
+  const dailyHoroscopes = (dailyData as HoroscopeResponse | undefined)?.data || [];
+  const weeklyHoroscopes = (weeklyData as HoroscopeResponse | undefined)?.data || [];
+  const horoscopes = viewType === "daily" ? dailyHoroscopes : weeklyHoroscopes;
   const isLoading = viewType === "daily" ? dailyLoading : weeklyLoading;
   const error = viewType === "daily" ? dailyError : weeklyError;
 

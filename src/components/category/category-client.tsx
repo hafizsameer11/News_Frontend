@@ -32,18 +32,16 @@ export function CategoryClient({ category, initialNews, structuredData: initialS
   const allCategories = categoriesData?.data || [];
   
   // Get subcategories for this category (direct children only - grandchildren accessible through children pages)
-  // Using category?.id to match React Compiler expectations while handling undefined
   const subcategories = useMemo(() => {
-    if (!category?.id || !allCategories.length) return [];
+    if (!category || !category.id || !allCategories.length) return [];
     // Get direct children only for the subcategories section
     // Users can navigate to grandchildren through the direct children pages
     return getSubcategories(category.id, allCategories);
-  }, [category?.id, allCategories]);
+  }, [category, allCategories]);
   
   // Get parent category
-  // Using category directly to match React Compiler expectations
   const parentCategory = useMemo(() => {
-    if (!category?.parentId || !allCategories.length) return null;
+    if (!category || !category.parentId || !allCategories.length) return null;
     return getParentCategory(category.parentId, allCategories);
   }, [category, allCategories]);
   

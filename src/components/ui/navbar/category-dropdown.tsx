@@ -22,7 +22,7 @@ export function CategoryDropdown({
   allCategories,
   onClose,
 }: CategoryDropdownProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const pathname = usePathname();
   const [hoveredSubcategory, setHoveredSubcategory] = useState<string | null>(
     null
@@ -139,7 +139,7 @@ export function CategoryDropdown({
                 <span className="flex-1">{subcategoryName}</span>
                 {hasChildren && (
                   <svg
-                    className="w-3.5 h-3.5 text-gray-400 ml-2 flex-shrink-0"
+                    className="w-3.5 h-3.5 text-gray-400 ml-2 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -190,7 +190,7 @@ export function CategoryDropdown({
                           <span className="flex-1">{childName}</span>
                           {hasChildChildren && (
                             <svg
-                              className="w-3 h-3 text-gray-400 ml-2 flex-shrink-0"
+                              className="w-3 h-3 text-gray-400 ml-2 shrink-0"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -255,7 +255,7 @@ export function CategoryDropdown({
           onClick={onClose}
           className="flex items-center justify-center px-4 py-2 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors"
         >
-          {language === "it" ? "Vedi tutti" : "View all"}
+          {t("nav.viewAll")}
           <svg
             className="w-3 h-3 ml-1"
             fill="none"

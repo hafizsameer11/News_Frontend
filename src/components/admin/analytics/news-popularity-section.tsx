@@ -3,20 +3,28 @@
 import Link from "next/link";
 import { NewsPopularityItem } from "@/types/stats.types";
 import { NewsPopularityChart } from "@/components/admin/charts/news-popularity-chart";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface NewsPopularitySectionProps {
-  data: NewsPopularityItem[] | { mostViewed?: any[]; trending?: any[]; recentPopular?: any[] };
+  data:
+    | NewsPopularityItem[]
+    | { mostViewed?: any[]; trending?: any[]; recentPopular?: any[] };
 }
 
 export function NewsPopularitySection({ data }: NewsPopularitySectionProps) {
+  const { t, formatNumber } = useLanguage();
   // Handle both array format and object format from backend
   let mostViewed: NewsPopularityItem[] = [];
-  
+
   if (Array.isArray(data)) {
     mostViewed = data;
-  } else if (data && typeof data === 'object' && 'mostViewed' in data) {
+  } else if (data && typeof data === "object" && "mostViewed" in data) {
     // Transform backend object format to array
-    const backendData = data as { mostViewed?: any[]; trending?: any[]; recentPopular?: any[] };
+    const backendData = data as {
+      mostViewed?: any[];
+      trending?: any[];
+      recentPopular?: any[];
+    };
     mostViewed = (backendData.mostViewed || []).map((item: any) => ({
       id: item.id,
       title: item.title,
@@ -29,10 +37,14 @@ export function NewsPopularitySection({ data }: NewsPopularitySectionProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-xl font-semibold mb-6 text-gray-900">News Popularity</h3>
+      <h3 className="text-xl font-semibold mb-6 text-gray-900">
+        News Popularity
+      </h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <h4 className="text-lg font-semibold mb-4 text-gray-900">Most Viewed Articles</h4>
+          <h4 className="text-lg font-semibold mb-4 text-gray-900">
+            Most Viewed Articles
+          </h4>
           <div className="space-y-3">
             {mostViewed.slice(0, 5).map((item, index) => (
               <div
@@ -51,18 +63,19 @@ export function NewsPopularitySection({ data }: NewsPopularitySectionProps) {
                   </Link>
                 </div>
                 <span className="flex-shrink-0 text-sm font-semibold text-gray-600 ml-4">
-                  {item.views.toLocaleString()} views
+                  {formatNumber(item.views)} {t("admin.views")}
                 </span>
               </div>
             ))}
           </div>
         </div>
         <div>
-          <h4 className="text-lg font-semibold mb-4 text-gray-900">Views Chart</h4>
+          <h4 className="text-lg font-semibold mb-4 text-gray-900">
+            Views Chart
+          </h4>
           <NewsPopularityChart data={mostViewed} limit={10} />
         </div>
       </div>
     </div>
   );
 }
-

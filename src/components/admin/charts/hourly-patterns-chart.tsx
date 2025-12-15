@@ -1,18 +1,28 @@
 "use client";
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface HourlyPatternsChartProps {
   data: Array<{ hour: number; count: number }>;
 }
 
 export function HourlyPatternsChart({ data }: HourlyPatternsChartProps) {
+  const { t, formatNumber, formatTime } = useLanguage();
   // Format hour for display (0-23 to 12-hour format)
   const formatHour = (hour: number) => {
-    if (hour === 0) return "12 AM";
-    if (hour < 12) return `${hour} AM`;
-    if (hour === 12) return "12 PM";
-    return `${hour - 12} PM`;
+    const date = new Date();
+    date.setHours(hour, 0, 0, 0);
+    return formatTime(date, "h a");
   };
 
   // Prepare chart data
@@ -34,7 +44,10 @@ export function HourlyPatternsChart({ data }: HourlyPatternsChartProps) {
         />
         <YAxis tick={{ fontSize: 12 }} />
         <Tooltip
-          formatter={(value: number) => [value.toLocaleString(), "Activity"]}
+          formatter={(value: number) => [
+            formatNumber(value),
+            t("admin.hourlyActivity"),
+          ]}
         />
         <Legend />
         <Bar
@@ -47,4 +60,3 @@ export function HourlyPatternsChart({ data }: HourlyPatternsChartProps) {
     </ResponsiveContainer>
   );
 }
-

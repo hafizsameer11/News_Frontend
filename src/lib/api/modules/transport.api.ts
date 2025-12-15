@@ -18,7 +18,7 @@ export const transportApi = {
     if (params?.search) queryParams.append("search", params.search);
 
     const url = `/transport${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
-    return apiClient.get<TransportResponse>(url);
+    return apiClient.get<TransportResponse["data"]>(url);
   },
 };
 

@@ -17,7 +17,7 @@ export function MediaVideoModal({
   isOpen,
   onClose,
 }: MediaVideoModalProps) {
-  const { language } = useLanguage();
+  const { language, formatDate } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   useEffect(() => {
     if (isOpen) {
@@ -108,7 +108,9 @@ export function MediaVideoModal({
   };
 
   const videoUrl = getFullUrl(media.url);
-  const posterUrl = media.thumbnailUrl ? getFullUrl(media.thumbnailUrl) : undefined;
+  const posterUrl = media.thumbnailUrl
+    ? getFullUrl(media.thumbnailUrl)
+    : undefined;
 
   return (
     <div
@@ -171,9 +173,7 @@ export function MediaVideoModal({
                 </h3>
                 <span
                   className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                    media.type === "VIDEO"
-                      ? "bg-purple-500"
-                      : "bg-gray-500"
+                    media.type === "VIDEO" ? "bg-purple-500" : "bg-gray-500"
                   }`}
                 >
                   {media.type}
@@ -287,11 +287,7 @@ export function MediaVideoModal({
                 <div>
                   <p className="text-gray-400 text-xs mb-1">Uploaded</p>
                   <p className="font-medium">
-                    {new Date(media.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    {formatDate(new Date(media.createdAt), "PP")}
                   </p>
                 </div>
 
@@ -300,11 +296,7 @@ export function MediaVideoModal({
                   <div>
                     <p className="text-gray-400 text-xs mb-1">Last Updated</p>
                     <p className="font-medium">
-                      {new Date(media.updatedAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatDate(new Date(media.updatedAt), "PP")}
                     </p>
                   </div>
                 )}
@@ -368,4 +360,3 @@ export function MediaVideoModal({
     </div>
   );
 }
-

@@ -6,7 +6,7 @@ import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { SignDetail } from "@/components/horoscope/sign-detail";
 import { useHoroscopeBySign } from "@/lib/hooks/useHoroscope";
-import { ZodiacSign } from "@/types/horoscope.types";
+import { ZodiacSign, HoroscopeDetailResponse, Horoscope } from "@/types/horoscope.types";
 
 // Validate and normalize sign parameter
 function normalizeSign(sign: string): ZodiacSign | null {
@@ -56,7 +56,7 @@ export function HoroscopeSignPageClient({ sign }: HoroscopeSignPageClientProps) 
     return null; // Will redirect
   }
 
-  const horoscope = horoscopeData?.data || null;
+  const horoscope = (horoscopeData as HoroscopeDetailResponse | undefined)?.data || null;
 
   return (
     <div className="min-h-screen flex flex-col">

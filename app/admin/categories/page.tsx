@@ -52,9 +52,10 @@ export default function AdminCategoriesPage() {
   const deleteMutation = useDeleteCategory();
   const updateOrderMutation = useUpdateCategoryOrder();
   const { showToast } = useToast();
-  const { t, language } = useLanguage();
+  const { language, t } = useLanguage();
 
-  const categories: Category[] = (data as CategoryResponse | undefined)?.data || [];
+  const categories: Category[] =
+    (data as CategoryResponse | undefined)?.data || [];
 
   // Flatten categories for filtering and operations (works with both hierarchical and flat data)
   const allCategoriesFlat = useMemo(() => {
@@ -99,7 +100,10 @@ export default function AdminCategoriesPage() {
         }
         return null;
       })
-      .filter((cat): cat is NonNullable<typeof cat> => cat !== null && cat !== undefined) as Category[];
+      .filter(
+        (cat): cat is NonNullable<typeof cat> =>
+          cat !== null && cat !== undefined
+      ) as Category[];
   };
 
   // Get hierarchical categories (original structure) for hierarchical view
@@ -176,22 +180,14 @@ export default function AdminCategoriesPage() {
     setIsSavingOrder(true);
     updateOrderMutation.mutate(orderUpdates, {
       onSuccess: () => {
-        showToast(
-          language === "it"
-            ? "Ordine categorie aggiornato con successo"
-            : "Category order updated successfully",
-          "success",
-          3000
-        );
+        showToast(t("toast.updated"), "success", 3000);
         // Don't exit reorder mode - let user continue reordering
       },
       onError: (error: any) => {
         const errorMessage =
           error?.message ||
           error?.response?.data?.message ||
-          (language === "it"
-            ? "Errore durante l'aggiornamento dell'ordine"
-            : "Failed to update category order");
+          t("toast.actionFailed");
         showToast(errorMessage, "error");
       },
       onSettled: () => {
@@ -449,7 +445,7 @@ export default function AdminCategoriesPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {language === "it" ? "Modalità Visualizzazione" : "View Mode"}
+              {t("admin.viewMode")}
             </label>
             <div className="flex gap-2">
               <button
@@ -460,7 +456,7 @@ export default function AdminCategoriesPage() {
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
               >
-                {language === "it" ? "Gerarchico" : "Hierarchical"}
+                {t("admin.hierarchical")}
               </button>
               <button
                 onClick={() => setViewMode("flat")}
@@ -470,7 +466,7 @@ export default function AdminCategoriesPage() {
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
               >
-                {language === "it" ? "Piatto" : "Flat"}
+                {t("admin.flat")}
               </button>
             </div>
           </div>
@@ -490,9 +486,7 @@ export default function AdminCategoriesPage() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  {language === "it"
-                    ? "Riordina Categorie"
-                    : "Reorder Categories"}
+                  {t("admin.reorderCategories")}
                 </h2>
                 <div className="flex items-start gap-2 text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                   <svg
@@ -510,14 +504,10 @@ export default function AdminCategoriesPage() {
                   </svg>
                   <div>
                     <p className="font-medium text-gray-900 mb-1">
-                      {language === "it"
-                        ? "Trascina e rilascia le categorie per riordinarle"
-                        : "Drag and drop categories to reorder them"}
+                      {t("admin.dragAndDropHint")}
                     </p>
                     <p className="text-xs text-gray-600">
-                      {language === "it"
-                        ? "Le modifiche verranno salvate automaticamente. L'ordine viene applicato globalmente. Usa la vista gerarchica per vedere la struttura completa."
-                        : "Changes will be saved automatically. The order is applied globally. Use the hierarchical view to see the complete structure."}
+                      {t("admin.dragAndDropDescription")}
                     </p>
                   </div>
                 </div>
@@ -544,14 +534,12 @@ export default function AdminCategoriesPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  {language === "it" ? "Salvataggio in corso..." : "Saving..."}
+                  {t("admin.saving")}
                 </div>
               )}
               {filteredCategoriesFlat.length === 0 ? (
                 <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-lg">
-                  {language === "it"
-                    ? "Nessuna categoria da riordinare."
-                    : "No categories to reorder."}
+                  {t("admin.noCategoriesToReorder")}
                 </div>
               ) : (
                 <CategoryDragList
@@ -569,7 +557,7 @@ export default function AdminCategoriesPage() {
                 <div className="p-8 text-center text-gray-500">
                   {search ? (
                     <>
-                      No categories found matching "{search}".{" "}
+                      No categories found matching &quot;{search}&quot;.{" "}
                       <button
                         onClick={() => setSearch("")}
                         className="text-blue-600 hover:underline"

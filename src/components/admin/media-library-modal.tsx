@@ -5,6 +5,7 @@ import { Media } from "@/types/media.types";
 import { MediaUpload } from "./media-upload";
 import { MediaGrid } from "./media-grid";
 import { API_CONFIG } from "@/lib/api/apiConfig";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface MediaLibraryModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export function MediaLibraryModal({
 }: MediaLibraryModalProps) {
   const [activeTab, setActiveTab] = useState<"browse" | "upload">("browse");
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const { formatDate } = useLanguage();
 
   if (!isOpen) return null;
 
@@ -36,7 +38,9 @@ export function MediaLibraryModal({
     }
     // Prevent selection of PENDING media (unless admin)
     if (media.processingStatus === "PENDING") {
-      alert("Cannot select pending media. Please wait for admin approval or select an approved image.");
+      alert(
+        "Cannot select pending media. Please wait for admin approval or select an approved image."
+      );
       return;
     }
     setSelectedMedia(media);
@@ -111,7 +115,10 @@ export function MediaLibraryModal({
               filterType={filterType}
             />
           ) : (
-            <MediaUpload onUploadSuccess={handleUploadSuccess} multiple={true} />
+            <MediaUpload
+              onUploadSuccess={handleUploadSuccess}
+              multiple={true}
+            />
           )}
         </div>
 
@@ -127,7 +134,8 @@ export function MediaLibraryModal({
                       alt={selectedMedia.caption || "Selected"}
                       className="w-full h-full object-cover"
                     />
-                  ) : selectedMedia.type === "VIDEO" && selectedMedia.thumbnailUrl ? (
+                  ) : selectedMedia.type === "VIDEO" &&
+                    selectedMedia.thumbnailUrl ? (
                     <img
                       src={getFullUrl(selectedMedia.thumbnailUrl)}
                       alt={selectedMedia.caption || "Selected"}
@@ -150,8 +158,7 @@ export function MediaLibraryModal({
                     {selectedMedia.caption || "Selected Media"}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {selectedMedia.type} •{" "}
-                    {new Date(selectedMedia.createdAt).toLocaleDateString()}
+                    {selectedMedia.type} • {formatDate(selectedMedia.createdAt)}
                   </p>
                 </div>
               </div>
@@ -160,11 +167,15 @@ export function MediaLibraryModal({
                   if (selectedMedia && onSelect) {
                     // Double-check status before using
                     if (selectedMedia.processingStatus === "FAILED") {
-                      alert("Cannot use rejected media. Please select an approved image.");
+                      alert(
+                        "Cannot use rejected media. Please select an approved image."
+                      );
                       return;
                     }
                     if (selectedMedia.processingStatus === "PENDING") {
-                      alert("Cannot use pending media. Please wait for admin approval or select an approved image.");
+                      alert(
+                        "Cannot use pending media. Please wait for admin approval or select an approved image."
+                      );
                       return;
                     }
                     onSelect(selectedMedia);
@@ -200,4 +211,3 @@ export function MediaLibraryModal({
     </div>
   );
 }
-

@@ -1,10 +1,12 @@
 import { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { CategoryClient } from "@/components/category/category-client";
 import { fetchCategoryBySlug, fetchNews } from "@/lib/api/server-api";
 import { mapSEOToNextMetadata } from "@/lib/helpers/metadataMapper";
 import { API_CONFIG } from "@/lib/api/apiConfig";
+import { getServerLanguage } from "@/lib/i18n/server";
 
 // Generate metadata for category page (runs on server)
 export async function generateMetadata({
@@ -14,9 +16,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const response = await fetch(`${API_CONFIG.BASE_URL}/seo/category/${slug}`, {
-      next: { revalidate: 3600 },
-    });
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/seo/category/${slug}`,
+      {
+        next: { revalidate: 3600 },
+      }
+    );
     if (response.ok) {
       const seoResponse = await response.json();
       if (seoResponse.success && seoResponse.data) {
@@ -27,10 +32,14 @@ export async function generateMetadata({
     console.error("Failed to fetch category SEO metadata:", error);
   }
 
-  // Fallback metadata
+  // Fallback metadata with language support
+  const language = await getServerLanguage(cookies());
   return {
-    title: "Category | NEWS NEXT",
-    description: "Browse news articles by category on NEWS NEXT",
+    title: language === "it" ? "Categoria | NEWS NEXT" : "Category | NEWS NEXT",
+    description:
+      language === "it"
+        ? "Sfoglia gli articoli di notizie per categoria su NEWS NEXT"
+        : "Browse news articles by category on NEWS NEXT",
   };
 }
 
@@ -53,7 +62,7 @@ export default async function CategoryPage({
 
   try {
     category = await fetchCategoryBySlug(slug);
-    
+
     if (category?.data) {
       // Fetch news for this category
       const newsData = await fetchNews({
@@ -66,9 +75,12 @@ export default async function CategoryPage({
 
       // Fetch structured data
       try {
-        const response = await fetch(`${API_CONFIG.BASE_URL}/seo/category/${slug}/structured-data`, {
-          next: { revalidate: 3600 }, // Revalidate every hour
-        });
+        const response = await fetch(
+          `${API_CONFIG.BASE_URL}/seo/category/${slug}/structured-data`,
+          {
+            next: { revalidate: 3600 }, // Revalidate every hour
+          }
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.data) {

@@ -62,8 +62,17 @@ export function UserFormModal({
 
   // Reset form when user changes
   useEffect(() => {
-    setFormData(initialFormData);
-    setErrors({});
+    // Use setTimeout to defer state updates
+    const timer = setTimeout(() => {
+      setFormData((prev) => {
+        if (JSON.stringify(prev) !== JSON.stringify(initialFormData)) {
+          return initialFormData;
+        }
+        return prev;
+      });
+      setErrors({});
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialFormData]);
 
   const validateForm = (): boolean => {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useConversations, useAvailableAdmins } from "@/lib/hooks/useChat";
+import { ConversationsResponse, ChatUsersResponse } from "@/types/chat.types";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { ConversationList } from "@/components/chat/conversation-list";
@@ -13,15 +14,28 @@ import { cn } from "@/lib/helpers/cn";
 export default function EditorChatPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const { language } = useLanguage();
-  const [selectedPartnerId, setSelectedPartnerId] = useState<string | undefined>();
-  const [viewMode, setViewMode] = useState<"conversations" | "admins">("conversations");
+  const { language, t } = useLanguage();
+  const [selectedPartnerId, setSelectedPartnerId] = useState<
+    string | undefined
+  >();
+  const [viewMode, setViewMode] = useState<"conversations" | "admins">(
+    "conversations"
+  );
+  const [showChatWindow, setShowChatWindow] = useState(false);
 
-  const { data: conversationsData, isLoading: conversationsLoading, error: conversationsError } = useConversations();
-  const { data: adminsData, isLoading: adminsLoading, error: adminsError } = useAvailableAdmins();
+  const {
+    data: conversationsData,
+    isLoading: conversationsLoading,
+    error: conversationsError,
+  } = useConversations();
+  const {
+    data: adminsData,
+    isLoading: adminsLoading,
+    error: adminsError,
+  } = useAvailableAdmins();
 
-  const conversations = conversationsData?.data || [];
-  const admins = adminsData?.data || [];
+  const conversations = (conversationsData as ConversationsResponse | undefined)?.data || [];
+  const admins = (adminsData as ChatUsersResponse | undefined)?.data || [];
 
   // Get selected partner info
   const selectedPartner = selectedPartnerId
@@ -53,8 +67,6 @@ export default function EditorChatPage() {
     return null;
   }
 
-  const [showChatWindow, setShowChatWindow] = useState(false);
-
   const handleSelectConversation = (userId: string) => {
     setSelectedPartnerId(userId);
     setShowChatWindow(true);
@@ -69,23 +81,29 @@ export default function EditorChatPage() {
     <div className="h-full flex flex-col">
       <div className="mb-4 sm:mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-          {language === "it" ? "Chat con Admin" : "Chat with Admin"}
+          {t("dashboard.chatWithAdmin")}
         </h1>
         <p className="text-sm sm:text-base text-gray-600 mt-1">
-          {language === "it"
-            ? "Ottieni supporto e informazioni dagli amministratori"
-            : "Get support and information from administrators"}
+          {t("editor.chatDescription")}
         </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden flex-1 flex flex-col min-h-0" style={{ height: "calc(100vh - 180px)", maxHeight: "calc(100vh - 180px)" }}>
+      <div
+        className="bg-white rounded-lg shadow-md overflow-hidden flex-1 flex flex-col min-h-0"
+        style={{
+          height: "calc(100vh - 180px)",
+          maxHeight: "calc(100vh - 180px)",
+        }}
+      >
         <div className="flex h-full flex-1 min-h-0">
           {/* Sidebar */}
-          <div className={cn(
-            "border-r border-gray-200 flex flex-col transition-all duration-300",
-            "w-full lg:w-80",
-            showChatWindow && selectedPartnerId ? "hidden lg:flex" : "flex"
-          )}>
+          <div
+            className={cn(
+              "border-r border-gray-200 flex flex-col transition-all duration-300",
+              "w-full lg:w-80",
+              showChatWindow && selectedPartnerId ? "hidden lg:flex" : "flex"
+            )}
+          >
             {/* Tabs */}
             <div className="flex border-b border-gray-200 flex-shrink-0">
               <button
@@ -97,7 +115,7 @@ export default function EditorChatPage() {
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 )}
               >
-                {language === "it" ? "Conversazioni" : "Conversations"}
+                {t("chat.conversations")}
               </button>
               <button
                 onClick={() => setViewMode("admins")}
@@ -108,7 +126,7 @@ export default function EditorChatPage() {
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 )}
               >
-                {language === "it" ? "Admin" : "Admins"}
+                {t("admin.admin")}
               </button>
             </div>
 
@@ -139,10 +157,12 @@ export default function EditorChatPage() {
           </div>
 
           {/* Chat Window */}
-          <div className={cn(
-            "flex-1 flex flex-col min-h-0",
-            showChatWindow && selectedPartnerId ? "flex" : "hidden lg:flex"
-          )}>
+          <div
+            className={cn(
+              "flex-1 flex flex-col min-h-0",
+              showChatWindow && selectedPartnerId ? "flex" : "hidden lg:flex"
+            )}
+          >
             {selectedPartnerId && selectedPartner ? (
               <>
                 {/* Mobile back button */}
@@ -153,10 +173,20 @@ export default function EditorChatPage() {
                       setSelectedPartnerId(undefined);
                     }}
                     className="p-2 hover:bg-gray-100 rounded-md transition"
-                    aria-label={language === "it" ? "Torna alle conversazioni" : "Back to conversations"}
+                    aria-label={t("chat.backToConversations")}
                   >
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <svg
+                      className="w-5 h-5 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
                     </svg>
                   </button>
                   <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -172,9 +202,11 @@ export default function EditorChatPage() {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 truncate">{selectedPartner.name}</p>
+                      <p className="font-medium text-gray-900 truncate">
+                        {selectedPartner.name}
+                      </p>
                       <p className="text-xs text-gray-500">
-                        {language === "it" ? "Online" : "Online"}
+                        {t("common.online")}
                       </p>
                     </div>
                   </div>
@@ -193,25 +225,19 @@ export default function EditorChatPage() {
               <div className="flex-1 flex items-center justify-center bg-gray-50">
                 <div className="text-center text-gray-500 px-4">
                   <p className="text-base sm:text-lg font-medium mb-2">
-                    {language === "it" ? "Seleziona una conversazione" : "Select a conversation"}
+                    {t("chat.selectConversation")}
                   </p>
-                  <p className="text-xs sm:text-sm">
-                    {language === "it"
-                      ? "Scegli un admin dall'elenco per iniziare a chattare"
-                      : "Choose an admin from the list to start chatting"}
-                  </p>
+                  <p className="text-xs sm:text-sm">{t("chat.chooseAdmin")}</p>
                 </div>
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center bg-gray-50">
                 <div className="text-center text-gray-500 px-4">
                   <p className="text-base sm:text-lg font-medium mb-2">
-                    {language === "it" ? "Nessuna conversazione ancora" : "No conversations yet"}
+                    {t("chat.noConversations")}
                   </p>
                   <p className="text-xs sm:text-sm">
-                    {language === "it"
-                      ? "Inizia una conversazione con un admin"
-                      : "Start a conversation with an admin"}
+                    {t("chat.startConversation")}
                   </p>
                 </div>
               </div>
@@ -222,4 +248,3 @@ export default function EditorChatPage() {
     </div>
   );
 }
-

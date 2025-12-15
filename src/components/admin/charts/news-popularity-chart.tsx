@@ -1,17 +1,32 @@
 "use client";
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { NewsPopularityItem } from "@/types/stats.types";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface NewsPopularityChartProps {
   data: NewsPopularityItem[];
   limit?: number;
 }
 
-export function NewsPopularityChart({ data, limit = 10 }: NewsPopularityChartProps) {
+export function NewsPopularityChart({
+  data,
+  limit = 10,
+}: NewsPopularityChartProps) {
+  const { t, formatNumber } = useLanguage();
   // Prepare chart data - truncate titles for display
   const chartData = data.slice(0, limit).map((item) => ({
-    title: item.title.length > 30 ? `${item.title.substring(0, 30)}...` : item.title,
+    title:
+      item.title.length > 30 ? `${item.title.substring(0, 30)}...` : item.title,
     views: item.views,
     fullTitle: item.title,
   }));
@@ -28,7 +43,7 @@ export function NewsPopularityChart({ data, limit = 10 }: NewsPopularityChartPro
           width={200}
         />
         <Tooltip
-          formatter={(value: number) => [value.toLocaleString(), "Views"]}
+          formatter={(value: number) => [formatNumber(value), t("admin.views")]}
           labelFormatter={(value, payload) => {
             const data = payload?.[0]?.payload;
             return data?.fullTitle || value;
@@ -45,4 +60,3 @@ export function NewsPopularityChart({ data, limit = 10 }: NewsPopularityChartPro
     </ResponsiveContainer>
   );
 }
-

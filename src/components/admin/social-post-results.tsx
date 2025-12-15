@@ -1,13 +1,18 @@
 "use client";
 
 import { SocialPostLog, SocialPlatform } from "@/types/social.types";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 interface SocialPostResultsProps {
   results: SocialPostLog[];
   onClose: () => void;
 }
 
-export function SocialPostResults({ results, onClose }: SocialPostResultsProps) {
+export function SocialPostResults({
+  results,
+  onClose,
+}: SocialPostResultsProps) {
+  const { t, formatDateTime } = useLanguage();
   const successCount = results.filter((r) => r.status === "SUCCESS").length;
   const failureCount = results.filter((r) => r.status === "FAILED").length;
   const totalCount = results.length;
@@ -39,7 +44,9 @@ export function SocialPostResults({ results, onClose }: SocialPostResultsProps) 
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900">Social Posting Results</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Social Posting Results
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl"
@@ -77,7 +84,9 @@ export function SocialPostResults({ results, onClose }: SocialPostResultsProps) 
             {results.map((result) => (
               <div
                 key={result.id}
-                className={`border rounded-lg p-4 ${getStatusBg(result.status)}`}
+                className={`border rounded-lg p-4 ${getStatusBg(
+                  result.status
+                )}`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 flex-1">
@@ -101,16 +110,22 @@ export function SocialPostResults({ results, onClose }: SocialPostResultsProps) 
                       </div>
                       {result.status === "SUCCESS" && result.message && (
                         <p className="text-sm text-gray-600 mt-1">
-                          <span className="font-medium">Post ID:</span> {result.message}
+                          <span className="font-medium">Post ID:</span>{" "}
+                          {result.message}
                         </p>
                       )}
                       {result.status === "FAILED" && result.message && (
                         <p className="text-sm text-red-600 mt-1">
-                          <span className="font-medium">Error:</span> {result.message}
+                          <span className="font-medium">Error:</span>{" "}
+                          {result.message}
                         </p>
                       )}
                       <p className="text-xs text-gray-500 mt-1">
-                        Posted at: {new Date(result.postedAt).toLocaleString()}
+                        {t("admin.postedAt")}:{" "}
+                        {formatDateTime(new Date(result.postedAt), {
+                          dateFormat: "PP",
+                          timeFormat: "p",
+                        })}
                       </p>
                     </div>
                   </div>
@@ -123,8 +138,10 @@ export function SocialPostResults({ results, onClose }: SocialPostResultsProps) 
           {failureCount > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> Some posts failed. Please check your social media account connections and try again. 
-                Common issues include expired tokens or missing required content (e.g., Instagram requires an image).
+                <strong>Note:</strong> Some posts failed. Please check your
+                social media account connections and try again. Common issues
+                include expired tokens or missing required content (e.g.,
+                Instagram requires an image).
               </p>
             </div>
           )}
@@ -142,4 +159,3 @@ export function SocialPostResults({ results, onClose }: SocialPostResultsProps) 
     </div>
   );
 }
-

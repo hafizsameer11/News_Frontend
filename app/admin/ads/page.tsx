@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { formatPrice } from "@/lib/helpers/ad-pricing";
-import { useAds, useCreateAd, useUpdateAd, useDeleteAd } from "@/lib/hooks/useAds";
+import {
+  useAds,
+  useCreateAd,
+  useUpdateAd,
+  useDeleteAd,
+} from "@/lib/hooks/useAds";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { AdFormModal } from "@/components/admin/ad-form-modal";
@@ -35,7 +40,7 @@ export default function AdminAdsPage() {
   const createMutation = useCreateAd();
   const updateMutation = useUpdateAd();
   const deleteMutation = useDeleteAd();
-  const { t, language } = useLanguage();
+  const { t, language, formatNumber } = useLanguage();
 
   const adsList = (data as AdResponse | undefined)?.data?.ads || [];
   const meta = (data as AdResponse | undefined)?.data?.meta;
@@ -91,7 +96,7 @@ export default function AdminAdsPage() {
           setStatusFilter("");
           setTypeFilter("");
           // Wait a bit for backend to process, then refetch
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
           // Manually refetch to ensure the new ad appears
           await refetch();
         },
@@ -120,14 +125,14 @@ export default function AdminAdsPage() {
     return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  const formatNumber = (num: number) => {
-    return num.toLocaleString();
-  };
+  // formatNumber is now from useLanguage context
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t("admin.adManagement")}</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {t("admin.adManagement")}
+        </h1>
         <button
           onClick={handleCreate}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
@@ -140,7 +145,9 @@ export default function AdminAdsPage() {
       <div className="bg-white rounded-lg shadow-md p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.search")}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("admin.search")}
+            </label>
             <InputWithClear
               type="text"
               value={search}
@@ -156,7 +163,9 @@ export default function AdminAdsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.status")}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("admin.status")}
+            </label>
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -167,14 +176,16 @@ export default function AdminAdsPage() {
             >
               <option value="">{t("admin.allStatus")}</option>
               <option value="PENDING">{t("admin.pending")}</option>
-              <option value="ACTIVE">{language === "it" ? "Attivo" : "Active"}</option>
-              <option value="PAUSED">{language === "it" ? "In Pausa" : "Paused"}</option>
-              <option value="EXPIRED">{language === "it" ? "Scaduto" : "Expired"}</option>
+              <option value="ACTIVE">{t("admin.active")}</option>
+              <option value="PAUSED">{t("admin.paused")}</option>
+              <option value="EXPIRED">{t("admin.expired")}</option>
               <option value="REJECTED">{t("admin.rejected")}</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.type")}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("admin.type")}
+            </label>
             <select
               value={typeFilter}
               onChange={(e) => {
@@ -183,15 +194,15 @@ export default function AdminAdsPage() {
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">{language === "it" ? "Tutti i Tipi" : "All Types"}</option>
-              <option value="BANNER_TOP">{language === "it" ? "Banner Superiore" : "Banner Top"}</option>
-              <option value="BANNER_SIDE">{language === "it" ? "Banner Laterale" : "Banner Side"}</option>
-              <option value="INLINE">{language === "it" ? "In Linea" : "Inline"}</option>
-              <option value="FOOTER">{language === "it" ? "Piè di Pagina" : "Footer"}</option>
-              <option value="SLIDER">{language === "it" ? "Slider" : "Slider"}</option>
-              <option value="TICKER">{language === "it" ? "Ticker" : "Ticker"}</option>
-              <option value="POPUP">{language === "it" ? "Popup" : "Popup"}</option>
-              <option value="STICKY">{language === "it" ? "Fisso" : "Sticky"}</option>
+              <option value="">{t("admin.allTypes")}</option>
+              <option value="BANNER_TOP">{t("admin.bannerTop")}</option>
+              <option value="BANNER_SIDE">{t("admin.bannerSide")}</option>
+              <option value="INLINE">{t("admin.inline")}</option>
+              <option value="FOOTER">{t("admin.footer")}</option>
+              <option value="SLIDER">{t("admin.slider")}</option>
+              <option value="TICKER">{t("admin.ticker")}</option>
+              <option value="POPUP">{t("admin.popup")}</option>
+              <option value="STICKY">{t("admin.sticky")}</option>
             </select>
           </div>
           <div className="flex items-end">
@@ -221,7 +232,10 @@ export default function AdminAdsPage() {
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             {filteredAds.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                {language === "it" ? "Nessun annuncio trovato." : "No ads found."} {search || statusFilter || typeFilter ? t("admin.filterBy") : t("admin.createAd")}
+                {t("advertiser.noAdsFound")}{" "}
+                {search || statusFilter || typeFilter
+                  ? t("admin.filterBy")
+                  : t("admin.createAd")}
               </div>
             ) : (
               <>
@@ -268,14 +282,17 @@ export default function AdminAdsPage() {
                                 alt={ad.title}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ddd' width='100' height='100'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='12' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EAd%3C/text%3E%3C/svg%3E";
+                                  (e.target as HTMLImageElement).src =
+                                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ddd' width='100' height='100'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='12' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EAd%3C/text%3E%3C/svg%3E";
                                 }}
                               />
                             </div>
                           </td>
                           <td className="px-4 py-3">
                             <div>
-                              <div className="font-medium text-gray-900">{ad.title}</div>
+                              <div className="font-medium text-gray-900">
+                                {ad.title}
+                              </div>
                               <a
                                 href={ad.targetLink}
                                 target="_blank"
@@ -289,14 +306,22 @@ export default function AdminAdsPage() {
                           <td className="px-4 py-3">
                             {ad.advertiser ? (
                               <div>
-                                <div className="font-medium text-gray-900">{ad.advertiser.name}</div>
+                                <div className="font-medium text-gray-900">
+                                  {ad.advertiser.name}
+                                </div>
                                 {ad.advertiser.companyName && (
-                                  <div className="text-xs text-gray-500">{ad.advertiser.companyName}</div>
+                                  <div className="text-xs text-gray-500">
+                                    {ad.advertiser.companyName}
+                                  </div>
                                 )}
-                                <div className="text-xs text-gray-400">{ad.advertiser.email}</div>
+                                <div className="text-xs text-gray-400">
+                                  {ad.advertiser.email}
+                                </div>
                               </div>
                             ) : (
-                              <span className="text-gray-400 text-sm">System/Admin</span>
+                              <span className="text-gray-400 text-sm">
+                                System/Admin
+                              </span>
                             )}
                           </td>
                           <td className="px-4 py-3">
@@ -315,23 +340,36 @@ export default function AdminAdsPage() {
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600">
                             <div className="flex flex-col">
-                              <span>{formatDate(ad.startDate, "MMM dd, yyyy")}</span>
+                              <span>
+                                {formatDate(ad.startDate, "MMM dd, yyyy")}
+                              </span>
                               <span className="text-gray-400">to</span>
-                              <span>{formatDate(ad.endDate, "MMM dd, yyyy")}</span>
+                              <span>
+                                {formatDate(ad.endDate, "MMM dd, yyyy")}
+                              </span>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600">
                             <div className="flex flex-col gap-1">
                               <span>
-                                <strong className="text-gray-900">{formatNumber(ad.impressions)}</strong>{" "}
+                                <strong className="text-gray-900">
+                                  {formatNumber(ad.impressions)}
+                                </strong>{" "}
                                 impressions
                               </span>
                               <span>
-                                <strong className="text-gray-900">{formatNumber(ad.clicks)}</strong> clicks
+                                <strong className="text-gray-900">
+                                  {formatNumber(ad.clicks)}
+                                </strong>{" "}
+                                clicks
                               </span>
                               {ad.impressions > 0 && (
                                 <span className="text-xs text-gray-500">
-                                  CTR: {((ad.clicks / ad.impressions) * 100).toFixed(2)}%
+                                  CTR:{" "}
+                                  {((ad.clicks / ad.impressions) * 100).toFixed(
+                                    2
+                                  )}
+                                  %
                                 </span>
                               )}
                             </div>
@@ -377,8 +415,9 @@ export default function AdminAdsPage() {
                 {meta && meta.totalPages > 1 && (
                   <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200">
                     <div className="text-sm text-gray-700">
-                      Showing {(page - 1) * limit + 1} to {Math.min(page * limit, meta.total)} of{" "}
-                      {meta.total} results
+                      Showing {(page - 1) * limit + 1} to{" "}
+                      {Math.min(page * limit, meta.total)} of {meta.total}{" "}
+                      results
                     </div>
                     <div className="flex gap-2">
                       <button

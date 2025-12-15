@@ -14,7 +14,7 @@ import {
 
 export function UserMenu() {
   const { user, logout, isAuthenticated } = useAuth();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -159,11 +159,7 @@ export function UserMenu() {
             </div>
 
             {/* Menu Items */}
-            <div
-              className="py-2"
-              role="menu"
-              aria-label={language === "it" ? "Menu utente" : "User menu"}
-            >
+            <div className="py-2" role="menu" aria-label={t("aria.userMenu")}>
               <Link
                 href="/profile"
                 onClick={() => setIsOpen(false)}
@@ -183,7 +179,7 @@ export function UserMenu() {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                {language === "it" ? "Profilo" : "Profile"}
+                {t("profile.title")}
               </Link>
 
               <Link
@@ -205,7 +201,7 @@ export function UserMenu() {
                     d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
                   />
                 </svg>
-                {language === "it" ? "Segnalibri" : "Bookmarks"}
+                {t("bookmarks.title")}
               </Link>
 
               <Link
@@ -227,7 +223,7 @@ export function UserMenu() {
                     d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                   />
                 </svg>
-                {language === "it" ? "Dashboard" : "Dashboard"}
+                {t("dashboard.title")}
               </Link>
 
               {(user.role === "USER" ||
@@ -259,7 +255,7 @@ export function UserMenu() {
                       d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                     />
                   </svg>
-                  {language === "it" ? "Chat" : "Chat"}
+                  {t("common.chat")}
                 </Link>
               )}
 
@@ -286,7 +282,7 @@ export function UserMenu() {
                         d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
                       />
                     </svg>
-                    {language === "it" ? "Gestione Notizie" : "News Management"}
+                    {t("admin.newsManagement")}
                   </Link>
                   <Link
                     href="/admin/analytics"
@@ -307,7 +303,7 @@ export function UserMenu() {
                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                       />
                     </svg>
-                    {language === "it" ? "Analytics" : "Analytics"}
+                    {t("admin.analytics")}
                   </Link>
                 </>
               )}
@@ -334,7 +330,7 @@ export function UserMenu() {
                         d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"
                       />
                     </svg>
-                    {language === "it" ? "Le Mie Pubblicità" : "My Ads"}
+                    {t("advertiser.ads")}
                   </Link>
                   <Link
                     href="/advertiser/analytics"
@@ -355,7 +351,7 @@ export function UserMenu() {
                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                       />
                     </svg>
-                    {language === "it" ? "Analytics" : "Analytics"}
+                    {t("admin.analytics")}
                   </Link>
                 </>
               )}
@@ -382,7 +378,7 @@ export function UserMenu() {
                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                       />
                     </svg>
-                    {language === "it" ? "Pannello Editor" : "Editor Panel"}
+                    {t("editor.panel")}
                   </Link>
                 </>
               )}
@@ -392,7 +388,7 @@ export function UserMenu() {
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset"
                 role="menuitem"
-                aria-label={language === "it" ? "Esci" : "Logout"}
+                aria-label={t("auth.logout")}
               >
                 <svg
                   className="w-5 h-5"
@@ -407,7 +403,7 @@ export function UserMenu() {
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                   />
                 </svg>
-                {language === "it" ? "Esci" : "Logout"}
+                {t("auth.logout")}
               </button>
             </div>
           </div>

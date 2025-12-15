@@ -1,8 +1,17 @@
 "use client";
 
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { TrendData } from "@/types/stats.types";
-import { formatDate } from "@/lib/helpers/formatDate";
+
 import { useLanguage } from "@/providers/LanguageProvider";
 
 interface EngagementChartProps {
@@ -11,16 +20,16 @@ interface EngagementChartProps {
 }
 
 export function EngagementChart({ data, period }: EngagementChartProps) {
-  const { t } = useLanguage();
-  
+  const { t, language, formatDate, formatNumber } = useLanguage();
+
   const formatXAxis = (date: string) => {
     const d = new Date(date);
     if (period === "daily") {
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      return formatDate(d, "MMM dd");
     } else if (period === "weekly") {
-      return `Week ${Math.ceil(d.getDate() / 7)}`;
+      return `${t("admin.weekly")} ${Math.ceil(d.getDate() / 7)}`;
     } else {
-      return d.toLocaleDateString("en-US", { month: "short" });
+      return formatDate(d, "MMM");
     }
   };
 
@@ -50,8 +59,10 @@ export function EngagementChart({ data, period }: EngagementChartProps) {
         />
         <YAxis style={{ fontSize: "12px" }} />
         <Tooltip
-          labelFormatter={(value) => formatDate(value, "MMM dd, yyyy")}
-          formatter={(value: number) => [value.toLocaleString(), "Users"]}
+          labelFormatter={(value) =>
+            formatDate(value, "MMM dd, yyyy")
+          }
+          formatter={(value: number) => [formatNumber(value), t("admin.user")]}
         />
         <Legend />
         <Area
@@ -66,4 +77,3 @@ export function EngagementChart({ data, period }: EngagementChartProps) {
     </ResponsiveContainer>
   );
 }
-

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdAnalytics } from "@/lib/hooks/useAnalytics";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 import {
@@ -20,7 +21,12 @@ interface AdAnalyticsDetailProps {
   endDate?: Date | null;
 }
 
-export function AdAnalyticsDetail({ adId, startDate, endDate }: AdAnalyticsDetailProps) {
+export function AdAnalyticsDetail({
+  adId,
+  startDate,
+  endDate,
+}: AdAnalyticsDetailProps) {
+  const { formatNumber } = useLanguage();
   const { data, isLoading, error } = useAdAnalytics(adId);
 
   if (isLoading) {
@@ -49,11 +55,16 @@ export function AdAnalyticsDetail({ adId, startDate, endDate }: AdAnalyticsDetai
     });
   };
 
-  const impressionsData = filterByDateRange(analytics.impressionsOverTime || []);
+  const impressionsData = filterByDateRange(
+    analytics.impressionsOverTime || []
+  );
   const clicksData = filterByDateRange(analytics.clicksOverTime || []);
 
   // Calculate CTR
-  const totalImpressions = impressionsData.reduce((sum, item) => sum + item.count, 0);
+  const totalImpressions = impressionsData.reduce(
+    (sum, item) => sum + item.count,
+    0
+  );
   const totalClicks = clicksData.reduce((sum, item) => sum + item.count, 0);
   const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
 
@@ -62,20 +73,36 @@ export function AdAnalyticsDetail({ adId, startDate, endDate }: AdAnalyticsDetai
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Total Impressions</h3>
-          <p className="text-3xl font-bold text-blue-600">{analytics.impressions.toLocaleString()}</p>
+          <h3 className="text-sm font-medium text-gray-600 mb-2">
+            Total Impressions
+          </h3>
+          <p className="text-3xl font-bold text-blue-600">
+            {formatNumber(analytics.impressions)}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Total Clicks</h3>
-          <p className="text-3xl font-bold text-green-600">{analytics.clicks.toLocaleString()}</p>
+          <h3 className="text-sm font-medium text-gray-600 mb-2">
+            Total Clicks
+          </h3>
+          <p className="text-3xl font-bold text-green-600">
+            {formatNumber(analytics.clicks)}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Click-Through Rate (CTR)</h3>
-          <p className="text-3xl font-bold text-red-600">{analytics.ctr.toFixed(2)}%</p>
+          <h3 className="text-sm font-medium text-gray-600 mb-2">
+            Click-Through Rate (CTR)
+          </h3>
+          <p className="text-3xl font-bold text-red-600">
+            {analytics.ctr.toFixed(2)}%
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Filtered CTR</h3>
-          <p className="text-3xl font-bold text-purple-600">{ctr.toFixed(2)}%</p>
+          <h3 className="text-sm font-medium text-gray-600 mb-2">
+            Filtered CTR
+          </h3>
+          <p className="text-3xl font-bold text-purple-600">
+            {ctr.toFixed(2)}%
+          </p>
         </div>
       </div>
 
@@ -83,7 +110,9 @@ export function AdAnalyticsDetail({ adId, startDate, endDate }: AdAnalyticsDetai
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Impressions Chart */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Impressions Over Time</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Impressions Over Time
+          </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={impressionsData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -104,7 +133,9 @@ export function AdAnalyticsDetail({ adId, startDate, endDate }: AdAnalyticsDetai
 
         {/* Clicks Chart */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Clicks Over Time</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Clicks Over Time
+          </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={clicksData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -126,4 +157,3 @@ export function AdAnalyticsDetail({ adId, startDate, endDate }: AdAnalyticsDetai
     </div>
   );
 }
-

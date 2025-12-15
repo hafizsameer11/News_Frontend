@@ -6,20 +6,16 @@ import { MediaUpload } from "@/components/admin/media-upload";
 import { MediaGrid } from "@/components/admin/media-grid";
 
 export default function EditorMediaPage() {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"browse" | "upload">("browse");
 
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">
-          {language === "it" ? "Libreria Media" : "Media Library"}
+          {t("admin.mediaLibrary")}
         </h1>
-        <p className="text-gray-600 mt-2">
-          {language === "it"
-            ? "Carica, gestisci e organizza i tuoi file multimediali"
-            : "Upload, manage, and organize your media files"}
-        </p>
+        <p className="text-gray-600 mt-2">{t("admin.uploadManageMedia")}</p>
       </div>
 
       {/* Tabs */}
@@ -34,7 +30,7 @@ export default function EditorMediaPage() {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              {language === "it" ? "Sfoglia Media" : "Browse Media"}
+              {t("admin.browseMedia")}
             </button>
             <button
               onClick={() => setActiveTab("upload")}
@@ -44,7 +40,7 @@ export default function EditorMediaPage() {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              {language === "it" ? "Carica File" : "Upload Files"}
+              {t("admin.uploadFiles")}
             </button>
           </div>
         </div>
@@ -61,4 +57,3 @@ export default function EditorMediaPage() {
     </div>
   );
 }
-

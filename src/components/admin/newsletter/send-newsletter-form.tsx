@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useSendNewsletter, useNewsletterSubscribers } from "@/lib/hooks/useNewsletterAdmin";
+import {
+  useSendNewsletter,
+  useNewsletterSubscribers,
+} from "@/lib/hooks/useNewsletterAdmin";
 import { RichTextEditor } from "../rich-text-editor";
 import { SendNewsletterConfirmModal } from "./send-newsletter-confirm-modal";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -16,7 +19,7 @@ export function SendNewsletterForm() {
   const [lastSentCount, setLastSentCount] = useState<number | null>(null);
 
   const sendMutation = useSendNewsletter();
-  const { t, language } = useLanguage();
+  const { t, language, formatTime, formatDate } = useLanguage();
   // Get subscriber count for the confirmation modal
   // Backend now returns ALL subscribers (active and inactive), so we need to filter for active ones
   const { data: subscribersData } = useNewsletterSubscribers(1, 1000); // Fetch enough to count all
@@ -27,12 +30,12 @@ export function SendNewsletterForm() {
     if (!subject.trim() || !html.trim()) {
       return;
     }
-    
+
     // Prevent sending if there are no active subscribers
     if (totalActive === 0) {
       return;
     }
-    
+
     setShowConfirm(true);
   };
 
@@ -63,7 +66,9 @@ export function SendNewsletterForm() {
   return (
     <>
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">{t("admin.sendNewsletter")}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          {t("admin.sendNewsletter")}
+        </h2>
 
         {/* Success Banner */}
         {lastSentAt && lastSentCount !== null && (
@@ -85,8 +90,9 @@ export function SendNewsletterForm() {
                   Newsletter queued successfully!
                 </p>
                 <p className="text-sm text-green-700">
-                  Queued for {lastSentCount} active subscriber{lastSentCount !== 1 ? "s" : ""} at{" "}
-                  {lastSentAt.toLocaleTimeString()} on {lastSentAt.toLocaleDateString()}
+                  Queued for {lastSentCount} active subscriber
+                  {lastSentCount !== 1 ? "s" : ""} at {formatTime(lastSentAt)}{" "}
+                  on {formatDate(lastSentAt)}
                 </p>
               </div>
               <button
@@ -97,7 +103,11 @@ export function SendNewsletterForm() {
                 className="text-green-600 hover:text-green-800 transition"
                 aria-label="Dismiss"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fillRule="evenodd"
                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -170,7 +180,9 @@ export function SendNewsletterForm() {
             <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
               <h3 className="text-lg font-semibold mb-2">Preview</h3>
               <div className="border border-gray-200 rounded p-4 bg-white">
-                <div className="mb-2 font-semibold text-gray-900">{subject}</div>
+                <div className="mb-2 font-semibold text-gray-900">
+                  {subject}
+                </div>
                 <div
                   className="prose max-w-none"
                   dangerouslySetInnerHTML={{ __html: html }}
@@ -184,13 +196,15 @@ export function SendNewsletterForm() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={!isFormValid || sendMutation.isPending || totalActive === 0}
+              disabled={
+                !isFormValid || sendMutation.isPending || totalActive === 0
+              }
               className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {sendMutation.isPending ? "Sending..." : "Send Newsletter"}
             </button>
           </div>
-          
+
           {/* Warning if no active subscribers */}
           {totalActive === 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
@@ -207,7 +221,9 @@ export function SendNewsletterForm() {
                   />
                 </svg>
                 <p className="text-sm text-yellow-800">
-                  <strong>Warning:</strong> There are no active subscribers. You cannot send a newsletter until you have at least one active subscriber.
+                  <strong>Warning:</strong> There are no active subscribers. You
+                  cannot send a newsletter until you have at least one active
+                  subscriber.
                 </p>
               </div>
             </div>
@@ -216,9 +232,9 @@ export function SendNewsletterForm() {
           {/* Info Message */}
           <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> This will send the newsletter to all active subscribers. The
-              emails will be queued and sent asynchronously. You can check the email queue status in
-              the backend logs.
+              <strong>Note:</strong> This will send the newsletter to all active
+              subscribers. The emails will be queued and sent asynchronously.
+              You can check the email queue status in the backend logs.
             </p>
           </div>
         </div>
@@ -238,4 +254,3 @@ export function SendNewsletterForm() {
     </>
   );
 }
-

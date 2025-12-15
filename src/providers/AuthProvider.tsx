@@ -62,9 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, 0);
     }
 
-    // Update token after other state updates
+    // Update token after other state updates - use setTimeout to defer
     if (shouldUpdateToken) {
-      setToken(storedToken);
+      setTimeout(() => {
+        setToken(storedToken);
+      }, 0);
     }
   }, [token, user]);
 

@@ -6,6 +6,7 @@ import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { VideoCard } from "@/components/tg/video-card";
 import { useTGVideo, useRelatedTGVideos } from "@/lib/hooks/useTG";
+import { TGVideosResponse, TGVideoDetailResponse } from "@/lib/api/modules/tg.api";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { formatDate } from "@/lib/helpers/formatDate";
@@ -24,8 +25,9 @@ export default function TGVideoDetailPage() {
   const { data: videoData, isLoading, error } = useTGVideo(videoId);
   const { data: relatedData } = useRelatedTGVideos(videoId);
 
-  const video = videoData?.data;
-  const relatedVideos = relatedData?.data?.videos || [];
+  const video = (videoData as TGVideoDetailResponse | undefined)?.data;
+  const relatedVideosData = (relatedData as TGVideosResponse | undefined)?.data;
+  const relatedVideos = relatedVideosData?.videos || [];
 
   if (isLoading) {
     return (

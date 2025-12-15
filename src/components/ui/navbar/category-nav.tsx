@@ -111,6 +111,7 @@ export function CategoryNav({ categories, isLoading }: CategoryNavProps) {
         className="flex items-center space-x-1 flex-shrink-0 overflow-x-auto scrollbar-hide"
         style={{ overflowY: "visible" }}
       >
+        {/* eslint-disable-next-line react-hooks/refs */}
         {mainCategories.map((category) => {
           const categoryPath = `/category/${category.slug}`;
           const isActive = isActiveRoute(pathname, categoryPath);

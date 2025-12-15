@@ -15,23 +15,35 @@ import { useSocialAccounts } from "@/lib/hooks/useSocial";
 import { SocialPostPreview } from "./social-post-preview";
 import { SocialPlatform } from "@/types/social.types";
 import { useLanguage } from "@/providers/LanguageProvider";
-import { 
-  flattenCategories, 
-  getCategoryLevel, 
+import {
+  flattenCategories,
+  getCategoryLevel,
   getCategoryBreadcrumb,
   getCategoryPath,
-  getParentCategory
+  getParentCategory,
 } from "@/lib/helpers/category-helpers";
 
 // Lazy load heavy components
-const RichTextEditor = dynamic(() => import("./rich-text-editor").then((mod) => ({ default: mod.RichTextEditor })), {
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded" />,
-  ssr: false,
-});
+const RichTextEditor = dynamic(
+  () =>
+    import("./rich-text-editor").then((mod) => ({
+      default: mod.RichTextEditor,
+    })),
+  {
+    loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded" />,
+    ssr: false,
+  }
+);
 
-const MediaLibraryModal = dynamic(() => import("./media-library-modal").then((mod) => ({ default: mod.MediaLibraryModal })), {
-  ssr: false,
-});
+const MediaLibraryModal = dynamic(
+  () =>
+    import("./media-library-modal").then((mod) => ({
+      default: mod.MediaLibraryModal,
+    })),
+  {
+    ssr: false,
+  }
+);
 
 interface NewsFormModalProps {
   news?: News | null;
@@ -40,7 +52,11 @@ interface NewsFormModalProps {
   onClose: () => void;
   isLoading?: boolean;
   error?: any;
-  onSocialPost?: (newsId: string, platforms: SocialPlatform[], scheduledFor?: string) => void;
+  onSocialPost?: (
+    newsId: string,
+    platforms: SocialPlatform[],
+    scheduledFor?: string
+  ) => void;
 }
 
 export function NewsFormModal({
@@ -94,7 +110,7 @@ export function NewsFormModal({
 
   const [formData, setFormData] = useState<CreateNewsInput>(initialFormData);
   const [scheduledDate, setScheduledDate] = useState<Date | null>(initialScheduledDate);
-  const { t, language } = useLanguage();
+  const { t, language, formatDateTime } = useLanguage();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [autoGenerateSlug, setAutoGenerateSlug] = useState(!news);
   const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
@@ -106,20 +122,35 @@ export function NewsFormModal({
   ]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSocialPreviewOpen, setIsSocialPreviewOpen] = useState(false);
-  const [socialScheduledDate, setSocialScheduledDate] = useState<Date | null>(null);
+  const [socialScheduledDate, setSocialScheduledDate] = useState<Date | null>(
+    null
+  );
 
   // Fetch connected social accounts
   const { data: socialAccountsData } = useSocialAccounts();
   const connectedAccounts = socialAccountsData?.accounts || [];
-  const facebookAccount = connectedAccounts.find((acc) => acc.platform === "FACEBOOK" && acc.isActive);
-  const instagramAccount = connectedAccounts.find((acc) => acc.platform === "INSTAGRAM" && acc.isActive);
+  const facebookAccount = connectedAccounts.find(
+    (acc) => acc.platform === "FACEBOOK" && acc.isActive
+  );
+  const instagramAccount = connectedAccounts.find(
+    (acc) => acc.platform === "INSTAGRAM" && acc.isActive
+  );
   const hasConnectedAccounts = connectedAccounts.some((acc) => acc.isActive);
 
-  // Reset form when news changes
+  // Reset form when news changes - use key prop pattern by resetting when dependencies change
   useEffect(() => {
-    setFormData(initialFormData);
-    setScheduledDate(initialScheduledDate);
-    setAutoGenerateSlug(!news);
+    // Use setTimeout to defer state updates
+    const timer = setTimeout(() => {
+      setFormData((prev) => {
+        if (JSON.stringify(prev) !== JSON.stringify(initialFormData)) {
+          return initialFormData;
+        }
+        return prev;
+      });
+      setScheduledDate(initialScheduledDate);
+      setAutoGenerateSlug(!news);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialFormData, initialScheduledDate, news]);
 
   const handleTitleChange = (title: string) => {
@@ -133,47 +164,79 @@ export function NewsFormModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = language === "it" ? "Il titolo è obbligatorio" : "Title is required";
+      newErrors.title =
+        language === "it" ? "Il titolo è obbligatorio" : "Title is required";
     } else if (formData.title.length < 5) {
-      newErrors.title = language === "it" ? "Il titolo deve essere di almeno 5 caratteri" : "Title must be at least 5 characters";
+      newErrors.title =
+        language === "it"
+          ? "Il titolo deve essere di almeno 5 caratteri"
+          : "Title must be at least 5 characters";
     }
 
     if (!formData.slug.trim()) {
-      newErrors.slug = language === "it" ? "Lo slug è obbligatorio" : "Slug is required";
+      newErrors.slug =
+        language === "it" ? "Lo slug è obbligatorio" : "Slug is required";
     } else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
-      newErrors.slug = language === "it" ? "Lo slug deve essere minuscolo con solo trattini" : "Slug must be lowercase with hyphens only";
+      newErrors.slug =
+        language === "it"
+          ? "Lo slug deve essere minuscolo con solo trattini"
+          : "Slug must be lowercase with hyphens only";
     }
 
     if (!formData.summary.trim()) {
-      newErrors.summary = language === "it" ? "Il riassunto è obbligatorio" : "Summary is required";
+      newErrors.summary =
+        language === "it"
+          ? "Il riassunto è obbligatorio"
+          : "Summary is required";
     } else if (formData.summary.length < 10) {
-      newErrors.summary = language === "it" ? "Il riassunto deve essere di almeno 10 caratteri" : "Summary must be at least 10 characters";
+      newErrors.summary =
+        language === "it"
+          ? "Il riassunto deve essere di almeno 10 caratteri"
+          : "Summary must be at least 10 characters";
     }
 
     if (!formData.content.trim()) {
-      newErrors.content = language === "it" ? "Il contenuto è obbligatorio" : "Content is required";
+      newErrors.content =
+        language === "it"
+          ? "Il contenuto è obbligatorio"
+          : "Content is required";
     } else {
       // Remove HTML tags for length validation
       const textContent = formData.content.replace(/<[^>]*>/g, "").trim();
       if (textContent.length < 20) {
-        newErrors.content = language === "it" ? "Il contenuto deve essere di almeno 20 caratteri" : "Content must be at least 20 characters";
+        newErrors.content =
+          language === "it"
+            ? "Il contenuto deve essere di almeno 20 caratteri"
+            : "Content must be at least 20 characters";
       }
     }
 
     if (!formData.categoryId) {
-      newErrors.categoryId = language === "it" ? "La categoria è obbligatoria" : "Category is required";
+      newErrors.categoryId =
+        language === "it"
+          ? "La categoria è obbligatoria"
+          : "Category is required";
     }
 
     // Social posting validation
     if (postToSocial && onSocialPost) {
       if (selectedPlatforms.length === 0) {
-        newErrors.socialPlatforms = language === "it" ? "Seleziona almeno una piattaforma" : "Please select at least one platform";
+        newErrors.socialPlatforms =
+          language === "it"
+            ? "Seleziona almeno una piattaforma"
+            : "Please select at least one platform";
       }
       if (selectedPlatforms.includes("INSTAGRAM") && !formData.mainImage) {
-        newErrors.socialInstagram = language === "it" ? "Instagram richiede un'immagine. Aggiungi un'immagine principale." : "Instagram requires an image. Please add a main image.";
+        newErrors.socialInstagram =
+          language === "it"
+            ? "Instagram richiede un'immagine. Aggiungi un'immagine principale."
+            : "Instagram requires an image. Please add a main image.";
       }
       if (socialScheduledDate && socialScheduledDate <= new Date()) {
-        newErrors.socialScheduled = language === "it" ? "L'orario di pubblicazione programmata deve essere nel futuro" : "Scheduled posting time must be in the future";
+        newErrors.socialScheduled =
+          language === "it"
+            ? "L'orario di pubblicazione programmata deve essere nel futuro"
+            : "Scheduled posting time must be in the future";
       }
     }
 
@@ -189,7 +252,7 @@ export function NewsFormModal({
         ...formData,
         scheduledFor: scheduledDate ? scheduledDate.toISOString() : undefined,
       };
-      
+
       // Store social posting preference before submitting
       // The actual posting will happen after news creation/update in the parent component
       if (onSocialPost && postToSocial && selectedPlatforms.length > 0) {
@@ -263,7 +326,11 @@ export function NewsFormModal({
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.title ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder={language === "it" ? "Inserisci il titolo della notizia" : "Enter news title"}
+                placeholder={
+                  language === "it"
+                    ? "Inserisci il titolo della notizia"
+                    : "Enter news title"
+                }
                 disabled={isLoading}
               />
               {errors.title && (
@@ -283,7 +350,9 @@ export function NewsFormModal({
                     onChange={(e) => setAutoGenerateSlug(e.target.checked)}
                     disabled={isLoading}
                   />
-                  {language === "it" ? "Genera automaticamente" : "Auto-generate"}
+                  {language === "it"
+                    ? "Genera automaticamente"
+                    : "Auto-generate"}
                 </label>
               </div>
               <input
@@ -317,84 +386,104 @@ export function NewsFormModal({
                 }`}
                 disabled={isLoading}
               >
-                <option value="">{language === "it" ? "Seleziona una categoria" : "Select a category"}</option>
+                <option value="">
+                  {language === "it"
+                    ? "Seleziona una categoria"
+                    : "Select a category"}
+                </option>
                 {(() => {
                   // Build hierarchical category options
                   const flat = flattenCategories(categories);
-                  const rootCats = flat.filter((cat) => !cat.parentId).sort((a, b) => a.order - b.order);
-                  
-                  const buildOptions = (parentId: string | null, level = 0): React.ReactElement[] => {
+                  const rootCats = flat
+                    .filter((cat) => !cat.parentId)
+                    .sort((a, b) => a.order - b.order);
+
+                  const buildOptions = (
+                    parentId: string | null,
+                    level = 0
+                  ): React.ReactElement[] => {
                     const options: React.ReactElement[] = [];
                     const children = flat
                       .filter((cat) => (cat.parentId || null) === parentId)
                       .sort((a, b) => a.order - b.order);
-                    
+
                     children.forEach((cat) => {
                       const catLevel = getCategoryLevel(cat, flat);
-                      const displayName = language === "it" ? cat.nameIt : cat.nameEn;
-                      const breadcrumb = cat.parentId 
+                      const displayName =
+                        language === "it" ? cat.nameIt : cat.nameEn;
+                      const breadcrumb = cat.parentId
                         ? getCategoryBreadcrumb(cat, flat)
                         : "";
-                      
+
                       // Build option text with hierarchy indicator
                       const indent = "  ".repeat(level);
                       const treeChar = level > 0 ? "└─ " : "";
                       let optionText = `${indent}${treeChar}${displayName}`;
-                      
+
                       // Add level indicator for non-root categories
                       if (catLevel > 0) {
                         optionText += ` [L${catLevel + 1}]`;
                       }
-                      
+
                       options.push(
-                        <option 
-                          key={cat.id} 
+                        <option
+                          key={cat.id}
                           value={cat.id}
-                          title={breadcrumb ? `${displayName} - ${breadcrumb}` : displayName}
+                          title={
+                            breadcrumb
+                              ? `${displayName} - ${breadcrumb}`
+                              : displayName
+                          }
                         >
                           {optionText}
                         </option>
                       );
-                      
+
                       // Recursively add children
                       const childOptions = buildOptions(cat.id, level + 1);
                       options.push(...childOptions);
                     });
-                    
+
                     return options;
                   };
-                  
+
                   return buildOptions(null, 0);
                 })()}
               </select>
-              {formData.categoryId && (() => {
-                const flat = flattenCategories(categories);
-                const selectedCat = flat.find((c) => c.id === formData.categoryId);
-                if (!selectedCat) return null;
-                
-                const breadcrumb = selectedCat.parentId 
-                  ? getCategoryBreadcrumb(selectedCat, flat)
-                  : "";
-                const level = getCategoryLevel(selectedCat, flat);
-                
-                return (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-blue-900">
-                        {language === "it" ? selectedCat.nameIt : selectedCat.nameEn}
-                      </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">
-                        {language === "it" ? "Livello" : "Level"} {level + 1}
-                      </span>
-                      {breadcrumb && (
-                        <span className="text-blue-700">
-                          {language === "it" ? "Percorso" : "Path"}: {breadcrumb}
+              {formData.categoryId &&
+                (() => {
+                  const flat = flattenCategories(categories);
+                  const selectedCat = flat.find(
+                    (c) => c.id === formData.categoryId
+                  );
+                  if (!selectedCat) return null;
+
+                  const breadcrumb = selectedCat.parentId
+                    ? getCategoryBreadcrumb(selectedCat, flat)
+                    : "";
+                  const level = getCategoryLevel(selectedCat, flat);
+
+                  return (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-blue-900">
+                          {language === "it"
+                            ? selectedCat.nameIt
+                            : selectedCat.nameEn}
                         </span>
-                      )}
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">
+                          {language === "it" ? "Livello" : "Level"} {level + 1}
+                        </span>
+                        {breadcrumb && (
+                          <span className="text-blue-700">
+                            {language === "it" ? "Percorso" : "Path"}:{" "}
+                            {breadcrumb}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })()}
+                  );
+                })()}
               {errors.categoryId && (
                 <p className="mt-1 text-sm text-red-600">{errors.categoryId}</p>
               )}
@@ -409,21 +498,28 @@ export function NewsFormModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    status: e.target.value as "DRAFT" | "PENDING_REVIEW" | "PUBLISHED",
+                    status: e.target.value as
+                      | "DRAFT"
+                      | "PENDING_REVIEW"
+                      | "PUBLISHED",
                   })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               >
                 <option value="DRAFT">{t("admin.draft")}</option>
-                <option value="PENDING_REVIEW">{t("admin.pendingReview")}</option>
+                <option value="PENDING_REVIEW">
+                  {t("admin.pendingReview")}
+                </option>
                 <option value="PUBLISHED">{t("admin.published")}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {language === "it" ? "Programma Pubblicazione" : "Schedule Publishing"}
+                {language === "it"
+                  ? "Programma Pubblicazione"
+                  : "Schedule Publishing"}
               </label>
               <div className="space-y-2">
                 <DatePicker
@@ -435,7 +531,10 @@ export function NewsFormModal({
                       if (date <= new Date()) {
                         setErrors((prev) => ({
                           ...prev,
-                          scheduledFor: language === "it" ? "La data programmata deve essere nel futuro" : "Scheduled date must be in the future",
+                          scheduledFor:
+                            language === "it"
+                              ? "La data programmata deve essere nel futuro"
+                              : "Scheduled date must be in the future",
                         }));
                       } else {
                         setErrors((prev) => {
@@ -471,7 +570,11 @@ export function NewsFormModal({
                       />
                     </svg>
                     <span>
-                      Will publish on: {scheduledDate.toLocaleString()}
+                      {t("admin.willPublishOn")}:{" "}
+                      {formatDateTime(scheduledDate, {
+                        dateFormat: "PP",
+                        timeFormat: "p",
+                      })}
                     </span>
                     <button
                       type="button"
@@ -559,7 +662,9 @@ export function NewsFormModal({
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {selectedMedia.caption || "Selected Media"}
                       </p>
-                      <p className="text-xs text-gray-500">{selectedMedia.type}</p>
+                      <p className="text-xs text-gray-500">
+                        {selectedMedia.type}
+                      </p>
                     </div>
                     <button
                       type="button"
@@ -614,12 +719,14 @@ export function NewsFormModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Content <span className="text-red-500">*</span>
               </label>
-              <div className={errors.content ? "border-2 border-red-500 rounded" : ""}>
+              <div
+                className={
+                  errors.content ? "border-2 border-red-500 rounded" : ""
+                }
+              >
                 <RichTextEditor
                   value={formData.content}
-                  onChange={(content) =>
-                    setFormData({ ...formData, content })
-                  }
+                  onChange={(content) => setFormData({ ...formData, content })}
                   placeholder="Enter full news content..."
                   disabled={isLoading}
                 />
@@ -701,7 +808,13 @@ export function NewsFormModal({
                       disabled={isLoading || !hasConnectedAccounts}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
                     />
-                    <span className={`text-sm font-medium ${!hasConnectedAccounts ? "text-gray-400" : "text-gray-700"}`}>
+                    <span
+                      className={`text-sm font-medium ${
+                        !hasConnectedAccounts
+                          ? "text-gray-400"
+                          : "text-gray-700"
+                      }`}
+                    >
                       Post to Social Media
                     </span>
                   </label>
@@ -710,8 +823,13 @@ export function NewsFormModal({
               {onSocialPost && !hasConnectedAccounts && (
                 <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                   <p className="text-sm text-yellow-800">
-                    ⚠️ No social media accounts connected. Please connect accounts in{" "}
-                    <a href="/admin/settings" className="underline font-medium" target="_blank">
+                    ⚠️ No social media accounts connected. Please connect
+                    accounts in{" "}
+                    <a
+                      href="/admin/settings"
+                      className="underline font-medium"
+                      target="_blank"
+                    >
                       Settings
                     </a>{" "}
                     first.
@@ -730,9 +848,24 @@ export function NewsFormModal({
                       disabled={!formData.title || !formData.summary}
                       className="px-3 py-1.5 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                     >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
                       </svg>
                       Preview Post
                     </button>
@@ -744,7 +877,10 @@ export function NewsFormModal({
                         checked={selectedPlatforms.includes("FACEBOOK")}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setSelectedPlatforms([...selectedPlatforms, "FACEBOOK"]);
+                            setSelectedPlatforms([
+                              ...selectedPlatforms,
+                              "FACEBOOK",
+                            ]);
                           } else {
                             setSelectedPlatforms(
                               selectedPlatforms.filter((p) => p !== "FACEBOOK")
@@ -758,13 +894,23 @@ export function NewsFormModal({
                         <span className="text-sm text-gray-700">Facebook</span>
                         {facebookAccount ? (
                           <span className="text-xs text-green-600 flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            <svg
+                              className="w-3 h-3"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                             {facebookAccount.name}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-400">Not connected</span>
+                          <span className="text-xs text-gray-400">
+                            Not connected
+                          </span>
                         )}
                       </div>
                     </label>
@@ -774,7 +920,10 @@ export function NewsFormModal({
                         checked={selectedPlatforms.includes("INSTAGRAM")}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setSelectedPlatforms([...selectedPlatforms, "INSTAGRAM"]);
+                            setSelectedPlatforms([
+                              ...selectedPlatforms,
+                              "INSTAGRAM",
+                            ]);
                           } else {
                             setSelectedPlatforms(
                               selectedPlatforms.filter((p) => p !== "INSTAGRAM")
@@ -788,22 +937,36 @@ export function NewsFormModal({
                         <span className="text-sm text-gray-700">Instagram</span>
                         {instagramAccount ? (
                           <span className="text-xs text-green-600 flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            <svg
+                              className="w-3 h-3"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                             {instagramAccount.name}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-400">Not connected</span>
+                          <span className="text-xs text-gray-400">
+                            Not connected
+                          </span>
                         )}
                       </div>
                     </label>
                   </div>
                   {errors.socialPlatforms && (
-                    <p className="text-sm text-red-600">{errors.socialPlatforms}</p>
+                    <p className="text-sm text-red-600">
+                      {errors.socialPlatforms}
+                    </p>
                   )}
                   {errors.socialInstagram && (
-                    <p className="text-sm text-red-600">{errors.socialInstagram}</p>
+                    <p className="text-sm text-red-600">
+                      {errors.socialInstagram}
+                    </p>
                   )}
 
                   {/* Scheduled Posting for Social */}
@@ -818,7 +981,8 @@ export function NewsFormModal({
                         if (date && date <= new Date()) {
                           setErrors((prev) => ({
                             ...prev,
-                            socialScheduled: "Scheduled time must be in the future",
+                            socialScheduled:
+                              "Scheduled time must be in the future",
                           }));
                         } else {
                           setErrors((prev) => {
@@ -839,10 +1003,26 @@ export function NewsFormModal({
                     />
                     {socialScheduledDate && (
                       <div className="mt-2 flex items-center gap-2 text-sm text-blue-600">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
                         </svg>
-                        <span>Will post on: {socialScheduledDate.toLocaleString()}</span>
+                        <span>
+                          {t("admin.willPostOn")}:{" "}
+                          {formatDateTime(socialScheduledDate, {
+                            dateFormat: "PP",
+                            timeFormat: "p",
+                          })}
+                        </span>
                         <button
                           type="button"
                           onClick={() => {
@@ -860,7 +1040,9 @@ export function NewsFormModal({
                       </div>
                     )}
                     {errors.socialScheduled && (
-                      <p className="mt-1 text-sm text-red-600">{errors.socialScheduled}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.socialScheduled}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -920,11 +1102,15 @@ export function NewsFormModal({
           onSelect={(media) => {
             // Validate media status before allowing selection
             if (media.processingStatus === "FAILED") {
-              alert("Cannot use rejected media. Please select an approved image.");
+              alert(
+                "Cannot use rejected media. Please select an approved image."
+              );
               return;
             }
             if (media.processingStatus === "PENDING") {
-              alert("Cannot use pending media. Please wait for admin approval or select an approved image.");
+              alert(
+                "Cannot use pending media. Please wait for admin approval or select an approved image."
+              );
               return;
             }
             if (media.processingStatus !== "COMPLETED") {
@@ -937,7 +1123,11 @@ export function NewsFormModal({
             const fullUrl = `${baseUrl}${
               media.url.startsWith("/") ? media.url : `/${media.url}`
             }`;
-            setFormData({ ...formData, mainImage: fullUrl, mainImageId: media.id });
+            setFormData({
+              ...formData,
+              mainImage: fullUrl,
+              mainImageId: media.id,
+            });
             setIsMediaLibraryOpen(false);
           }}
           filterType="IMAGE"
@@ -974,4 +1164,3 @@ export function NewsFormModal({
     </div>
   );
 }
-

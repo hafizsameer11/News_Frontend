@@ -27,7 +27,7 @@ export function MediaItem({
   showDelete = true,
 }: MediaItemProps) {
   const { user } = useAuth();
-  const { language } = useLanguage();
+  const { language, formatDate: formatDateUtil } = useLanguage();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -99,11 +99,7 @@ export function MediaItem({
       const date =
         typeof dateString === "string" ? new Date(dateString) : dateString;
       if (isNaN(date.getTime())) return "N/A";
-      return date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
+      return formatDateUtil(date, "PP", language);
     } catch {
       return "N/A";
     }
@@ -193,11 +189,15 @@ export function MediaItem({
         onClick={() => {
           // Prevent selection of FAILED or PENDING media
           if (media.processingStatus === "FAILED") {
-            alert("Cannot select rejected media. Please select an approved image.");
+            alert(
+              "Cannot select rejected media. Please select an approved image."
+            );
             return;
           }
           if (media.processingStatus === "PENDING") {
-            alert("Cannot select pending media. Please wait for admin approval or select an approved image.");
+            alert(
+              "Cannot select pending media. Please wait for admin approval or select an approved image."
+            );
             return;
           }
           onSelect?.(media);
@@ -232,7 +232,10 @@ export function MediaItem({
                   fill
                   className="object-cover"
                   onError={() => setImageError(true)}
-                  unoptimized={imageUrl.includes("localhost") || imageUrl.includes("127.0.0.1")}
+                  unoptimized={
+                    imageUrl.includes("localhost") ||
+                    imageUrl.includes("127.0.0.1")
+                  }
                 />
                 {/* Enlarge button */}
                 <button
@@ -273,7 +276,10 @@ export function MediaItem({
               </div>
             )
           ) : media.type === "VIDEO" ? (
-            <div className="relative w-full h-full cursor-pointer" onClick={handleVideoClick}>
+            <div
+              className="relative w-full h-full cursor-pointer"
+              onClick={handleVideoClick}
+            >
               {media.thumbnailUrl ? (
                 imageError ? (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center">
@@ -444,7 +450,10 @@ export function MediaItem({
           {(media.uploader || media.uploadedBy || media.uploaderName) && (
             <div className="flex items-center gap-2">
               <div className="flex-1 min-w-0">
-                <p lang={language} className="text-xs font-medium text-gray-700 truncate">
+                <p
+                  lang={language}
+                  className="text-xs font-medium text-gray-700 truncate"
+                >
                   {media.uploader?.name ||
                     media.uploadedBy?.name ||
                     media.uploaderName ||

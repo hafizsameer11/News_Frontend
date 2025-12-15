@@ -12,25 +12,32 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import Link from "next/link";
 
 // Lazy load heavy chart component
-const DashboardCharts = dynamic(() => import("@/components/admin/dashboard-charts").then((mod) => ({ default: mod.DashboardCharts })), {
-  loading: () => <div className="bg-white rounded-lg shadow-md p-6"><Loading /></div>,
-  ssr: false,
-});
+const DashboardCharts = dynamic(
+  () =>
+    import("@/components/admin/dashboard-charts").then((mod) => ({
+      default: mod.DashboardCharts,
+    })),
+  {
+    loading: () => (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <Loading />
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 export default function AdminDashboard() {
   const { data, isLoading, error } = useAdminStats();
-  const { t } = useLanguage();
+  const { t, formatNumber } = useLanguage();
 
   const stats = (data as StatsResponse | undefined)?.data;
 
-  // Format number with commas
-  const formatNumber = (num: number) => {
-    return num.toLocaleString();
-  };
-
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6 text-gray-900">{t("admin.dashboard")}</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-900">
+        {t("admin.dashboard")}
+      </h1>
 
       {isLoading ? (
         <Loading />
@@ -90,45 +97,62 @@ export default function AdminDashboard() {
             </h2>
             {stats?.recentNews && stats.recentNews.length > 0 ? (
               <div className="space-y-4">
-                {stats.recentNews.map((news: { id: string; title: string; slug: string; summary: string; status: string; createdAt: string; updatedAt: string; author: { name: string } }) => (
-                  <div
-                    key={news.id}
-                    className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <Link
-                          href={`/news/${news.slug || news.id}`}
-                          className="text-lg font-semibold text-blue-600 hover:text-blue-800 hover:underline"
-                        >
-                          {news.title}
-                        </Link>
-                        <p className="text-gray-600 text-sm mt-1 line-clamp-2">{news.summary}</p>
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm text-gray-500">
-                          <span>{t("admin.author")}: {news.author.name}</span>
-                          <span>•</span>
-                          <span>{formatDate(news.createdAt, "MMM dd, yyyy")}</span>
-                          <span>•</span>
-                          <span
-                            className={`px-2 py-1 rounded text-xs ${
-                              news.status === "PUBLISHED"
-                                ? "bg-green-100 text-green-800"
-                                : news.status === "PENDING_REVIEW"
+                {stats.recentNews.map(
+                  (news: {
+                    id: string;
+                    title: string;
+                    slug: string;
+                    summary: string;
+                    status: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    author: { name: string };
+                  }) => (
+                    <div
+                      key={news.id}
+                      className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <Link
+                            href={`/news/${news.slug || news.id}`}
+                            className="text-lg font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            {news.title}
+                          </Link>
+                          <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                            {news.summary}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm text-gray-500">
+                            <span>
+                              {t("admin.author")}: {news.author.name}
+                            </span>
+                            <span>•</span>
+                            <span>
+                              {formatDate(news.createdAt, "MMM dd, yyyy")}
+                            </span>
+                            <span>•</span>
+                            <span
+                              className={`px-2 py-1 rounded text-xs ${
+                                news.status === "PUBLISHED"
+                                  ? "bg-green-100 text-green-800"
+                                  : news.status === "PENDING_REVIEW"
                                   ? "bg-yellow-100 text-yellow-800"
                                   : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {news.status === "PUBLISHED" 
-                              ? t("admin.published")
-                              : news.status === "PENDING_REVIEW"
+                              }`}
+                            >
+                              {news.status === "PUBLISHED"
+                                ? t("admin.published")
+                                : news.status === "PENDING_REVIEW"
                                 ? t("admin.pendingReview")
                                 : t("admin.draft")}
-                          </span>
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             ) : (
               <p className="text-gray-600">{t("news.noNews")}</p>
@@ -139,4 +163,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-

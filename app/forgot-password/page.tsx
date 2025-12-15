@@ -13,15 +13,15 @@ export default function ForgotPasswordPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const forgotPasswordMutation = useForgotPassword();
   const [isSuccess, setIsSuccess] = useState(false);
-  const { language } = useLanguage();
+  const { t } = useLanguage();
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!email.trim()) {
-      newErrors.email = language === "it" ? "Email richiesta" : "Email is required";
+      newErrors.email = t("validation.emailRequired");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = language === "it" ? "Inserisci un indirizzo email valido" : "Please enter a valid email address";
+      newErrors.email = t("validation.emailInvalid");
     }
 
     setErrors(newErrors);
@@ -51,12 +51,10 @@ export default function ForgotPasswordPage() {
         <div className="max-w-md w-full space-y-8">
           <div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              {language === "it" ? "Password dimenticata" : "Forgot Password"}
+              {t("auth.forgotPassword")}
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              {language === "it"
-                ? "Inserisci il tuo indirizzo email e ti invieremo un link per reimpostare la password"
-                : "Enter your email address and we'll send you a link to reset your password"}
+              {t("auth.forgotPasswordDescription")}
             </p>
           </div>
 
@@ -78,12 +76,10 @@ export default function ForgotPasswordPage() {
                 </svg>
                 <div>
                   <h3 className="text-lg font-medium text-green-800">
-                    {language === "it" ? "Email inviata!" : "Email sent!"}
+                    {t("auth.emailSent")}
                   </h3>
                   <p className="mt-1 text-sm text-green-700">
-                    {language === "it"
-                      ? "Controlla la tua casella di posta per il link di reimpostazione password. Se non vedi l'email, controlla anche la cartella spam."
-                      : "Check your inbox for the password reset link. If you don't see the email, check your spam folder as well."}
+                    {t("auth.emailSentDescription")}
                   </p>
                 </div>
               </div>
@@ -92,19 +88,25 @@ export default function ForgotPasswordPage() {
                   href="/login"
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
-                  {language === "it" ? "Torna al login" : "Back to Login"}
+                  {t("auth.backToLogin")}
                 </Link>
               </div>
             </div>
           ) : (
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
               {forgotPasswordMutation.error && (
-                <ErrorMessage error={forgotPasswordMutation.error} className="mb-4" />
+                <ErrorMessage
+                  error={forgotPasswordMutation.error}
+                  className="mb-4"
+                />
               )}
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  {language === "it" ? "Indirizzo email" : "Email address"}
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  {t("auth.email")}
                 </label>
                 <input
                   id="email"
@@ -122,7 +124,7 @@ export default function ForgotPasswordPage() {
                       ? "border-red-300 text-red-900 placeholder-red-300"
                       : "border-gray-300 text-gray-900 placeholder-gray-500"
                   } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
-                  placeholder={language === "it" ? "Inserisci la tua email" : "Enter your email"}
+                  placeholder={t("auth.enterYourEmail")}
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600">{errors.email}</p>
@@ -157,10 +159,10 @@ export default function ForgotPasswordPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      {language === "it" ? "Invio in corso..." : "Sending..."}
+                      {t("auth.sending")}
                     </span>
                   ) : (
-                    language === "it" ? "Invia link di reimpostazione" : "Send Reset Link"
+                    t("auth.sendResetLink")
                   )}
                 </button>
               </div>
@@ -170,7 +172,7 @@ export default function ForgotPasswordPage() {
                   href="/login"
                   className="font-medium text-red-600 hover:text-red-500"
                 >
-                  {language === "it" ? "← Torna al login" : "← Back to Login"}
+                  {t("auth.backToLogin")}
                 </Link>
               </div>
             </form>
@@ -181,4 +183,3 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
-

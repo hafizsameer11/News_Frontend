@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { useGetMe } from "@/lib/hooks/useAuth";
+import { AuthResponse } from "@/types/user.types";
 import {
   useNews,
   useCreateNews,
@@ -11,11 +12,12 @@ import {
   useDeleteNews,
 } from "@/lib/hooks/useNews";
 import { useCategories } from "@/lib/hooks/useCategories";
+import { CategoryResponse } from "@/types/category.types";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { NewsFormModal } from "@/components/admin/news-form-modal";
 import { DeleteConfirmModal } from "@/components/admin/delete-confirm-modal";
-import { News, CreateNewsInput, UpdateNewsInput } from "@/types/news.types";
+import { News, CreateNewsInput, UpdateNewsInput, NewsResponse } from "@/types/news.types";
 import { formatDate } from "@/lib/helpers/formatDate";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { InputWithClear } from "@/components/ui/input-with-clear";
@@ -33,7 +35,7 @@ export default function EditorNewsPage() {
   const searchParams = useSearchParams();
   const { user: authUser, isAuthenticated } = useAuth();
   const { data: userData, isLoading: userLoading } = useGetMe(isAuthenticated);
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -44,17 +46,21 @@ export default function EditorNewsPage() {
   const [deletingNews, setDeletingNews] = useState<News | null>(null);
 
   // Get current user with allowed categories
-  // Try multiple ways to get the user data
-  const currentUser =
-    (userData?.data as any)?.user || userData?.data || authUser;
+  const currentUser = (userData as AuthResponse | undefined)?.data?.user || authUser;
 
-  const allowedCategoryIds =
-    currentUser?.allowedCategories?.map((cat: any) => cat.id) || [];
+  const allowedCategoryIds = useMemo(
+    () => currentUser?.allowedCategories?.map((cat: any) => cat.id) || [],
+    [currentUser?.allowedCategories]
+  );
 
   // Check if create modal should be open from URL
   useEffect(() => {
     if (searchParams.get("create") === "true") {
-      setIsCreateModalOpen(true);
+      // Use setTimeout to defer state update
+      const timer = setTimeout(() => {
+        setIsCreateModalOpen(true);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [searchParams]);
 
@@ -95,10 +101,11 @@ export default function EditorNewsPage() {
 
   // Fetch all categories but filter to show only allowed ones
   const { data: categoriesData } = useCategories(true);
+  const categoriesList = (categoriesData as CategoryResponse | undefined)?.data || [];
   const allowedCategories =
-    categoriesData?.data?.filter((cat) =>
+    categoriesList.filter((cat) =>
       allowedCategoryIds.includes(cat.id)
-    ) || [];
+    );
 
   const createMutation = useCreateNews();
   const updateMutation = useUpdateNews();
@@ -122,11 +129,11 @@ export default function EditorNewsPage() {
 
   // Combine news from all status queries
   const allNews = useMemo(() => {
-    const publishedNews = data?.data?.news || [];
-    const draftNews = draftData?.data?.news || [];
-    const pendingNews = pendingData?.data?.news || [];
-    const rejectedNews = rejectedData?.data?.news || [];
-    const archivedNews = archivedData?.data?.news || [];
+    const publishedNews = (data as NewsResponse | undefined)?.data?.news || [];
+    const draftNews = (draftData as NewsResponse | undefined)?.data?.news || [];
+    const pendingNews = (pendingData as NewsResponse | undefined)?.data?.news || [];
+    const rejectedNews = (rejectedData as NewsResponse | undefined)?.data?.news || [];
+    const archivedNews = (archivedData as NewsResponse | undefined)?.data?.news || [];
 
     // Combine and deduplicate by ID
     const combined = [
@@ -144,11 +151,11 @@ export default function EditorNewsPage() {
 
     return uniqueNews;
   }, [
-    data?.data?.news,
-    draftData?.data?.news,
-    pendingData?.data?.news,
-    rejectedData?.data?.news,
-    archivedData?.data?.news,
+    data,
+    draftData,
+    pendingData,
+    rejectedData,
+    archivedData,
   ]);
   const userNews = useMemo(() => {
     if (!currentUser?.id) return [];
@@ -166,6 +173,7 @@ export default function EditorNewsPage() {
 
       return matchesAuthor && matchesCategory;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allNews, currentUser?.id, allowedCategoryIds]);
 
   // Apply additional filters (search, status, category)
@@ -278,47 +286,30 @@ export default function EditorNewsPage() {
   };
 
   const getStatusLabel = (status: string) => {
-    if (language === "it") {
-      switch (status) {
-        case "PUBLISHED":
-          return "Pubblicato";
-        case "PENDING_REVIEW":
-          return "In Revisione";
-        case "DRAFT":
-          return "Bozza";
-        case "REJECTED":
-          return "Rifiutato";
-        case "ARCHIVED":
-          return "Archiviato";
-        default:
-          return status;
-      }
-    }
+    if (status === "PUBLISHED") return t("admin.published");
+    if (status === "PENDING_REVIEW") return t("admin.pendingReview");
+    if (status === "REJECTED") return t("admin.rejected");
+    if (status === "DRAFT") return t("admin.draft");
+    if (status === "ARCHIVED") return t("admin.archived");
     return status;
   };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          {language === "it" ? "Le Mie Notizie" : "My News"}
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t("editor.news")}</h1>
         <button
           onClick={handleCreate}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           disabled={allowedCategories.length === 0}
         >
-          {language === "it" ? "+ Crea Notizia" : "+ Create News"}
+          + {t("admin.createNews")}
         </button>
       </div>
 
       {allowedCategories.length === 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center mb-6">
-          <p className="text-yellow-800">
-            {language === "it"
-              ? "Devi avere almeno una categoria assegnata per creare notizie. Contatta un amministratore."
-              : "You need to have at least one assigned category to create news. Please contact an administrator."}
-          </p>
+          <p className="text-yellow-800">{t("editor.noCategoriesAssigned")}</p>
         </div>
       )}
 
@@ -327,7 +318,7 @@ export default function EditorNewsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {language === "it" ? "Cerca" : "Search"}
+              {t("admin.search")}
             </label>
             <input
               type="text"
@@ -336,15 +327,13 @@ export default function EditorNewsPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder={
-                language === "it" ? "Cerca per titolo..." : "Search by title..."
-              }
+              placeholder={t("admin.search") + "..."}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {language === "it" ? "Stato" : "Status"}
+              {t("admin.status")}
             </label>
             <select
               value={statusFilter}
@@ -354,26 +343,16 @@ export default function EditorNewsPage() {
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">
-                {language === "it" ? "Tutti gli stati" : "All Status"}
-              </option>
-              <option value="DRAFT">
-                {language === "it" ? "Bozza" : "Draft"}
-              </option>
-              <option value="PENDING_REVIEW">
-                {language === "it" ? "In Revisione" : "Pending Review"}
-              </option>
-              <option value="PUBLISHED">
-                {language === "it" ? "Pubblicato" : "Published"}
-              </option>
-              <option value="REJECTED">
-                {language === "it" ? "Rifiutato" : "Rejected"}
-              </option>
+              <option value="">{t("admin.allStatus")}</option>
+              <option value="DRAFT">{t("admin.draft")}</option>
+              <option value="PENDING_REVIEW">{t("admin.pendingReview")}</option>
+              <option value="PUBLISHED">{t("admin.published")}</option>
+              <option value="REJECTED">{t("admin.rejected")}</option>
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {language === "it" ? "Categoria" : "Category"}
+              {t("admin.category")}
             </label>
             <select
               value={categoryFilter}
@@ -383,9 +362,7 @@ export default function EditorNewsPage() {
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">
-                {language === "it" ? "Tutte le categorie" : "All Categories"}
-              </option>
+              <option value="">{t("admin.allCategories")}</option>
               {allowedCategories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {language === "it" ? cat.nameIt : cat.nameEn}
@@ -406,9 +383,7 @@ export default function EditorNewsPage() {
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {paginatedNews.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            {language === "it"
-              ? "Nessuna notizia trovata. Crea la tua prima notizia!"
-              : "No news articles found. Create your first article!"}
+            {t("editor.noNewsAvailable")}
           </div>
         ) : (
           <>
@@ -416,19 +391,19 @@ export default function EditorNewsPage() {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                    {language === "it" ? "Titolo" : "Title"}
+                    {t("admin.title")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                    {language === "it" ? "Categoria" : "Category"}
+                    {t("admin.category")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                    {language === "it" ? "Stato" : "Status"}
+                    {t("admin.status")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                    {language === "it" ? "Creato" : "Created"}
+                    {t("admin.created")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                    {language === "it" ? "Azioni" : "Actions"}
+                    {t("admin.actions")}
                   </th>
                 </tr>
               </thead>
@@ -469,14 +444,14 @@ export default function EditorNewsPage() {
                           onClick={() => handleEdit(news)}
                           className="text-blue-600 hover:text-blue-800 hover:underline text-sm"
                         >
-                          {language === "it" ? "Modifica" : "Edit"}
+                          {t("common.edit")}
                         </button>
                         <span className="text-gray-300">|</span>
                         <button
                           onClick={() => handleDelete(news)}
                           className="text-red-600 hover:text-red-800 hover:underline text-sm"
                         >
-                          {language === "it" ? "Elimina" : "Delete"}
+                          {t("common.delete")}
                         </button>
                         <span className="text-gray-300">|</span>
                         <Link
@@ -497,8 +472,7 @@ export default function EditorNewsPage() {
             {totalPages > 1 && (
               <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
                 <div className="text-sm text-gray-700">
-                  {language === "it" ? "Pagina" : "Page"} {page}{" "}
-                  {language === "it" ? "di" : "of"} {totalPages}
+                  {t("search.page")} {page} {t("common.of")} {totalPages}
                 </div>
                 <div className="flex gap-2">
                   <button
