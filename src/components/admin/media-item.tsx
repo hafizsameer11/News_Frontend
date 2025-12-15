@@ -1,7 +1,6 @@
 "use client";
 
 import { Media } from "@/types/media.types";
-import { API_CONFIG } from "@/lib/api/apiConfig";
 import { useState } from "react";
 import Image from "next/image";
 import { DeleteConfirmModal } from "./delete-confirm-modal";
@@ -10,6 +9,7 @@ import { MediaVideoModal } from "./media-video-modal";
 import { useUpdateMediaStatus } from "@/lib/hooks/useMedia";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface MediaItemProps {
   media: Media;
@@ -40,19 +40,10 @@ export function MediaItem({
   // Allow admin to approve/reject media with PENDING status (for both images and videos)
   const canApprove = isAdmin && media.processingStatus === "PENDING";
 
-  // Convert relative URL to full URL
-  const getFullUrl = (url: string): string => {
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-    const baseUrl = API_CONFIG.BASE_URL.replace("/api/v1", "");
-    return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
-  };
-
   const imageUrl =
     media.type === "VIDEO" && media.thumbnailUrl
-      ? getFullUrl(media.thumbnailUrl)
-      : getFullUrl(media.url);
+      ? getImageUrl(media.thumbnailUrl)
+      : getImageUrl(media.url);
 
   const handleDelete = async () => {
     if (onDelete) {

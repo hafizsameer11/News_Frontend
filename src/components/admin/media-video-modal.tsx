@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Media } from "@/types/media.types";
-import { API_CONFIG } from "@/lib/api/apiConfig";
 import { VideoPlayer } from "@/components/ui/video-player";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface MediaVideoModalProps {
   media: Media | null;
@@ -107,9 +107,9 @@ export function MediaVideoModal({
     }
   };
 
-  const videoUrl = getFullUrl(media.url);
+  const videoUrl = getImageUrl(media.url);
   const posterUrl = media.thumbnailUrl
-    ? getFullUrl(media.thumbnailUrl)
+    ? getImageUrl(media.thumbnailUrl)
     : undefined;
 
   return (

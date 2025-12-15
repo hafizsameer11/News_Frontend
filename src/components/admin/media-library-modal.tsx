@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Media } from "@/types/media.types";
 import { MediaUpload } from "./media-upload";
 import { MediaGrid } from "./media-grid";
-import { API_CONFIG } from "@/lib/api/apiConfig";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface MediaLibraryModalProps {
   isOpen: boolean;
@@ -57,14 +57,7 @@ export function MediaLibraryModal({
     setActiveTab("browse");
   };
 
-  // Convert relative URL to full URL for display
-  const getFullUrl = (url: string): string => {
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-    const baseUrl = API_CONFIG.BASE_URL.replace("/api/v1", "");
-    return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
-  };
+  // Use centralized image URL helper
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -137,7 +130,7 @@ export function MediaLibraryModal({
                   ) : selectedMedia.type === "VIDEO" &&
                     selectedMedia.thumbnailUrl ? (
                     <img
-                      src={getFullUrl(selectedMedia.thumbnailUrl)}
+                      src={getImageUrl(selectedMedia.thumbnailUrl)}
                       alt={selectedMedia.caption || "Selected"}
                       className="w-full h-full object-cover"
                     />

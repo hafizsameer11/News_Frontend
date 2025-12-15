@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import { MediaLibraryModal } from "./media-library-modal";
 import { Media } from "@/types/media.types";
-import { API_CONFIG } from "@/lib/api/apiConfig";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface RichTextEditorProps {
   value: string;
@@ -23,18 +23,9 @@ export function RichTextEditor({
   const editorRef = useRef<{ insertContent: (content: string) => void } | null>(null);
   const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
 
-  // Convert relative URL to full URL
-  const getFullUrl = (url: string): string => {
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-    const baseUrl = API_CONFIG.BASE_URL.replace("/api/v1", "");
-    return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
-  };
-
   const handleMediaSelect = (media: Media) => {
     if (editorRef.current && media.type === "IMAGE") {
-      const imageUrl = getFullUrl(media.url);
+      const imageUrl = getImageUrl(media.url);
       editorRef.current.insertContent(
         `<img src="${imageUrl}" alt="${media.caption || ""}" />`
       );
@@ -124,7 +115,7 @@ export function RichTextEditor({
           handleMediaSelect(media);
           // If there's a pending callback from file picker, use it
           if ((window as any).tinymceImageCallback && media.type === "IMAGE") {
-            const imageUrl = getFullUrl(media.url);
+            const imageUrl = getImageUrl(media.url);
             (window as any).tinymceImageCallback(imageUrl, {
               alt: media.caption || "",
               title: media.caption || "",

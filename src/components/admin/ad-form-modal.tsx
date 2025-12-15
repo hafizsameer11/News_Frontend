@@ -5,9 +5,9 @@ import { Ad } from "@/types/ads.types";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { MediaLibraryModal } from "./media-library-modal";
 import { Media } from "@/types/media.types";
-import { API_CONFIG } from "@/lib/api/apiConfig";
 import { convertPriceToNumber } from "@/lib/helpers/ad-pricing";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface AdFormModalProps {
   ad?: Ad | null;
@@ -70,17 +70,9 @@ export function AdFormModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
 
-  const getFullUrl = (url: string): string => {
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-    const baseUrl = API_CONFIG.BASE_URL.replace("/api/v1", "");
-    return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
-  };
-
   const handleMediaSelect = (media: Media) => {
     if (media.type === "IMAGE") {
-      const fullUrl = getFullUrl(media.url);
+      const fullUrl = getImageUrl(media.url);
       setFormData({ ...formData, imageUrl: fullUrl });
       if (errors.imageUrl) setErrors({ ...errors, imageUrl: "" });
     }

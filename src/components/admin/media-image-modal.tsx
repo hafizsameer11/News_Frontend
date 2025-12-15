@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Media } from "@/types/media.types";
-import { API_CONFIG } from "@/lib/api/apiConfig";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface MediaImageModalProps {
   media: Media | null;
@@ -45,13 +45,6 @@ export function MediaImageModal({
     return null;
   }
 
-  const getFullUrl = (url: string): string => {
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-    const baseUrl = API_CONFIG.BASE_URL.replace("/api/v1", "");
-    return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
-  };
 
   const formatFileSize = (bytes: number | string): string => {
     const size = typeof bytes === "string" ? parseInt(bytes, 10) : bytes;
@@ -106,7 +99,7 @@ export function MediaImageModal({
     }
   };
 
-  const imageUrl = getFullUrl(media.url);
+  const imageUrl = getImageUrl(media.url);
 
   return (
     <div

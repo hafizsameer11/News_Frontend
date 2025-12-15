@@ -1,6 +1,7 @@
 import { apiClient } from "../apiClient";
 import { MediaResponse, MediaListResponse, UploadMediaInput } from "@/types/media.types";
 import { API_CONFIG } from "../apiConfig";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 export const mediaApi = {
   // Upload media
@@ -29,7 +30,19 @@ export const mediaApi = {
       }
     );
 
-    return response.data;
+    // Normalize URLs in the response to use production backend domain
+    const data = response.data;
+    if (data?.data) {
+      // Convert localhost URLs to production backend URLs
+      if (data.data.url) {
+        data.data.url = getImageUrl(data.data.url);
+      }
+      if (data.data.thumbnailUrl) {
+        data.data.thumbnailUrl = getImageUrl(data.data.thumbnailUrl);
+      }
+    }
+
+    return data;
   },
 
   // Get all media

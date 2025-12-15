@@ -20,17 +20,9 @@ export function CreativeStep({ formData, updateFormData, errors }: CreativeStepP
   const [uploadMode, setUploadMode] = useState<"url" | "library">("url");
   const [imageError, setImageError] = useState<string>("");
 
-  const getFullUrl = (url: string): string => {
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-    const baseUrl = API_CONFIG.BASE_URL.replace("/api/v1", "");
-    return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
-  };
-
   const handleMediaSelect = (media: Media) => {
     if (media.type === "IMAGE") {
-      const fullUrl = getFullUrl(media.url);
+      const fullUrl = getImageUrl(media.url);
       updateFormData({ imageUrl: fullUrl });
       setImageError("");
       setShowMediaLibrary(false);
