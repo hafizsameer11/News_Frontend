@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import { Navbar } from "@/components/ui/navbar";
+import { Footer } from "@/components/ui/footer";
 import { SportsPageClient } from "./sports-client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,6 +28,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function SportsPage() {
-  return <SportsPageClient />;
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <SportsPageClient />
+      <Footer />
+    </div>
+  );
 }
 

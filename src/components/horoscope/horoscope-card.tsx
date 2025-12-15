@@ -3,12 +3,10 @@
 import { Horoscope, ZodiacSign } from "@/types/horoscope.types";
 import Link from "next/link";
 import { signDataMap } from "./sign-info";
-import { HoroscopeShare } from "./horoscope-share";
 import { useLanguage } from "@/providers/LanguageProvider";
 
 interface HoroscopeCardProps {
   horoscope: Horoscope;
-  type?: "daily" | "weekly";
   className?: string;
 }
 
@@ -29,12 +27,10 @@ const signNames: Record<ZodiacSign, { en: string; it: string }> = {
 
 export function HoroscopeCard({
   horoscope,
-  type = "daily",
   className = "",
 }: HoroscopeCardProps) {
   const { formatDate } = useLanguage();
-  const content =
-    type === "daily" ? horoscope.dailyContent : horoscope.weeklyContent;
+  const content = horoscope.dailyContent;
   const signName = signNames[horoscope.sign];
   const signData = signDataMap[horoscope.sign];
 
@@ -52,13 +48,6 @@ export function HoroscopeCard({
             <h3 className="text-2xl font-bold text-gray-900">{signName.en}</h3>
           </div>
         </Link>
-        <div onClick={(e) => e.stopPropagation()}>
-          <HoroscopeShare
-            sign={horoscope.sign}
-            date={horoscope.date}
-            type={type}
-          />
-        </div>
       </div>
 
       <Link href={`/horoscope/${horoscope.sign.toLowerCase()}`}>
@@ -66,7 +55,7 @@ export function HoroscopeCard({
           <p className="text-gray-600 line-clamp-3 mb-4">{content}</p>
         ) : (
           <p className="text-gray-400 italic mb-4">
-            No {type} horoscope available yet.
+            No horoscope available yet.
           </p>
         )}
         <p className="text-sm text-gray-500">

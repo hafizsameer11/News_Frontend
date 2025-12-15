@@ -9,7 +9,8 @@ import { useHoroscopeBySign } from "@/lib/hooks/useHoroscope";
 import { ZodiacSign, HoroscopeDetailResponse, Horoscope } from "@/types/horoscope.types";
 
 // Validate and normalize sign parameter
-function normalizeSign(sign: string): ZodiacSign | null {
+function normalizeSign(sign: string | undefined): ZodiacSign | null {
+  if (!sign) return null;
   const upperSign = sign.toUpperCase() as ZodiacSign;
   const validSigns: ZodiacSign[] = [
     "ARIES",
@@ -34,10 +35,9 @@ interface HoroscopeSignPageClientProps {
 
 export function HoroscopeSignPageClient({ sign }: HoroscopeSignPageClientProps) {
   const router = useRouter();
-  const [viewType, setViewType] = useState<"daily" | "weekly">("daily");
+  const [shouldFetch, setShouldFetch] = useState(false);
 
-  const signParam = sign;
-  const normalizedSign = normalizeSign(signParam);
+  const normalizedSign = normalizeSign(sign);
 
   // Redirect to horoscope page if invalid sign
   useEffect(() => {
@@ -50,13 +50,19 @@ export function HoroscopeSignPageClient({ sign }: HoroscopeSignPageClientProps) 
     data: horoscopeData,
     isLoading,
     error,
-  } = useHoroscopeBySign(normalizedSign || "ARIES", viewType);
+    refetch,
+  } = useHoroscopeBySign(normalizedSign || "ARIES", "daily", shouldFetch);
 
   if (!normalizedSign) {
     return null; // Will redirect
   }
 
   const horoscope = (horoscopeData as HoroscopeDetailResponse | undefined)?.data || null;
+
+  const handleLoadHoroscope = () => {
+    setShouldFetch(true);
+    refetch();
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -79,13 +85,23 @@ export function HoroscopeSignPageClient({ sign }: HoroscopeSignPageClientProps) 
           </button>
         </div>
 
-        <SignDetail
-          horoscope={horoscope}
-          isLoading={isLoading}
-          error={error as Error | null}
-          viewType={viewType}
-          onViewTypeChange={setViewType}
-        />
+        {!shouldFetch && !horoscope ? (
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <p className="text-gray-600 mb-4">Click the button below to load the horoscope for this zodiac sign.</p>
+            <button
+              onClick={handleLoadHoroscope}
+              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+            >
+              Load Horoscope
+            </button>
+          </div>
+        ) : (
+          <SignDetail
+            horoscope={horoscope}
+            isLoading={isLoading}
+            error={error as Error | null}
+          />
+        )}
       </main>
       <Footer />
     </div>

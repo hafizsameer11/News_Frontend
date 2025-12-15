@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import { Navbar } from "@/components/ui/navbar";
+import { Footer } from "@/components/ui/footer";
 import { HoroscopePageClient } from "./horoscope-client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,6 +28,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function HoroscopePage() {
-  return <HoroscopePageClient />;
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <HoroscopePageClient />
+      <Footer />
+    </div>
+  );
 }
 

@@ -45,6 +45,8 @@ export function MediaLibraryModal({
     }
     setSelectedMedia(media);
     onSelect?.(media);
+    // Auto-close modal after selection
+    handleClose();
   };
 
   const handleClose = () => {
@@ -123,7 +125,7 @@ export function MediaLibraryModal({
                 <div className="w-16 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                   {selectedMedia.type === "IMAGE" ? (
                     <img
-                      src={getFullUrl(selectedMedia.url)}
+                      src={getImageUrl(selectedMedia.url)}
                       alt={selectedMedia.caption || "Selected"}
                       className="w-full h-full object-cover"
                     />

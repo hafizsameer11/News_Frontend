@@ -2,7 +2,6 @@
 
 import { Horoscope, ZodiacSign } from "@/types/horoscope.types";
 import { SignInfo, signDataMap } from "./sign-info";
-import { HoroscopeShare } from "./horoscope-share";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -11,16 +10,12 @@ interface SignDetailProps {
   horoscope: Horoscope | null;
   isLoading: boolean;
   error: Error | null;
-  viewType: "daily" | "weekly";
-  onViewTypeChange: (type: "daily" | "weekly") => void;
 }
 
 export function SignDetail({
   horoscope,
   isLoading,
   error,
-  viewType,
-  onViewTypeChange,
 }: SignDetailProps) {
   const { t, formatDate } = useLanguage();
 
@@ -40,60 +35,25 @@ export function SignDetail({
     );
   }
 
-  const content =
-    viewType === "daily" ? horoscope.dailyContent : horoscope.weeklyContent;
+  const content = horoscope.dailyContent;
   const signData = signDataMap[horoscope.sign];
 
   return (
     <div className="space-y-6">
       <SignInfo sign={horoscope.sign} />
 
-      {/* View Type Toggle */}
-      <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => onViewTypeChange("daily")}
-          className={`px-4 py-2 rounded-md transition ${
-            viewType === "daily"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
-        >
-          {t("horoscope.daily")}
-        </button>
-        <button
-          onClick={() => onViewTypeChange("weekly")}
-          className={`px-4 py-2 rounded-md transition ${
-            viewType === "weekly"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
-        >
-          {t("horoscope.weekly")}
-        </button>
-      </div>
-
       {/* Horoscope Content */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <span className="text-4xl">{signData.symbol}</span>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {signData.name.en}
-              </h2>
-              <p className="text-sm text-gray-500">
-                {viewType === "daily"
-                  ? t("horoscope.dailyHoroscope")
-                  : t("horoscope.weeklyHoroscope")}{" "}
-                - {formatDate(new Date(horoscope.date), "PP")}
-              </p>
-            </div>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-4xl">{signData.symbol}</span>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {signData.name.en}
+            </h2>
+            <p className="text-sm text-gray-500">
+              {t("horoscope.dailyHoroscope")} - {formatDate(new Date(horoscope.date), "PP")}
+            </p>
           </div>
-          <HoroscopeShare
-            sign={horoscope.sign}
-            date={horoscope.date}
-            type={viewType}
-          />
         </div>
 
         {content ? (

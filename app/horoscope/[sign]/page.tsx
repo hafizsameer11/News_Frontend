@@ -1,6 +1,21 @@
 import { Metadata } from "next";
 import { HoroscopeSignPageClient } from "./horoscope-sign-client";
-import { signDataMap } from "@/components/horoscope/sign-info";
+
+// Sign names mapping for server-side use (since signDataMap is in a client component)
+const signNamesMap: Record<string, { name: string; element: string }> = {
+  ARIES: { name: "Aries", element: "Fire" },
+  TAURUS: { name: "Taurus", element: "Earth" },
+  GEMINI: { name: "Gemini", element: "Air" },
+  CANCER: { name: "Cancer", element: "Water" },
+  LEO: { name: "Leo", element: "Fire" },
+  VIRGO: { name: "Virgo", element: "Earth" },
+  LIBRA: { name: "Libra", element: "Air" },
+  SCORPIO: { name: "Scorpio", element: "Water" },
+  SAGITTARIUS: { name: "Sagittarius", element: "Fire" },
+  CAPRICORN: { name: "Capricorn", element: "Earth" },
+  AQUARIUS: { name: "Aquarius", element: "Air" },
+  PISCES: { name: "Pisces", element: "Water" },
+};
 
 // Validate and normalize sign parameter
 function normalizeSign(sign: string): string | null {
@@ -25,10 +40,11 @@ function normalizeSign(sign: string): string | null {
 export async function generateMetadata({
   params,
 }: {
-  params: { sign: string };
+  params: Promise<{ sign: string }>;
 }): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
-  const normalizedSign = normalizeSign(params.sign);
+  const { sign } = await params;
+  const normalizedSign = normalizeSign(sign);
   
   if (!normalizedSign) {
     return {
@@ -37,31 +53,34 @@ export async function generateMetadata({
     };
   }
 
-  const signData = signDataMap[normalizedSign as keyof typeof signDataMap];
-  const signName = signData.name.en;
+  // Get sign data from server-safe mapping
+  const signData = signNamesMap[normalizedSign];
+  const signName = signData?.name || normalizedSign;
+  const element = signData?.element || "";
 
   return {
-    title: `${signName} Horoscope - Daily & Weekly | NEWS NEXT`,
-    description: `Read your daily and weekly horoscope for ${signName}. Get insights, predictions, and guidance for ${signName} zodiac sign.`,
-    keywords: `horoscope, ${signName}, zodiac sign, daily horoscope, weekly horoscope, astrology, ${signData.element}`,
+    title: `${signName} Horoscope | NEWS NEXT`,
+    description: `Read your daily horoscope for ${signName}. Get insights, predictions, and guidance for ${signName} zodiac sign.`,
+    keywords: `horoscope, ${signName}, zodiac sign, daily horoscope, astrology${element ? `, ${element}` : ""}`,
     openGraph: {
-      title: `${signName} Horoscope - Daily & Weekly | NEWS NEXT`,
-      description: `Read your daily and weekly horoscope for ${signName}.`,
+      title: `${signName} Horoscope | NEWS NEXT`,
+      description: `Read your daily horoscope for ${signName}.`,
       type: "website",
-      url: `${baseUrl}/horoscope/${params.sign.toLowerCase()}`,
+      url: `${baseUrl}/horoscope/${sign.toLowerCase()}`,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${signName} Horoscope - Daily & Weekly | NEWS NEXT`,
-      description: `Read your daily and weekly horoscope for ${signName}.`,
+      title: `${signName} Horoscope | NEWS NEXT`,
+      description: `Read your daily horoscope for ${signName}.`,
     },
     alternates: {
-      canonical: `${baseUrl}/horoscope/${params.sign.toLowerCase()}`,
+      canonical: `${baseUrl}/horoscope/${sign.toLowerCase()}`,
     },
   };
 }
 
-export default function HoroscopeSignPage({ params }: { params: { sign: string } }) {
-  return <HoroscopeSignPageClient sign={params.sign} />;
+export default async function HoroscopeSignPage({ params }: { params: Promise<{ sign: string }> }) {
+  const { sign } = await params;
+  return <HoroscopeSignPageClient sign={sign} />;
 }
 
