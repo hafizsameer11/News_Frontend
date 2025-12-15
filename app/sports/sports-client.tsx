@@ -107,12 +107,36 @@ export function SportsPageClient() {
     try {
       const response = await sportsApi.getStandings(selectedLeagueId);
       if (response.success === 1 && response.result) {
-        setStandings(response.result);
+        const hasData =
+          response.result.total.length > 0 ||
+          response.result.home.length > 0 ||
+          response.result.away.length > 0;
+        if (hasData) {
+          setStandings(response.result);
+          setStandingsError(null);
+        } else {
+          setStandings(null);
+          setStandingsError(
+            language === "it"
+              ? "Nessuna classifica disponibile per questo campionato."
+              : "No standings available for this league."
+          );
+        }
       } else {
-        setStandingsError("No standings found for this league");
+        setStandings(null);
+        setStandingsError(
+          language === "it"
+            ? "Nessuna classifica disponibile per questo campionato."
+            : "No standings available for this league."
+        );
       }
     } catch (error: any) {
-      setStandingsError(error.message || "Failed to fetch standings. Please try again.");
+      setStandings(null);
+      setStandingsError(
+        language === "it"
+          ? "Impossibile caricare la classifica. Riprova più tardi."
+          : "Unable to load standings. Please try again later."
+      );
     } finally {
       setStandingsLoading(false);
     }
@@ -137,12 +161,32 @@ export function SportsPageClient() {
         selectedCountryId || undefined
       );
       if (response.success === 1 && response.result) {
-        setFixtures(response.result);
+        if (response.result.length === 0) {
+          setFixtures([]);
+          setFixturesError(
+            language === "it"
+              ? "Nessuna partita trovata per i criteri selezionati. Prova a modificare la data o i filtri."
+              : "No matches found for the selected criteria. Try adjusting the date range or filters."
+          );
+        } else {
+          setFixtures(response.result);
+          setFixturesError(null);
+        }
       } else {
-        setFixturesError("No fixtures found for the selected criteria");
+        setFixtures([]);
+        setFixturesError(
+          language === "it"
+            ? "Nessuna partita disponibile per i criteri selezionati."
+            : "No matches available for the selected criteria."
+        );
       }
     } catch (error: any) {
-      setFixturesError(error.message || "Failed to fetch fixtures. Please try again.");
+      setFixtures([]);
+      setFixturesError(
+        language === "it"
+          ? "Impossibile caricare le partite. Riprova più tardi."
+          : "Unable to load matches. Please try again later."
+      );
     } finally {
       setFixturesLoading(false);
     }
@@ -162,12 +206,32 @@ export function SportsPageClient() {
     try {
       const response = await sportsApi.getVideos(eventIdStr);
       if (response.success === 1 && response.result) {
-        setVideos(response.result);
+        if (response.result.length === 0) {
+          setVideos([]);
+          setVideosError(
+            language === "it"
+              ? "Nessun video disponibile per questa partita."
+              : "No videos available for this match."
+          );
+        } else {
+          setVideos(response.result);
+          setVideosError(null);
+        }
       } else {
-        setVideosError("No videos found for this match");
+        setVideos([]);
+        setVideosError(
+          language === "it"
+            ? "Nessun video disponibile per questa partita."
+            : "No videos available for this match."
+        );
       }
     } catch (error: any) {
-      setVideosError(error.message || "Failed to fetch videos. Please try again.");
+      setVideos([]);
+      setVideosError(
+        language === "it"
+          ? "Impossibile caricare i video. Riprova più tardi."
+          : "Unable to load videos. Please try again later."
+      );
     } finally {
       setVideosLoading(false);
     }
@@ -278,14 +342,23 @@ export function SportsPageClient() {
             </div>
 
             {standingsError && (
-              <div className="mb-4">
-                <ErrorMessage
-                  error={{
-                    message: standingsError,
-                    status: 0,
-                    code: "STANDINGS_ERROR",
-                  }}
-                />
+              <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <svg
+                    className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <p className="text-sm text-yellow-800">{standingsError}</p>
+                </div>
               </div>
             )}
 
@@ -429,14 +502,23 @@ export function SportsPageClient() {
             </div>
 
             {fixturesError && (
-              <div className="mb-4">
-                <ErrorMessage
-                  error={{
-                    message: fixturesError,
-                    status: 0,
-                    code: "FIXTURES_ERROR",
-                  }}
-                />
+              <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <svg
+                    className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <p className="text-sm text-yellow-800">{fixturesError}</p>
+                </div>
               </div>
             )}
 
@@ -606,8 +688,26 @@ export function SportsPageClient() {
             )}
 
             {!fixturesLoading && fixtures.length === 0 && !fixturesError && (
-              <div className="text-center py-8 text-gray-500">
-                <p>
+              <div className="text-center py-8">
+                <svg
+                  className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <p className="text-gray-600 mb-2">
+                  {language === "it"
+                    ? "Nessuna partita caricata"
+                    : "No fixtures loaded"}
+                </p>
+                <p className="text-sm text-gray-500">
                   {language === "it"
                     ? "Seleziona un intervallo di date e clicca 'Carica Partite' per visualizzare le partite"
                     : "Select a date range and click 'Load Fixtures' to view matches"}
@@ -624,14 +724,23 @@ export function SportsPageClient() {
               </h2>
 
               {videosError && (
-                <div className="mb-4">
-                  <ErrorMessage
-                    error={{
-                      message: videosError,
-                      status: 0,
-                      code: "VIDEOS_ERROR",
-                    }}
-                  />
+                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <svg
+                      className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <p className="text-sm text-yellow-800">{videosError}</p>
+                  </div>
                 </div>
               )}
 

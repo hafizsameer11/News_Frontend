@@ -13,10 +13,24 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
   const [imageError, setImageError] = useState(false);
   const prevSrcRef = useRef(src);
 
-  // Check for localhost - must be called unconditionally
+  // Check for localhost or external domains that might need unoptimized
   const isLocalhost = useMemo(() => {
     if (typeof src === "string") {
       return src.includes("localhost") || src.includes("127.0.0.1");
+    }
+    return false;
+  }, [src]);
+
+  // Check if the image URL is from an external domain that might have issues
+  const isExternalDomain = useMemo(() => {
+    if (typeof src === "string") {
+      try {
+        const url = new URL(src, window.location.origin);
+        // If the domain is different from current domain, it's external
+        return url.hostname !== window.location.hostname;
+      } catch {
+        return false;
+      }
     }
     return false;
   }, [src]);
@@ -71,8 +85,18 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
     );
   }
 
-  // In development, disable optimization for localhost URLs to avoid fetch issues
-  const shouldUnoptimize = process.env.NODE_ENV === "development" && isLocalhost;
+  // Disable optimization for localhost URLs in development to avoid fetch issues
+  // Also disable for backend domain if it's causing upstream response issues
+  const shouldUnoptimize = useMemo(() => {
+    if (process.env.NODE_ENV === "development" && isLocalhost) {
+      return true;
+    }
+    // Disable optimization for backend domain if it causes issues
+    if (typeof src === "string" && src.includes("news-backend.hmstech.org")) {
+      return true;
+    }
+    return false;
+  }, [src, isLocalhost]);
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     if (!imageError) {

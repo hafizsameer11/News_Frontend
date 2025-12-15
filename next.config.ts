@@ -48,6 +48,17 @@ const nextConfig: NextConfig = {
         hostname: "www.pehoxu.cc",
         pathname: "/**",
       },
+      // Backend API domain
+      {
+        protocol: "https",
+        hostname: "news-backend.hmstech.org",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "news-backend.hmstech.org",
+        pathname: "/**",
+      },
       // Allow any external image (for flexibility - you can restrict this in production)
       // Note: These wildcard patterns are at the end to avoid interfering with specific patterns
       {
