@@ -5,6 +5,7 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { SubscriptionForm } from "@/components/newsletter/subscription-form";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { useCategories } from "@/lib/hooks/useCategories";
+import { Category } from "@/types/category.types";
 
 // Social Media Icons Component
 function SocialIcon({ name, href }: { name: string; href?: string }) {
@@ -92,8 +93,8 @@ export function Footer() {
   const { data: categoriesData } = useCategories(true);
 
   // Flatten categories for sitemap
-  const flattenCategories = (cats: any[]): any[] => {
-    const result: any[] = [];
+  const flattenCategories = (cats: Category[]): Category[] => {
+    const result: Category[] = [];
     for (const cat of cats || []) {
       result.push(cat);
       if (cat.children && cat.children.length > 0) {

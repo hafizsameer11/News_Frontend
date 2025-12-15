@@ -5,10 +5,7 @@ import Link from "next/link";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { usePathname } from "next/navigation";
 import { isActiveRoute } from "@/lib/helpers/navbar-helpers";
-import {
-  getSubcategories,
-  getCategoryLevel,
-} from "@/lib/helpers/category-helpers";
+import { getSubcategories } from "@/lib/helpers/category-helpers";
 import { Category } from "@/types/category.types";
 
 interface CategoryDropdownProps {
@@ -32,7 +29,6 @@ export function CategoryDropdown({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const subcategories = getSubcategories(category.id, allCategories);
-  const hasSubcategories = subcategories.length > 0;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -75,9 +71,7 @@ export function CategoryDropdown({
     // The parent component will handle closing when mouse leaves the entire dropdown area
   };
 
-  const categoryName = language === "it" ? category.nameIt : category.nameEn;
   const categoryPath = `/category/${category.slug}`;
-  const isActive = isActiveRoute(pathname, categoryPath);
 
   // Get direct children (level 1) - categories that have this category as direct parent
   const directChildren = subcategories.filter(
@@ -89,15 +83,6 @@ export function CategoryDropdown({
     return null;
   }
 
-  // Calculate number of columns based on subcategory count - more compact
-  const columnCount =
-    directChildren.length > 8
-      ? 4
-      : directChildren.length > 4
-      ? 3
-      : directChildren.length > 2
-      ? 2
-      : 1;
 
   return (
     <div

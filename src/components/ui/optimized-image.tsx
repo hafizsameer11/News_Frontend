@@ -9,7 +9,7 @@ import { useMemo, useState, useRef, useEffect } from "react";
  * Also includes fallback handling for failed image loads
  */
 export function OptimizedImage(props: ImageProps & { alt: string }) {
-  const { onError, src, ...imageProps } = props;
+  const { onError, src, alt, ...imageProps } = props;
   const [imageError, setImageError] = useState(false);
   const prevSrcRef = useRef(src);
 
@@ -21,19 +21,19 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
     return false;
   }, [src]);
 
-  // Check if the image URL is from an external domain that might have issues
-  const isExternalDomain = useMemo(() => {
-    if (typeof src === "string") {
-      try {
-        const url = new URL(src, window.location.origin);
-        // If the domain is different from current domain, it's external
-        return url.hostname !== window.location.hostname;
-      } catch {
-        return false;
-      }
+  // Disable optimization for localhost URLs in development to avoid fetch issues
+  // Also disable for backend domain if it's causing upstream response issues
+  // MUST be called before any conditional returns (React Hooks rules)
+  const shouldUnoptimize = useMemo(() => {
+    if (process.env.NODE_ENV === "development" && isLocalhost) {
+      return true;
+    }
+    // Disable optimization for backend domain if it causes issues
+    if (typeof src === "string" && src.includes("news-backend.hmstech.org")) {
+      return true;
     }
     return false;
-  }, [src]);
+  }, [src, isLocalhost]);
 
   // Reset error state when src changes - use setTimeout to defer
   useEffect(() => {
@@ -71,6 +71,7 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -84,19 +85,6 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
       </div>
     );
   }
-
-  // Disable optimization for localhost URLs in development to avoid fetch issues
-  // Also disable for backend domain if it's causing upstream response issues
-  const shouldUnoptimize = useMemo(() => {
-    if (process.env.NODE_ENV === "development" && isLocalhost) {
-      return true;
-    }
-    // Disable optimization for backend domain if it causes issues
-    if (typeof src === "string" && src.includes("news-backend.hmstech.org")) {
-      return true;
-    }
-    return false;
-  }, [src, isLocalhost]);
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     if (!imageError) {
@@ -125,6 +113,7 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -153,7 +142,7 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
     ? { ...imageProps.style, width: "auto", height: "auto" }
     : imageProps.style;
 
-  // Ensure src is passed correctly to Image component
-  return <Image {...imageProps} src={src} style={style} unoptimized={shouldUnoptimize} onError={handleError} />;
+  // Ensure src and alt are passed correctly to Image component
+  return <Image {...imageProps} src={src} alt={alt} style={style} unoptimized={shouldUnoptimize} onError={handleError} />;
 }
 

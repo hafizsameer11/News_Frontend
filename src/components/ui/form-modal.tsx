@@ -3,13 +3,20 @@
 import { ReactNode } from "react";
 import { ErrorMessage } from "./error-message";
 
+interface ApiError {
+  code?: string;
+  message?: string;
+  status?: number;
+  errors?: unknown;
+}
+
 interface FormModalProps {
   title: string;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
   isLoading?: boolean;
-  error?: any;
+  error?: ApiError | Error | string | null | undefined;
   children: ReactNode;
   submitLabel?: string;
   cancelLabel?: string;

@@ -40,7 +40,10 @@ export function NewsDetailClient({
 
   // Use initial data or fetch if needed
   const { data: newsData, isLoading, error } = useNewsDetail(idOrSlug);
-  const news = newsData?.data || initialNews;
+  // Extract NewsDetail from response: newsData is { data: NewsDetail }, so newsData.data is NewsDetail
+  // Type assertion to properly extract NewsDetail from the API response
+  const fetchedNews = (newsData as { data?: NewsDetail } | undefined)?.data;
+  const news: News | NewsDetail | null = fetchedNews || initialNews;
 
   // Fetch structured data for news article
   const [structuredData, setStructuredData] =
@@ -136,7 +139,9 @@ export function NewsDetailClient({
   }
 
   const categoryName =
-    language === "it" ? news.category?.nameIt : news.category?.nameEn;
+    news && 'category' in news && news.category
+      ? language === "it" ? news.category.nameIt : news.category.nameEn
+      : "";
   const frontendUrl =
     process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 
@@ -155,7 +160,7 @@ export function NewsDetailClient({
                   {t("nav.home")}
                 </Link>
                 <span>/</span>
-                {news.category && (
+                {news && 'category' in news && news.category && (
                   <>
                     <Link
                       href={`/category/${news.category.slug}`}
@@ -173,7 +178,7 @@ export function NewsDetailClient({
 
               {/* Category and Date */}
               <div className="mb-4">
-                {news.category && (
+                {news && 'category' in news && news.category && (
                   <Link
                     href={`/category/${news.category.slug}`}
                     className="inline-block text-red-600 font-semibold hover:underline mr-3"

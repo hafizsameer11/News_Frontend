@@ -3,8 +3,15 @@
 import { handleApiError } from "@/lib/helpers/errorHandler";
 import { useLanguage } from "@/providers/LanguageProvider";
 
+interface ApiError {
+  code?: string;
+  message?: string;
+  status?: number;
+  errors?: unknown;
+}
+
 interface ErrorMessageProps {
-  error: any;
+  error: ApiError | Error | string | null | undefined;
   className?: string;
 }
 

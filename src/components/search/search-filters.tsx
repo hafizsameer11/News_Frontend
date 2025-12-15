@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useCategories } from "@/lib/hooks/useCategories";
+import { Category } from "@/types/category.types";
 
 interface SearchFiltersProps {
   onFiltersChange: (filters: {
@@ -23,8 +24,8 @@ export function SearchFilters({ onFiltersChange, className = "" }: SearchFilters
   const [sortBy, setSortBy] = useState<"relevance" | "date" | "views">("relevance");
 
   // Flatten categories
-  const flattenCategories = (cats: any[]): any[] => {
-    const result: any[] = [];
+  const flattenCategories = (cats: Category[]): Category[] => {
+    const result: Category[] = [];
     for (const cat of cats || []) {
       result.push(cat);
       if (cat.children && cat.children.length > 0) {

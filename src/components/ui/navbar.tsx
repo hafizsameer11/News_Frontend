@@ -6,16 +6,15 @@ import { useCategories } from "@/lib/hooks/useCategories";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { usePathname } from "next/navigation";
+import { Category } from "@/types/category.types";
 import { UtilityBar } from "./navbar/utility-bar";
 import { CategoryNav } from "./navbar/category-nav";
 import { UserMenu } from "./navbar/user-menu";
 import { MobileMenu } from "./navbar/mobile-menu";
 import { SearchDropdown } from "./navbar/search-dropdown";
-import { isActiveRoute } from "@/lib/helpers/navbar-helpers";
-
 export function Navbar() {
   const { data: categoriesData, isLoading } = useCategories();
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -43,7 +42,7 @@ export function Navbar() {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isMobileMenuOpen]);
 
-  const categories = (categoriesData as any)?.data || [];
+  const categories = (categoriesData as { data?: Category[] } | undefined)?.data || [];
 
   return (
     <>

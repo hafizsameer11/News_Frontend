@@ -10,7 +10,7 @@ interface CNNHeadlinesSectionProps {
 }
 
 export function CNNHeadlinesSection({ headlines = [] }: CNNHeadlinesSectionProps) {
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">

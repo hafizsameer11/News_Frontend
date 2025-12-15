@@ -1,7 +1,6 @@
 "use client";
 
 import { usePopularTGVideos } from "@/lib/hooks/useTG";
-import { VideoCard } from "./video-card";
 import { VideoPlayer } from "@/components/ui/video-player";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";

@@ -9,7 +9,7 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { getDashboardUrl, getRoleDisplayName, getUserInitials } from "@/lib/helpers/navbar-helpers";
 import { usePathname } from "next/navigation";
 import { isActiveRoute } from "@/lib/helpers/navbar-helpers";
-import { getRootCategories, getSubcategories, getCategoryLevel } from "@/lib/helpers/category-helpers";
+import { getRootCategories, getSubcategories } from "@/lib/helpers/category-helpers";
 import { Category } from "@/types/category.types";
 
 interface MobileMenuProps {
