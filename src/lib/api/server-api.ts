@@ -23,6 +23,9 @@ export async function fetchNews(params?: {
   
   const response = await fetch(url, {
     next: { revalidate: 60 }, // Revalidate every 60 seconds (ISR)
+    // No CORS restrictions - allow requests from anywhere
+    mode: "cors",
+    credentials: "include", // Include credentials (cookies) if needed
   });
 
   if (!response.ok) {
@@ -37,6 +40,9 @@ export async function fetchCategories(flat?: boolean): Promise<CategoryResponse>
   
   const response = await fetch(url, {
     next: { revalidate: 3600 }, // Revalidate every hour (categories don't change often)
+    // No CORS restrictions - allow requests from anywhere
+    mode: "cors",
+    credentials: "include", // Include credentials (cookies) if needed
   });
 
   if (!response.ok) {
@@ -52,6 +58,9 @@ export async function fetchCategoryBySlug(slug: string): Promise<{ data: Categor
     try {
       const response = await fetch(`${API_CONFIG.BASE_URL}/categories/slug/${slug}`, {
         next: { revalidate: 3600 }, // Revalidate every hour
+        // No CORS restrictions - allow requests from anywhere
+        mode: "cors",
+        credentials: "include", // Include credentials (cookies) if needed
       });
       
       if (response.ok) {
@@ -120,6 +129,9 @@ export async function fetchHomepageLayout(): Promise<{ success: boolean; data: A
     
     const response = await fetch(url, {
       next: { revalidate: 60 }, // Revalidate every 60 seconds
+      // No CORS restrictions - allow requests from anywhere
+      mode: "cors",
+      credentials: "include", // Include credentials (cookies) if needed
     });
 
     if (!response.ok) {

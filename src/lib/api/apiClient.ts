@@ -3,12 +3,16 @@ import { API_CONFIG } from "./apiConfig";
 import { ApiResponse, ApiError } from "@/types/api.types";
 
 // Create axios instance
+// No CORS restrictions - allows requests from anywhere
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
   headers: {
     "Content-Type": "application/json",
   },
+  // Allow credentials (cookies) to be sent with requests
+  withCredentials: true,
+  // No origin restrictions - allow requests from any origin
 });
 
 // Request interceptor - Inject token
