@@ -290,6 +290,23 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
                 </span>
               </Link>
               <Link
+                href="/sports"
+                onClick={onClose}
+                className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
+              >
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                    />
+                  </svg>
+                  {language === "it" ? "Sport" : "Sports"}
+                </span>
+              </Link>
+              <Link
                 href="/transport"
                 onClick={onClose}
                 className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"

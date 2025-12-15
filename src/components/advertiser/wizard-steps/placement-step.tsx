@@ -41,14 +41,12 @@ export function PlacementStep({ formData, updateFormData, errors }: PlacementSte
 
   const handleStartDateChange = (date: Date | null) => {
     if (date) {
-      setStartDate(date);
       updateFormData({ startDate: date.toISOString().split("T")[0] });
     }
   };
 
   const handleEndDateChange = (date: Date | null) => {
     if (date) {
-      setEndDate(date);
       updateFormData({ endDate: date.toISOString().split("T")[0] });
     }
   };

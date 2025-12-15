@@ -146,7 +146,7 @@ export function NewsDetailClient({
         <StructuredData data={structuredData} id="news-structured-data" />
       )}
       <div className="min-h-screen flex flex-col">
-        <main className="flex-grow container mx-auto px-4 py-8">
+        <main className="flex-grow container mx-auto px-14 sm:px-6 lg:px-10 xl:px-15 py-8 max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <article className="lg:col-span-8">
               {/* Breadcrumb */}

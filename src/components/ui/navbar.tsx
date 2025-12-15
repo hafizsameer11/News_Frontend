@@ -57,7 +57,7 @@ export function Navbar() {
         role="navigation"
         aria-label={t("aria.mainNavigation")}
       >
-        <div className="container mx-auto px-4" style={{ overflow: "visible" }}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl" style={{ overflow: "visible" }}>
           <div
             className="flex items-center justify-between h-16"
             style={{ overflow: "visible" }}

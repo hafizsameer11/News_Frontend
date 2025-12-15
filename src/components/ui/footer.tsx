@@ -119,15 +119,15 @@ export function Footer() {
   return (
     <footer className="bg-gray-900 text-white mt-20">
       {/* Footer Ad Slot */}
-      <div className="container mx-auto px-4 py-3 bg-gray-800">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl py-3 bg-gray-800">
         <AdSlot slot="FOOTER" />
       </div>
 
       {/* Main Footer Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-8 lg:gap-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-8 lg:gap-8 xl:gap-10">
           {/* About Section */}
-          <div className="sm:col-span-2 lg:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-2 flex flex-col">
             <h3 className="text-xl font-bold mb-4 text-white">NEWS NEXT</h3>
             <p className="text-gray-400 mb-4 text-sm leading-relaxed">
               {t("footer.about.description")}
@@ -199,11 +199,11 @@ export function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4 className="font-semibold mb-4 text-white">
+          <div className="flex flex-col">
+            <h4 className="font-semibold mb-4 text-white text-base">
               {t("footer.quickLinks.title")}
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2.5 text-sm">
               <li>
                 <Link
                   href="/"
@@ -229,6 +229,15 @@ export function Footer() {
                   className="text-gray-400 hover:text-red-600 transition-colors"
                 >
                   {t("footer.quickLinks.horoscope")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/sports"
+                  prefetch={true}
+                  className="text-gray-400 hover:text-red-600 transition-colors"
+                >
+                  {language === "it" ? "Sport" : "Sports"}
                 </Link>
               </li>
               <li>
@@ -280,11 +289,11 @@ export function Footer() {
           </div>
 
           {/* Categories */}
-          <div>
-            <h4 className="font-semibold mb-4 text-white">
+          <div className="flex flex-col">
+            <h4 className="font-semibold mb-4 text-white text-base">
               {t("footer.categories.title")}
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2.5 text-sm">
               {displayCategories.length > 0 ? (
                 displayCategories.map((category) => (
                   <li key={category.id}>
@@ -329,11 +338,11 @@ export function Footer() {
           </div>
 
           {/* Content Section */}
-          <div>
-            <h4 className="font-semibold mb-4 text-white">
+          <div className="flex flex-col">
+            <h4 className="font-semibold mb-4 text-white text-base">
               {t("footer.content.title")}
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2.5 text-sm">
               <li>
                 <Link
                   href="/"
@@ -362,11 +371,11 @@ export function Footer() {
           </div>
 
           {/* Regional Services */}
-          <div>
-            <h4 className="font-semibold mb-4 text-white">
+          <div className="flex flex-col">
+            <h4 className="font-semibold mb-4 text-white text-base">
               {t("footer.regionalServices.title")}
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2.5 text-sm">
               <li>
                 <Link
                   href="/weather"
@@ -407,11 +416,11 @@ export function Footer() {
           </div>
 
           {/* User Services */}
-          <div>
-            <h4 className="font-semibold mb-4 text-white">
+          <div className="flex flex-col">
+            <h4 className="font-semibold mb-4 text-white text-base">
               {t("footer.userServices.title")}
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2.5 text-sm">
               <li>
                 <Link
                   href="/profile"
@@ -453,8 +462,8 @@ export function Footer() {
 
         {/* Newsletter Section */}
         <div id="newsletter" className="border-t border-gray-800 mt-12 pt-8">
-          <div className="max-w-md">
-            <h4 className="font-semibold mb-2 text-white">
+          <div className="max-w-2xl">
+            <h4 className="font-semibold mb-2 text-white text-lg">
               {t("footer.newsletter.title")}
             </h4>
             <p className="text-gray-400 mb-4 text-sm">

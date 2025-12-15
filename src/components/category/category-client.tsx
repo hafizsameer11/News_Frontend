@@ -92,7 +92,7 @@ export function CategoryClient({ category, initialNews, structuredData: initialS
   if (newsLoading && page === 1) {
     return (
       <div className="min-h-screen flex flex-col">
-        <main className="flex-grow container mx-auto px-4 py-8">
+        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl py-8">
           <Loading />
         </main>
       </div>
@@ -103,7 +103,7 @@ export function CategoryClient({ category, initialNews, structuredData: initialS
   if (newsError && page === 1) {
     return (
       <div className="min-h-screen flex flex-col">
-        <main className="flex-grow container mx-auto px-4 py-8">
+        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl py-8">
           <ErrorMessage error={newsError} />
         </main>
       </div>
@@ -114,7 +114,7 @@ export function CategoryClient({ category, initialNews, structuredData: initialS
   if (!category) {
     return (
       <div className="min-h-screen flex flex-col">
-        <main className="flex-grow container mx-auto px-4 py-8 text-center">
+        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl py-8 text-center">
           <h1 className="text-4xl font-bold mb-4 text-gray-900">Category Not Found</h1>
           <p className="text-gray-600 mb-6">
             The category you&apos;re looking for doesn&apos;t exist or has been removed.
@@ -134,7 +134,7 @@ export function CategoryClient({ category, initialNews, structuredData: initialS
     <>
       {structuredData && <StructuredData data={structuredData} id="category-structured-data" />}
       <div className="min-h-screen flex flex-col">
-        <main className="flex-grow container mx-auto px-4 py-8">
+        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl py-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-9">
               {/* Category Header */}
