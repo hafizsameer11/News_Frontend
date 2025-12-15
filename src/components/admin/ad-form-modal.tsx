@@ -7,7 +7,7 @@ import { MediaLibraryModal } from "./media-library-modal";
 import { Media } from "@/types/media.types";
 import { convertPriceToNumber } from "@/lib/helpers/ad-pricing";
 import { useLanguage } from "@/providers/LanguageProvider";
-import { getImageUrl } from "@/lib/helpers/imageUrl";
+import { getImageUrl, normalizeImageUrl } from "@/lib/helpers/imageUrl";
 
 interface AdFormModalProps {
   ad?: Ad | null;
@@ -72,8 +72,9 @@ export function AdFormModal({
 
   const handleMediaSelect = (media: Media) => {
     if (media.type === "IMAGE") {
-      const fullUrl = getImageUrl(media.url);
-      setFormData({ ...formData, imageUrl: fullUrl });
+      // Normalize URL to prevent duplicates
+      const normalizedUrl = normalizeImageUrl(media.url);
+      setFormData({ ...formData, imageUrl: normalizedUrl });
       if (errors.imageUrl) setErrors({ ...errors, imageUrl: "" });
     }
     setShowMediaLibrary(false);
@@ -244,7 +245,7 @@ export function AdFormModal({
       const submitData: any = {
         title: formData.title.trim(),
         type: formData.type,
-        imageUrl: formData.imageUrl.trim(),
+        imageUrl: normalizeImageUrl(formData.imageUrl.trim()), // Normalize to prevent duplicates
         targetLink: formData.targetLink.trim(),
         startDate: new Date(formData.startDate).toISOString(),
         endDate: new Date(formData.endDate).toISOString(),
@@ -420,7 +421,9 @@ export function AdFormModal({
                   type="url"
                   value={formData.imageUrl}
                   onChange={(e) => {
-                    setFormData({ ...formData, imageUrl: e.target.value });
+                    // Normalize URL when user manually enters it to prevent duplicates
+                    const normalizedUrl = normalizeImageUrl(e.target.value);
+                    setFormData({ ...formData, imageUrl: normalizedUrl });
                     if (errors.imageUrl) setErrors({ ...errors, imageUrl: "" });
                   }}
                   className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${

@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from "axios";
 import { API_CONFIG } from "./apiConfig";
 import { ApiResponse, ApiError } from "@/types/api.types";
+import { normalizeImageUrl } from "@/lib/helpers/imageUrl";
 
 // Create axios instance
 // No CORS restrictions - allows requests from anywhere
@@ -32,10 +33,45 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle errors
+// Response interceptor - Handle errors and normalize image URLs
 axiosInstance.interceptors.response.use(
   (response) => {
-    return response.data;
+    // Normalize image URLs in response data to prevent duplicates
+    const normalizeResponseData = (data: any): any => {
+      if (!data || typeof data !== "object") return data;
+      
+      if (Array.isArray(data)) {
+        return data.map(normalizeResponseData);
+      }
+      
+      const normalized: any = {};
+      for (const [key, value] of Object.entries(data)) {
+        if (key === "mainImage" || key === "url" || key === "thumbnailUrl" || key === "imageUrl") {
+          // Normalize image URLs
+          normalized[key] = typeof value === "string" ? normalizeImageUrl(value) : value;
+        } else if (key === "data" && value && typeof value === "object") {
+          // Recursively normalize nested data
+          normalized[key] = normalizeResponseData(value);
+        } else if (key === "news" && Array.isArray(value)) {
+          // Normalize news array
+          normalized[key] = value.map((item: any) => {
+            if (item && typeof item === "object") {
+              return {
+                ...item,
+                mainImage: item.mainImage ? normalizeImageUrl(item.mainImage) : item.mainImage,
+              };
+            }
+            return item;
+          });
+        } else {
+          normalized[key] = value;
+        }
+      }
+      return normalized;
+    };
+    
+    const normalizedData = normalizeResponseData(response.data);
+    return normalizedData;
   },
   (error: AxiosError) => {
     // Handle connection errors
@@ -105,7 +141,8 @@ export const apiClient = {
         Pragma: "no-cache",
       },
     });
-    return response as ApiResponse<T>;
+    // Response interceptor already returns response.data, so response is already ApiResponse<T>
+    return response as unknown as ApiResponse<T>;
   },
 
   post: async <T = unknown>(
@@ -114,7 +151,8 @@ export const apiClient = {
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> => {
     const response = await axiosInstance.post<ApiResponse<T>>(url, data, config);
-    return response as ApiResponse<T>;
+    // Response interceptor already returns response.data, so response is already ApiResponse<T>
+    return response as unknown as ApiResponse<T>;
   },
 
   put: async <T = unknown>(
@@ -123,7 +161,8 @@ export const apiClient = {
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> => {
     const response = await axiosInstance.put<ApiResponse<T>>(url, data, config);
-    return response as ApiResponse<T>;
+    // Response interceptor already returns response.data, so response is already ApiResponse<T>
+    return response as unknown as ApiResponse<T>;
   },
 
   patch: async <T = unknown>(
@@ -132,12 +171,14 @@ export const apiClient = {
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> => {
     const response = await axiosInstance.patch<ApiResponse<T>>(url, data, config);
-    return response as ApiResponse<T>;
+    // Response interceptor already returns response.data, so response is already ApiResponse<T>
+    return response as unknown as ApiResponse<T>;
   },
 
   delete: async <T = unknown>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
     const response = await axiosInstance.delete<ApiResponse<T>>(url, config);
-    return response as ApiResponse<T>;
+    // Response interceptor already returns response.data, so response is already ApiResponse<T>
+    return response as unknown as ApiResponse<T>;
   },
 };
 

@@ -1,5 +1,6 @@
 import { apiClient } from "../apiClient";
 import { NewsResponse, NewsDetail, CreateNewsInput, UpdateNewsInput } from "@/types/news.types";
+import { normalizeImageUrl } from "@/lib/helpers/imageUrl";
 
 export const newsApi = {
   // Get all news
@@ -28,12 +29,22 @@ export const newsApi = {
 
   // Create news
   create: (data: CreateNewsInput) => {
-    return apiClient.post<{ data: NewsDetail }>("/news", data);
+    // Normalize mainImage URL before sending to prevent duplicates
+    const normalizedData = {
+      ...data,
+      mainImage: data.mainImage ? normalizeImageUrl(data.mainImage) : data.mainImage,
+    };
+    return apiClient.post<{ data: NewsDetail }>("/news", normalizedData);
   },
 
   // Update news
   update: (id: string, data: UpdateNewsInput) => {
-    return apiClient.patch<{ data: NewsDetail }>(`/news/${id}`, data);
+    // Normalize mainImage URL before sending to prevent duplicates
+    const normalizedData = {
+      ...data,
+      mainImage: data.mainImage ? normalizeImageUrl(data.mainImage) : data.mainImage,
+    };
+    return apiClient.patch<{ data: NewsDetail }>(`/news/${id}`, normalizedData);
   },
 
   // Delete news

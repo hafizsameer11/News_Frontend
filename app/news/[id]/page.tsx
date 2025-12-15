@@ -85,7 +85,12 @@ export default async function NewsDetailPage({
     } else {
       const newsResponse = await response.json();
       if (newsResponse.success && newsResponse.data) {
-        news = newsResponse.data;
+        // Normalize mainImage URL to prevent duplicates
+        const { normalizeImageUrl } = await import("@/lib/helpers/imageUrl");
+        news = {
+          ...newsResponse.data,
+          mainImage: newsResponse.data.mainImage ? normalizeImageUrl(newsResponse.data.mainImage) : newsResponse.data.mainImage,
+        };
       }
     }
 

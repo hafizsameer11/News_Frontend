@@ -9,8 +9,8 @@ import { Category } from "@/types/category.types";
 import { Media } from "@/types/media.types";
 import { slugify } from "@/lib/helpers/slugify";
 import { ErrorMessage } from "@/components/ui/error-message";
-import { API_CONFIG } from "@/lib/api/apiConfig";
 import { NewsPreviewModal } from "./news-preview-modal";
+import { getImageUrl, normalizeImageUrl } from "@/lib/helpers/imageUrl";
 import { useSocialAccounts } from "@/lib/hooks/useSocial";
 import { SocialPostPreview } from "./social-post-preview";
 import { SocialPlatform } from "@/types/social.types";
@@ -247,9 +247,13 @@ export function NewsFormModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      // Normalize mainImage URL before submitting to prevent duplicates
+      const normalizedMainImage = formData.mainImage ? normalizeImageUrl(formData.mainImage) : "";
+      
       // Convert scheduled date to ISO string if set
       const submitData = {
         ...formData,
+        mainImage: normalizedMainImage,
         scheduledFor: scheduledDate ? scheduledDate.toISOString() : undefined,
       };
 
@@ -603,9 +607,11 @@ export function NewsFormModal({
                   <input
                     type="url"
                     value={formData.mainImage}
-                    onChange={(e) =>
-                      setFormData({ ...formData, mainImage: e.target.value })
-                    }
+                    onChange={(e) => {
+                      // Normalize URL when user manually enters it to prevent duplicates
+                      const normalizedUrl = normalizeImageUrl(e.target.value);
+                      setFormData({ ...formData, mainImage: normalizedUrl });
+                    }}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="https://example.com/image.jpg or select from library"
                     disabled={isLoading}
@@ -638,11 +644,7 @@ export function NewsFormModal({
                     <div className="w-16 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                       {selectedMedia.type === "IMAGE" ? (
                         <img
-                          src={`${API_CONFIG.BASE_URL.replace("/api/v1", "")}${
-                            selectedMedia.url.startsWith("/")
-                              ? selectedMedia.url
-                              : `/${selectedMedia.url}`
-                          }`}
+                          src={getImageUrl(selectedMedia.url)}
                           alt={selectedMedia.caption || "Selected"}
                           className="w-full h-full object-cover"
                         />
@@ -1118,14 +1120,11 @@ export function NewsFormModal({
               return;
             }
             setSelectedMedia(media);
-            // Convert relative URL to full URL
-            const baseUrl = API_CONFIG.BASE_URL.replace("/api/v1", "");
-            const fullUrl = `${baseUrl}${
-              media.url.startsWith("/") ? media.url : `/${media.url}`
-            }`;
+            // Normalize the URL to prevent duplicates before storing
+            const normalizedUrl = normalizeImageUrl(media.url);
             setFormData({
               ...formData,
-              mainImage: fullUrl,
+              mainImage: normalizedUrl,
               mainImageId: media.id,
             });
             setIsMediaLibraryOpen(false);

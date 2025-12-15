@@ -4,6 +4,7 @@
 import { API_CONFIG } from "./apiConfig";
 import { NewsResponse } from "@/types/news.types";
 import { CategoryResponse, Category } from "@/types/category.types";
+import { normalizeImageUrl } from "@/lib/helpers/imageUrl";
 
 export async function fetchNews(params?: {
   page?: number;
@@ -32,7 +33,17 @@ export async function fetchNews(params?: {
     throw new Error(`Failed to fetch news: ${response.statusText}`);
   }
 
-  return response.json();
+  const data: NewsResponse = await response.json();
+  
+  // Normalize image URLs in the response to prevent duplicates
+  if (data?.data?.news && Array.isArray(data.data.news)) {
+    data.data.news = data.data.news.map((news) => ({
+      ...news,
+      mainImage: news.mainImage ? normalizeImageUrl(news.mainImage) : news.mainImage,
+    }));
+  }
+  
+  return data;
 }
 
 export async function fetchCategories(flat?: boolean): Promise<CategoryResponse> {
