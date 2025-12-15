@@ -47,26 +47,6 @@ export function ErrorMessage({ error, className = "" }: ErrorMessageProps) {
           >
             {errorMessage}
           </p>
-          {isConnectionError && (
-            <div className="mt-3 text-sm text-yellow-700">
-              <p className="font-semibold">{t("errors.toFixThis")}</p>
-              <ol className="list-decimal list-inside mt-1 space-y-1">
-                <li>
-                  {t("errors.openTerminal")}{" "}
-                  <code className="bg-yellow-100 px-1 rounded">backend</code>{" "}
-                  {language === "it" ? "directory" : "directory"}
-                </li>
-                <li>{t("errors.makeSureMySQL")}</li>
-                <li>
-                  {language === "it" ? "Esegui:" : "Run:"}{" "}
-                  <code className="bg-yellow-100 px-1 rounded">
-                    npm run dev
-                  </code>
-                </li>
-                <li>{t("errors.waitForServer")}</li>
-              </ol>
-            </div>
-          )}
         </div>
       </div>
     </div>

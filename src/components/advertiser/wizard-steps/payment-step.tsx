@@ -99,7 +99,7 @@ export function PaymentStep({ formData, onComplete, onBack }: PaymentStepProps) 
         } else if (errorObj.status === 400) {
           errorMessage = "Invalid request. Please check your input and try again.";
         } else if (errorObj.status === 0) {
-          errorMessage = "Network error. Please check your connection and try again.";
+          errorMessage = "Unable to connect to the server. Please try again later.";
         }
       }
       

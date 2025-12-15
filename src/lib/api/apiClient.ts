@@ -41,7 +41,7 @@ axiosInstance.interceptors.response.use(
     // Handle connection errors
     if (error.code === "ECONNREFUSED" || error.message.includes("ERR_CONNECTION_REFUSED")) {
       return Promise.reject({
-        message: "Backend server is not running. Please start the backend server on port 3001.",
+        message: "Unable to connect to the server. Please try again later.",
         status: 0,
         code: "CONNECTION_REFUSED",
         errors: null,
@@ -51,7 +51,7 @@ axiosInstance.interceptors.response.use(
     // Handle network errors
     if (error.code === "ERR_NETWORK" || !error.response) {
       return Promise.reject({
-        message: "Network error. Please check your connection and ensure the backend server is running.",
+        message: "Network error. Please check your connection and try again.",
         status: 0,
         code: "NETWORK_ERROR",
         errors: null,
