@@ -7,6 +7,7 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { cn } from "@/lib/helpers/cn";
 import { OptimizedImage } from "./optimized-image";
 import { BookmarkButton } from "@/components/bookmarks/bookmark-button";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface NewsCardProps {
   news: News;
@@ -31,7 +32,7 @@ export function NewsCard({ news, featured = false, className }: NewsCardProps) {
         {news.mainImage && (
           <div className={cn("relative w-full", featured ? "h-64" : "h-48")}>
             <OptimizedImage
-              src={news.mainImage}
+              src={getImageUrl(news.mainImage)}
               alt={news.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"

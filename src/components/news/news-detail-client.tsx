@@ -22,6 +22,7 @@ import { useMediaStatus } from "@/lib/hooks/useMediaStatus";
 import { API_CONFIG } from "@/lib/api/apiConfig";
 import { News, NewsDetail } from "@/types/news.types";
 import { StructuredData as StructuredDataType } from "@/types/seo.types";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface NewsDetailClientProps {
   initialNews: News | NewsDetail | null;
@@ -232,7 +233,7 @@ export function NewsDetailClient({
                 !shouldShowFallback && (
                   <div className="relative w-full h-96 md:h-[500px] mb-8 rounded-lg overflow-hidden">
                     <OptimizedImage
-                      src={news.mainImage}
+                      src={getImageUrl(news.mainImage)}
                       alt={news.title}
                       fill
                       className="object-cover"

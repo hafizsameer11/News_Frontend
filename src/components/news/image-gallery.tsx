@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface ImageGalleryProps {
   content: string;
@@ -13,9 +14,9 @@ export function ImageGallery({ content, mainImage, className = "" }: ImageGaller
   const images = useMemo(() => {
     const extractedImages: string[] = [];
     
-    // Add main image if available
+    // Add main image if available (convert to full URL)
     if (mainImage) {
-      extractedImages.push(mainImage);
+      extractedImages.push(getImageUrl(mainImage));
     }
 
     // Extract images from HTML content
@@ -26,8 +27,12 @@ export function ImageGallery({ content, mainImage, className = "" }: ImageGaller
       
       imgElements.forEach((img) => {
         const src = img.getAttribute("src");
-        if (src && !extractedImages.includes(src)) {
-          extractedImages.push(src);
+        if (src) {
+          // Convert to full URL and avoid duplicates
+          const fullUrl = getImageUrl(src);
+          if (!extractedImages.includes(fullUrl)) {
+            extractedImages.push(fullUrl);
+          }
         }
       });
     }
