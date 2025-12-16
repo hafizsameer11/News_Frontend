@@ -3,8 +3,8 @@ import type { NextRequest } from "next/server";
 
 const isDev = process.env.NODE_ENV === "development";
 
-export function middleware(request: NextRequest) {
-  // Skip middleware in development for better performance
+export function proxy(request: NextRequest) {
+  // Skip proxy in development for better performance
   if (isDev) {
     return NextResponse.next();
   }

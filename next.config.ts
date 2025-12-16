@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   compress: true, // Enable gzip compression (always enabled for production builds)
   poweredByHeader: false, // Remove X-Powered-By header
   reactStrictMode: !isDev, // Disable in dev to avoid double renders (slower)
-  swcMinify: true, // Use SWC minification (faster than Terser)
+  // Note: swcMinify is deprecated in Next.js 16 - SWC minification is enabled by default
   
   // Experimental optimizations (only in production)
   ...(!isDev && {
