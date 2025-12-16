@@ -20,8 +20,8 @@ export function WeatherPageClient() {
     !!selectedCityId && viewMode === "single"
   );
 
-  const cities = citiesData?.data?.filter((city) => city.isActive) || [];
-  const weather = weatherData?.data;
+  const cities = citiesData?.filter((city) => city.isActive) || [];
+  const weather = weatherData;
 
   // Fetch weather for all cities when in "all" mode
   const allCitiesWeather = useMemo(() => {
@@ -139,7 +139,7 @@ function CityWeatherCard({ city }: { city: WeatherCity }) {
     );
   }
 
-  if (error || !weatherData?.data) {
+  if (error || !weatherData) {
     return (
       <div className="bg-white rounded-lg shadow-md p-4">
         <h3 className="text-lg font-bold text-gray-900 mb-1">{city.name}</h3>
@@ -148,6 +148,6 @@ function CityWeatherCard({ city }: { city: WeatherCity }) {
     );
   }
 
-  return <WeatherCard weather={weatherData.data} compact={true} />;
+  return <WeatherCard weather={weatherData} compact={true} />;
 }
 

@@ -9,9 +9,9 @@ import { storage } from "@/lib/helpers/storage";
 const WEATHER_CITY_STORAGE_KEY = "weather_selected_city_id";
 
 const getInitialCityId = (citiesData: ReturnType<typeof useWeatherCities>["data"]): string => {
-  if (citiesData?.data && citiesData.data.length > 0) {
+  if (citiesData && citiesData.length > 0) {
     const savedCityId = storage.get<string>(WEATHER_CITY_STORAGE_KEY);
-    const activeCities = citiesData.data.filter((city) => city.isActive);
+    const activeCities = citiesData.filter((city) => city.isActive);
     
     if (savedCityId && activeCities.some((city) => city.id === savedCityId)) {
       return savedCityId;
@@ -36,12 +36,12 @@ export function WeatherWidget() {
 
   // Update city when citiesData changes (after initial load)
   useEffect(() => {
-    if (citiesData?.data && citiesData.data.length > 0) {
+    if (citiesData && citiesData.length > 0) {
       // Use setTimeout to defer state update
       const timer = setTimeout(() => {
         setSelectedCityId((prev) => {
           if (!prev) {
-            const activeCities = citiesData.data.filter((city) => city.isActive);
+            const activeCities = citiesData.filter((city) => city.isActive);
             if (activeCities.length > 0) {
               const firstCityId = activeCities[0].id;
               storage.set(WEATHER_CITY_STORAGE_KEY, firstCityId);
@@ -63,8 +63,8 @@ export function WeatherWidget() {
 
   const { data: weatherData, isLoading } = useWeather(selectedCityId, !!selectedCityId);
 
-  const cities = citiesData?.data?.filter((city) => city.isActive) || [];
-  const weather = weatherData?.data;
+  const cities = citiesData?.filter((city) => city.isActive) || [];
+  const weather = weatherData;
 
   const getWeatherIcon = (icon: string) => {
     if (icon.startsWith("http")) {
@@ -100,7 +100,9 @@ export function WeatherWidget() {
             title="Change city"
             aria-label="Select weather city"
           >
-            <span className="text-[10px] max-w-[60px] truncate">{weather.city.name}</span>
+            <span className="text-[10px] max-w-[60px] truncate">
+              {typeof weather.city === "string" ? weather.city : weather.city.name}
+            </span>
             <svg
               className={`w-3 h-3 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               fill="none"
@@ -143,7 +145,7 @@ export function WeatherWidget() {
         <Link
           href="/weather"
           className="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-700 hover:text-red-600 transition border border-gray-200 rounded hover:border-red-600"
-          title={`${weather.city.name}: ${Math.round(weather.temperature)}°C - ${weather.conditionDescription}. Humidity: ${weather.humidity}%, Wind: ${weather.windSpeed} m/s`}
+          title={`${typeof weather.city === "string" ? weather.city : weather.city.name}: ${Math.round(weather.temperature)}°C - ${weather.conditionDescription}. Humidity: ${weather.humidity}%, Wind: ${weather.windSpeed} m/s`}
         >
           {weather.icon && (
             <div className="w-5 h-5 relative">
