@@ -40,16 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    // Load token from storage on mount (in case it changed)
-    const storedToken = tokenStorage.get();
-    
-    // Update token if it changed
-    if (storedToken !== token) {
-      setToken(storedToken);
-    }
-
-    // If we have a token but no user, fetch user profile
-    if (storedToken && !user) {
+    // Only fetch user profile if we have a token but no user
+    if (token && !user) {
       // Fetch user profile asynchronously (don't block UI)
       // Use requestIdleCallback or setTimeout to ensure router is ready first
       const fetchUser = () => {
@@ -65,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.error("Failed to fetch user profile:", error);
             tokenStorage.remove();
             setToken(null);
+            setUser(null);
           })
           .finally(() => {
             setIsLoading(false);
@@ -78,15 +71,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setTimeout(fetchUser, 0);
       }
-    } else if (!storedToken) {
-      // No token, no need to load - set loading to false immediately
-      setIsLoading(false);
+    } else {
+      // No token or we have both token and user - set loading to false asynchronously
+      // Use setTimeout to avoid synchronous setState in effect
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
-    // If we have both token and user, we're already loaded
-    else if (storedToken && user) {
-      setIsLoading(false);
-    }
-  }, []); // Only run once on mount
+  }, [token, user]); // Run when token or user changes
 
   const login = (newToken: string, newUser: User) => {
     tokenStorage.set(newToken);
