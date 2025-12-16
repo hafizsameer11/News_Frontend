@@ -22,11 +22,14 @@ export async function fetchNews(params?: {
 
   const url = `${API_CONFIG.BASE_URL}/news${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
   
+  const isDev = process.env.NODE_ENV === "development";
   const response = await fetch(url, {
-    next: { revalidate: 60 }, // Revalidate every 60 seconds (ISR)
+    next: { revalidate: isDev ? 0 : 60 }, // No cache in dev, 60s in production (ISR)
     // No CORS restrictions - allow requests from anywhere
     mode: "cors",
     credentials: "include", // Include credentials (cookies) if needed
+    // Add cache control for development
+    ...(isDev && { cache: "no-store" }),
   });
 
   if (!response.ok) {
@@ -49,11 +52,13 @@ export async function fetchNews(params?: {
 export async function fetchCategories(flat?: boolean): Promise<CategoryResponse> {
   const url = `${API_CONFIG.BASE_URL}/categories${flat ? "?flat=true" : ""}`;
   
+  const isDev = process.env.NODE_ENV === "development";
   const response = await fetch(url, {
-    next: { revalidate: 3600 }, // Revalidate every hour (categories don't change often)
+    next: { revalidate: isDev ? 0 : 3600 }, // No cache in dev, 1h in production
     // No CORS restrictions - allow requests from anywhere
     mode: "cors",
     credentials: "include", // Include credentials (cookies) if needed
+    ...(isDev && { cache: "no-store" }),
   });
 
   if (!response.ok) {
@@ -67,11 +72,13 @@ export async function fetchCategoryBySlug(slug: string): Promise<{ data: Categor
   try {
     // Try direct API endpoint first (more efficient)
     try {
+      const isDev = process.env.NODE_ENV === "development";
       const response = await fetch(`${API_CONFIG.BASE_URL}/categories/slug/${slug}`, {
-        next: { revalidate: 3600 }, // Revalidate every hour
+        next: { revalidate: isDev ? 0 : 3600 }, // No cache in dev, 1h in production
         // No CORS restrictions - allow requests from anywhere
         mode: "cors",
         credentials: "include", // Include credentials (cookies) if needed
+        ...(isDev && { cache: "no-store" }),
       });
       
       if (response.ok) {
@@ -138,11 +145,13 @@ export async function fetchHomepageLayout(): Promise<{ success: boolean; data: A
   try {
     const url = `${API_CONFIG.BASE_URL}/homepage/layout`;
     
+    const isDev = process.env.NODE_ENV === "development";
     const response = await fetch(url, {
-      next: { revalidate: 60 }, // Revalidate every 60 seconds
+      next: { revalidate: isDev ? 0 : 60 }, // No cache in dev, 60s in production
       // No CORS restrictions - allow requests from anywhere
       mode: "cors",
       credentials: "include", // Include credentials (cookies) if needed
+      ...(isDev && { cache: "no-store" }),
     });
 
     if (!response.ok) {

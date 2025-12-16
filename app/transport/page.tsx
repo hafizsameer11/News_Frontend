@@ -1,6 +1,10 @@
 import { Metadata } from "next";
 import { TransportPageClient } from "./transport-client";
 
+// ISR: Revalidate transport page every 3600 seconds (1 hour)
+// Transport schedules change less frequently, so longer cache is acceptable
+export const revalidate = 3600;
+
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
   

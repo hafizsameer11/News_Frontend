@@ -3,6 +3,10 @@ import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { HoroscopePageClient } from "./horoscope-client";
 
+// ISR: Revalidate horoscope page every 3600 seconds (1 hour)
+// Horoscope content updates daily, so hourly refresh is sufficient
+export const revalidate = 3600;
+
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
   

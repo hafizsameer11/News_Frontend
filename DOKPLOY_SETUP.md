@@ -150,7 +150,9 @@ docker run -p 3000:3000 \
 
 ## Notes
 
-- **Dokploy only uses Dockerfile** - docker-compose.yml is for local development only
+- **Dokploy only uses Dockerfile** - The app is served via Node.js server (NOT static files)
+- **Serving Method**: Node.js server enables SSR/ISR, API routes, and dynamic routes
+- **NOT static export**: Uses `output: "standalone"` which creates a Node.js server
 - The Dockerfile uses multi-stage builds for optimal image size (~200MB final image)
 - Standalone output is enabled for minimal runtime dependencies
 - Healthcheck uses curl (included in Alpine image)

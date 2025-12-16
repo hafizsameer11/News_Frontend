@@ -3,10 +3,34 @@ import { cookies } from "next/headers";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { CategoryClient } from "@/components/category/category-client";
-import { fetchCategoryBySlug, fetchNews } from "@/lib/api/server-api";
+import { fetchCategoryBySlug, fetchNews, fetchCategories } from "@/lib/api/server-api";
 import { mapSEOToNextMetadata } from "@/lib/helpers/metadataMapper";
 import { API_CONFIG } from "@/lib/api/apiConfig";
 import { getServerLanguage } from "@/lib/i18n/server";
+
+// ISR: Revalidate category pages every 300 seconds (5 minutes)
+// Categories change less frequently than news, so longer cache is acceptable
+export const revalidate = 300;
+
+// Generate static params for all categories at build time
+// This pre-generates category pages for faster initial load
+export async function generateStaticParams() {
+  try {
+    const categoriesData = await fetchCategories(true);
+    const categories = categoriesData?.data || [];
+    
+    // Return array of params for static generation
+    return categories
+      .filter((cat: { slug?: string }) => cat.slug)
+      .map((category: { slug: string }) => ({
+        slug: category.slug,
+      }));
+  } catch (error) {
+    console.error("Failed to generate static params for categories:", error);
+    // Return empty array on error - pages will be generated on-demand
+    return [];
+  }
+}
 
 // Generate metadata for category page (runs on server)
 export async function generateMetadata({
@@ -19,7 +43,8 @@ export async function generateMetadata({
     const response = await fetch(
       `${API_CONFIG.BASE_URL}/seo/category/${slug}`,
       {
-        next: { revalidate: 3600 },
+        next: { revalidate: process.env.NODE_ENV === "development" ? 0 : 3600 },
+        ...(process.env.NODE_ENV === "development" && { cache: "no-store" }),
       }
     );
     if (response.ok) {
@@ -75,10 +100,12 @@ export default async function CategoryPage({
 
       // Fetch structured data
       try {
+        const isDev = process.env.NODE_ENV === "development";
         const response = await fetch(
           `${API_CONFIG.BASE_URL}/seo/category/${slug}/structured-data`,
           {
-            next: { revalidate: 3600 }, // Revalidate every hour
+            next: { revalidate: isDev ? 0 : 3600 }, // No cache in dev, 1h in production
+            ...(isDev && { cache: "no-store" }),
           }
         );
         if (response.ok) {

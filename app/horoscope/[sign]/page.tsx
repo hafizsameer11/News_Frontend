@@ -1,6 +1,23 @@
 import { Metadata } from "next";
 import { HoroscopeSignPageClient } from "./horoscope-sign-client";
 
+// ISR: Revalidate horoscope sign pages every 3600 seconds (1 hour)
+// Horoscope content updates daily, so hourly refresh is sufficient
+export const revalidate = 3600;
+
+// Generate static params for all 12 zodiac signs at build time
+export async function generateStaticParams() {
+  const signs = [
+    "aries", "taurus", "gemini", "cancer",
+    "leo", "virgo", "libra", "scorpio",
+    "sagittarius", "capricorn", "aquarius", "pisces"
+  ];
+  
+  return signs.map((sign) => ({
+    sign: sign,
+  }));
+}
+
 // Sign names mapping for server-side use (since signDataMap is in a client component)
 const signNamesMap: Record<string, { name: string; element: string }> = {
   ARIES: { name: "Aries", element: "Fire" },

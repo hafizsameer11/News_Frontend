@@ -10,6 +10,10 @@ import { API_CONFIG } from "@/lib/api/apiConfig";
 import { getServerLanguage } from "@/lib/i18n/server";
 import { getDefaultMetadata } from "@/lib/i18n/metadata";
 
+// ISR: Revalidate homepage every 60 seconds
+// This allows the page to be statically generated and cached, but refreshed periodically
+export const revalidate = 60;
+
 // Generate metadata for homepage (runs on server)
 export async function generateMetadata(): Promise<Metadata> {
   const language = await getServerLanguage(cookies());
@@ -53,10 +57,12 @@ export default async function Home() {
 
     // Fetch structured data
     try {
+      const isDev = process.env.NODE_ENV === "development";
       const response = await fetch(
         `${API_CONFIG.BASE_URL}/seo/homepage/structured-data`,
         {
-          next: { revalidate: 3600 }, // Revalidate every hour
+          next: { revalidate: isDev ? 0 : 3600 }, // No cache in dev, 1h in production
+          ...(isDev && { cache: "no-store" }),
         }
       );
       if (response.ok) {

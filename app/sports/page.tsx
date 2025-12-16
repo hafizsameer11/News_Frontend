@@ -3,6 +3,10 @@ import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { SportsPageClient } from "./sports-client";
 
+// ISR: Revalidate sports page every 300 seconds (5 minutes)
+// Sports data updates frequently, so shorter cache is needed
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
   

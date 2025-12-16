@@ -10,6 +10,34 @@ import { News } from "@/types/news.types";
 import { getServerLanguage } from "@/lib/i18n/server";
 import { getDefaultMetadata } from "@/lib/i18n/metadata";
 
+// ISR: Revalidate news articles every 60 seconds
+// News articles are statically generated and cached, refreshed periodically
+export const revalidate = 60;
+
+// Generate static params for news articles at build time
+// This pre-generates popular/recent articles for faster initial load
+export async function generateStaticParams() {
+  try {
+    // Fetch recent published news to pre-generate
+    const newsData = await fetchNews({
+      status: "PUBLISHED",
+      limit: 100, // Pre-generate top 100 most recent articles
+    });
+    
+    const news = newsData?.data?.news || [];
+    
+    // Return array of params for static generation
+    // Using both id and slug for flexibility
+    return news.map((article) => ({
+      id: article.id,
+    }));
+  } catch (error) {
+    console.error("Failed to generate static params for news:", error);
+    // Return empty array on error - pages will be generated on-demand
+    return [];
+  }
+}
+
 // Generate metadata for news detail page (runs on server)
 export async function generateMetadata({
   params,
@@ -19,16 +47,20 @@ export async function generateMetadata({
   try {
     const { id } = await params;
     // Fetch news to get slug (since route uses [id] but SEO API needs slug)
+    const isDev = process.env.NODE_ENV === "development";
     const response = await fetch(`${API_CONFIG.BASE_URL}/news/${id}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: isDev ? 0 : 3600 },
+      ...(isDev && { cache: "no-store" }),
     });
     if (response.ok) {
       const newsResponse = await response.json();
       if (newsResponse.success && newsResponse.data && newsResponse.data.slug) {
+        const isDev = process.env.NODE_ENV === "development";
         const seoResponse = await fetch(
           `${API_CONFIG.BASE_URL}/seo/news/${newsResponse.data.slug}`,
           {
-            next: { revalidate: 3600 },
+            next: { revalidate: isDev ? 0 : 3600 },
+            ...(isDev && { cache: "no-store" }),
           }
         );
         if (seoResponse.ok) {
@@ -69,8 +101,10 @@ export default async function NewsDetailPage({
   let relatedNews: any[] = [];
 
   try {
+    const isDev = process.env.NODE_ENV === "development";
     const response = await fetch(`${API_CONFIG.BASE_URL}/news/${idOrSlug}`, {
       next: { revalidate: 60 }, // ISR: Revalidate every 60 seconds
+      ...(isDev && { cache: "no-store" }),
     });
 
     if (!response.ok) {
@@ -98,10 +132,12 @@ export default async function NewsDetailPage({
       // Fetch structured data
       if (news.slug) {
         try {
+          const isDev = process.env.NODE_ENV === "development";
           const response = await fetch(
             `${API_CONFIG.BASE_URL}/seo/news/${news.slug}/structured-data`,
             {
-              next: { revalidate: 3600 }, // Revalidate every hour
+              next: { revalidate: isDev ? 0 : 3600 }, // No cache in dev, 1h in production
+              ...(isDev && { cache: "no-store" }),
             }
           );
           if (response.ok) {

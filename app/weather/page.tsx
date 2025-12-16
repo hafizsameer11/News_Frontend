@@ -1,6 +1,10 @@
 import { Metadata } from "next";
 import { WeatherPageClient } from "./weather-client";
 
+// ISR: Revalidate weather page every 300 seconds (5 minutes)
+// Weather data updates frequently, so shorter cache is needed
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
   

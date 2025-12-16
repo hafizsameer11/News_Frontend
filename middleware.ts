@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const isDev = process.env.NODE_ENV === "development";
+
 export function middleware(request: NextRequest) {
+  // Skip middleware in development for better performance
+  if (isDev) {
+    return NextResponse.next();
+  }
+
   const response = NextResponse.next();
 
-  // Add performance headers
+  // Add performance headers (production only)
   response.headers.set("X-DNS-Prefetch-Control", "on");
   response.headers.set("X-Frame-Options", "SAMEORIGIN");
   response.headers.set("X-Content-Type-Options", "nosniff");

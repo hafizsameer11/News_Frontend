@@ -46,7 +46,9 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 # Copy standalone output from builder
-# The standalone folder contains server.js and required node_modules
+# IMPORTANT: This is NOT static file serving - it's a Node.js server
+# The standalone folder contains server.js which runs a Next.js server
+# This enables SSR (Server-Side Rendering) and ISR (Incremental Static Regeneration)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
@@ -58,5 +60,11 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Use node with optimizations
+# Start Next.js server (NOT static file serving)
+# This runs a Node.js process that handles:
+# - Server-side rendering (SSR)
+# - Incremental Static Regeneration (ISR)
+# - API routes (/api/*)
+# - Dynamic routes (/news/[id], /category/[slug])
+# If you wanted static files, you'd use nginx and output: "export" instead
 CMD ["node", "--max-old-space-size=512", "server.js"]
