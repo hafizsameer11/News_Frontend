@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useVerifyEmail } from "@/lib/hooks/useAuth";
 import { usePublicConfig } from "@/lib/hooks/useConfig";
@@ -11,7 +11,7 @@ import { Loading } from "@/components/ui/loading";
 import { useLanguage } from "@/providers/LanguageProvider";
 import Link from "next/link";
 
-export default function VerifyEmailPage() {
+function VerifyEmailPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -193,5 +193,21 @@ export default function VerifyEmailPage() {
   }
 
   return null;
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center">
+          <Loading />
+        </main>
+        <Footer />
+      </div>
+    }>
+      <VerifyEmailPageContent />
+    </Suspense>
+  );
 }
 

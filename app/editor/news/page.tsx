@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { useGetMe } from "@/lib/hooks/useAuth";
@@ -30,7 +30,7 @@ type NewsStatus =
   | "ARCHIVED"
   | "REJECTED";
 
-export default function EditorNewsPage() {
+function EditorNewsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user: authUser, isAuthenticated } = useAuth();
@@ -528,5 +528,17 @@ export default function EditorNewsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function EditorNewsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loading />
+      </div>
+    }>
+      <EditorNewsPageContent />
+    </Suspense>
   );
 }

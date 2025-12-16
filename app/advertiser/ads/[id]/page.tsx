@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { useGetMe } from "@/lib/hooks/useAuth";
@@ -19,7 +19,7 @@ import Link from "next/link";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { formatPrice } from "@/lib/helpers/ad-pricing";
 
-export default function AdDetailPage() {
+function AdDetailPageContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -413,5 +413,17 @@ export default function AdDetailPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function AdDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loading />
+      </div>
+    }>
+      <AdDetailPageContent />
+    </Suspense>
   );
 }

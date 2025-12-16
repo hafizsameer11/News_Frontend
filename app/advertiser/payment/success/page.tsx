@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useAds } from "@/lib/hooks/useAds";
@@ -8,7 +8,7 @@ import { AdResponse } from "@/types/ads.types";
 import { Loading } from "@/components/ui/loading";
 import Link from "next/link";
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { language } = useLanguage();
@@ -124,6 +124,18 @@ export default function PaymentSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loading />
+      </div>
+    }>
+      <PaymentSuccessPageContent />
+    </Suspense>
   );
 }
 

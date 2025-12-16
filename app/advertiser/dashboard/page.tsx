@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { useGetMe } from "@/lib/hooks/useAuth";
@@ -16,7 +16,7 @@ import { formatDate } from "@/lib/helpers/formatDate";
 import { DashboardCharts } from "@/components/advertiser/dashboard-charts";
 import { RecentTransactions } from "@/components/advertiser/recent-transactions";
 
-export default function AdvertiserDashboard() {
+function AdvertiserDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user: authUser, isAuthenticated, login } = useAuth();
@@ -362,5 +362,17 @@ export default function AdvertiserDashboard() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AdvertiserDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loading />
+      </div>
+    }>
+      <AdvertiserDashboardContent />
+    </Suspense>
   );
 }

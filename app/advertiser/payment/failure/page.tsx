@@ -1,10 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { Loading } from "@/components/ui/loading";
 import Link from "next/link";
 
-export default function PaymentFailurePage() {
+function PaymentFailurePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { language } = useLanguage();
@@ -85,6 +87,18 @@ export default function PaymentFailurePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentFailurePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loading />
+      </div>
+    }>
+      <PaymentFailurePageContent />
+    </Suspense>
   );
 }
 

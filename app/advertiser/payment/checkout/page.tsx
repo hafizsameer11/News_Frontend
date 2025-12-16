@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useStripe } from "@/lib/hooks/useStripe";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 
-export default function PaymentCheckoutPage() {
+function PaymentCheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { stripe, loading: stripeLoading } = useStripe();
@@ -86,6 +86,18 @@ export default function PaymentCheckoutPage() {
         <p className="mt-4 text-gray-600">Processing payment...</p>
       </div>
     </div>
+  );
+}
+
+export default function PaymentCheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loading />
+      </div>
+    }>
+      <PaymentCheckoutPageContent />
+    </Suspense>
   );
 }
 
