@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -91,7 +91,8 @@ const PLANS: Plan[] = [
   },
 ];
 
-export default function PlansPage() {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function PlansPageContent() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -259,6 +260,19 @@ export default function PlansPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function PlansPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loading />
+      </div>
+    }>
+      <PlansPageContent />
+    </Suspense>
   );
 }
 
