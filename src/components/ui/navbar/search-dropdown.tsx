@@ -89,7 +89,7 @@ export function SearchDropdown() {
         type: "news",
         id: item.id,
         title: item.title,
-        href: `/news/${item.slug}`,
+        href: `/news/${item.slug || item.id}`,
         subtitle: item.category
           ? language === "it"
             ? item.category.nameIt

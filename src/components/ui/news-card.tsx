@@ -20,7 +20,7 @@ export function NewsCard({ news, featured = false, className }: NewsCardProps) {
   
   return (
     <Link
-      href={`/news/${news.slug}`}
+      href={`/news/${news.slug || news.id}`}
       prefetch={true}
       className={cn(
         "block group hover:opacity-90 transition",
