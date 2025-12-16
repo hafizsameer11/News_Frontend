@@ -7,6 +7,81 @@ const nextConfig: NextConfig = {
     // Ignore TypeScript errors during build
     ignoreBuildErrors: true,
   },
+  // Performance optimizations
+  compress: true, // Enable gzip compression
+  poweredByHeader: false, // Remove X-Powered-By header
+  reactStrictMode: true, // Enable React strict mode for better performance
+  swcMinify: true, // Use SWC minification (faster than Terser)
+  
+  // Experimental optimizations
+  experimental: {
+    optimizeCss: true, // Optimize CSS
+    optimizePackageImports: [
+      "@tanstack/react-query",
+      "recharts",
+      "@dnd-kit/core",
+      "@dnd-kit/sortable",
+      "@dnd-kit/utilities",
+    ], // Tree-shake unused exports from these packages
+  },
+
+  // Headers for caching and performance
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "origin-when-cross-origin",
+          },
+        ],
+      },
+      {
+        // Cache static assets aggressively
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        // Cache images
+        source: "/_next/image/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        // Cache public assets
+        source: "/:path*\\.(ico|png|jpg|jpeg|svg|gif|webp|avif|woff|woff2|ttf|eot)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
+
   images: {
     // Enable automatic WebP conversion (default in Next.js 16)
     formats: ["image/avif", "image/webp"],
@@ -16,7 +91,7 @@ const nextConfig: NextConfig = {
     // Supported quality values (must include all qualities used in Image components)
     qualities: [75, 85, 90],
     // Minimum quality for optimized images
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 3600, // Increase cache TTL to 1 hour
     // CDN configuration (if CDN_URL is set in environment)
     ...(process.env.NEXT_PUBLIC_CDN_URL && {
       loader: "custom",

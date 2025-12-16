@@ -1,0 +1,26 @@
+{
+  "name": "news-frontend",
+  "type": "dockerfile",
+  "dockerfile": "Dockerfile",
+  "buildContext": ".",
+  "port": 3000,
+  "env": {
+    "NODE_ENV": "production",
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "PORT": "3000",
+    "HOSTNAME": "0.0.0.0"
+  },
+  "buildArgs": {
+    "NEXT_PUBLIC_API_URL": "${NEXT_PUBLIC_API_URL}",
+    "NEXT_PUBLIC_FRONTEND_URL": "${NEXT_PUBLIC_FRONTEND_URL}"
+  },
+  "healthcheck": {
+    "path": "/",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3,
+    "startPeriod": 40
+  },
+  "restartPolicy": "unless-stopped"
+}
+

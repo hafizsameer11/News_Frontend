@@ -13,11 +13,17 @@ import { ErrorBoundary } from "@/components/error-boundary";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap", // Prevent invisible text during font load
+  preload: true,
+  fallback: ["system-ui", "arial"],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap", // Prevent invisible text during font load
+  preload: false, // Only preload primary font
+  fallback: ["monospace"],
 });
 
 export const metadata: Metadata = {
