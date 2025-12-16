@@ -16,18 +16,20 @@ export const revalidate = 60;
 
 // Generate static params for news articles at build time
 // This pre-generates popular/recent articles for faster initial load
+// Limited to 50 articles to avoid large cache issues
 export async function generateStaticParams() {
   try {
     // Fetch recent published news to pre-generate
+    // Limit to 50 to avoid cache size issues (2MB limit per item)
     const newsData = await fetchNews({
       status: "PUBLISHED",
-      limit: 100, // Pre-generate top 100 most recent articles
+      limit: 50, // Reduced from 100 to avoid cache size warnings
     });
     
     const news = newsData?.data?.news || [];
     
     // Return array of params for static generation
-    // Using both id and slug for flexibility
+    // Using id for static generation
     return news.map((article) => ({
       id: article.id,
     }));

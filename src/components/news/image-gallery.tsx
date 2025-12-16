@@ -20,13 +20,14 @@ export function ImageGallery({ content, mainImage, className = "" }: ImageGaller
     }
 
     // Extract images from HTML content
+    // Use regex for server-side compatibility (DOMParser is browser-only and causes build errors)
     if (content) {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(content, "text/html");
-      const imgElements = doc.querySelectorAll("img");
-      
-      imgElements.forEach((img) => {
-        const src = img.getAttribute("src");
+      // Always use regex for server-side rendering (during static generation)
+      // This regex matches <img> tags with src attribute
+      const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+      let match;
+      while ((match = imgRegex.exec(content)) !== null) {
+        const src = match[1];
         if (src) {
           // Convert to full URL and avoid duplicates
           const fullUrl = getImageUrl(src);
@@ -34,7 +35,30 @@ export function ImageGallery({ content, mainImage, className = "" }: ImageGaller
             extractedImages.push(fullUrl);
           }
         }
-      });
+      }
+      
+      // In browser, optionally use DOMParser for more accurate parsing (but regex is primary)
+      // This is only for client-side hydration improvements, not required
+      if (typeof window !== "undefined" && typeof DOMParser !== "undefined") {
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(content, "text/html");
+          const imgElements = doc.querySelectorAll("img");
+          
+          // Add any additional images found by DOMParser that regex might have missed
+          imgElements.forEach((img) => {
+            const src = img.getAttribute("src");
+            if (src) {
+              const fullUrl = getImageUrl(src);
+              if (!extractedImages.includes(fullUrl)) {
+                extractedImages.push(fullUrl);
+              }
+            }
+          });
+        } catch (error) {
+          // Ignore DOMParser errors - regex is the primary method
+        }
+      }
     }
 
     return extractedImages;
