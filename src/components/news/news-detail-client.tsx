@@ -239,7 +239,8 @@ export function NewsDetailClient({
                       className="object-cover"
                       priority
                       loading="eager"
-                      quality={90}
+                      quality={85}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
                     />
                   </div>
                 )}

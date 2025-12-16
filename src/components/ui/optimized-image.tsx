@@ -21,17 +21,15 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
     return false;
   }, [src]);
 
-  // Disable optimization for localhost URLs in development to avoid fetch issues
-  // Also disable for backend domain if it's causing upstream response issues
+  // Disable optimization ONLY for localhost URLs in development to avoid fetch issues
+  // In production, enable optimization for all domains including backend
   // MUST be called before any conditional returns (React Hooks rules)
   const shouldUnoptimize = useMemo(() => {
+    // Only unoptimize in development for localhost
     if (process.env.NODE_ENV === "development" && isLocalhost) {
       return true;
     }
-    // Disable optimization for backend domain if it causes issues
-    if (typeof src === "string" && src.includes("news-backend.hmstech.org")) {
-      return true;
-    }
+    // In production, always optimize (Next.js will handle it)
     return false;
   }, [src, isLocalhost]);
 
@@ -143,6 +141,25 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
     : imageProps.style;
 
   // Ensure src and alt are passed correctly to Image component
-  return <Image {...imageProps} src={src} alt={alt} style={style} unoptimized={shouldUnoptimize} onError={handleError} />;
+  // Add sizes prop for better responsive image loading if not provided
+  const sizes = imageProps.sizes || (isFill ? "100vw" : undefined);
+  
+  // Only add placeholder if not already provided and not unoptimized
+  const placeholderProps = shouldUnoptimize || imageProps.placeholder
+    ? {}
+    : { placeholder: "blur" as const, blurDataURL: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjwvc3ZnPg==" };
+  
+  return (
+    <Image
+      {...imageProps}
+      src={src}
+      alt={alt}
+      style={style}
+      unoptimized={shouldUnoptimize}
+      onError={handleError}
+      sizes={sizes}
+      {...placeholderProps}
+    />
+  );
 }
 

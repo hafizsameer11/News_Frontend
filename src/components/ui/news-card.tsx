@@ -36,8 +36,9 @@ export function NewsCard({ news, featured = false, className }: NewsCardProps) {
               alt={news.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
-              quality={85}
+              quality={75}
               loading="lazy"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
             {news.isBreaking && (
               <span className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 text-xs font-bold">

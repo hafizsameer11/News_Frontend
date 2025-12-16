@@ -7,6 +7,7 @@ import { News } from "@/types/news.types";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { formatDate, formatRelativeTime } from "@/lib/helpers/formatDate";
 import { cn } from "@/lib/helpers/cn";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface BaseCardProps {
   news: News;
@@ -31,12 +32,14 @@ export const HeroCard = memo(function HeroCard({ news, className }: BaseCardProp
         <div className="relative h-64 sm:h-80 md:h-96 lg:h-[500px] mb-3 md:mb-4 overflow-hidden rounded-lg">
           {news.mainImage && news.mainImage.trim() !== "" ? (
             <OptimizedImage
-              src={news.mainImage}
+              src={getImageUrl(news.mainImage)}
               alt={news.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
               priority
               loading="eager"
+              quality={85}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
             />
           ) : (
             <div className="w-full h-full bg-gray-200"></div>
@@ -82,10 +85,13 @@ export const CompactCard = memo(function CompactCard({ news, className }: BaseCa
         <div className="relative w-24 h-24 shrink-0 overflow-hidden rounded">
           {news.mainImage && news.mainImage.trim() !== "" ? (
             <OptimizedImage
-              src={news.mainImage}
+              src={getImageUrl(news.mainImage)}
               alt={news.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+              quality={75}
+              sizes="(max-width: 768px) 100vw, 200px"
             />
           ) : (
             <div className="w-full h-full bg-gray-200"></div>
@@ -173,10 +179,13 @@ export const HorizontalCard = memo(function HorizontalCard({ news, className }: 
         <div className="relative w-32 h-32 shrink-0 overflow-hidden rounded">
           {news.mainImage && news.mainImage.trim() !== "" ? (
             <OptimizedImage
-              src={news.mainImage}
+              src={getImageUrl(news.mainImage)}
               alt={news.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+              quality={75}
+              sizes="(max-width: 768px) 100vw, 200px"
             />
           ) : (
             <div className="w-full h-full bg-gray-200"></div>

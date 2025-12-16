@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { HomepageSection } from "@/lib/api/modules/homepage.api";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 import { formatRelativeTime, formatDate } from "@/lib/helpers/formatDate";
 import { AdSlot } from "@/components/ads/ad-slot";
 
@@ -87,12 +88,14 @@ function HeroSliderSection({
                 <div className="relative h-96 mb-4 overflow-hidden rounded-lg">
                   {mainStory.mainImage && mainStory.mainImage.trim() !== "" ? (
                     <OptimizedImage
-                      src={mainStory.mainImage}
+                      src={getImageUrl(mainStory.mainImage)}
                       alt={mainStory.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       priority
                       loading="eager"
+                      quality={85}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-200"></div>
@@ -122,10 +125,13 @@ function HeroSliderSection({
                 <div className="relative h-32 mb-2 overflow-hidden rounded">
                   {story.mainImage && story.mainImage.trim() !== "" ? (
                     <OptimizedImage
-                      src={story.mainImage}
+                      src={getImageUrl(story.mainImage)}
                       alt={story.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                      quality={75}
+                      sizes="(max-width: 768px) 100vw, 400px"
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-200"></div>
