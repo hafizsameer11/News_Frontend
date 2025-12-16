@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Initialize with function to avoid hydration mismatch
   // On server, always null, on client, check localStorage
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize loading based on whether we have a token (if token exists, we might need to fetch user)
   const [token, setToken] = useState<string | null>(() => {
     // Only access localStorage on client side
     if (typeof window !== "undefined") {
@@ -28,47 +28,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     return null;
   });
+  // Only set loading to true if we have a token (need to fetch user), otherwise false immediately
+  const [isLoading, setIsLoading] = useState(() => {
+    // If we have a token, we'll need to fetch user, so start loading
+    // If no token, no need to load, set to false immediately
+    if (typeof window !== "undefined") {
+      const storedToken = tokenStorage.get();
+      return !!storedToken; // Only loading if we have a token to verify
+    }
+    return false; // Server-side: no loading needed
+  });
 
   useEffect(() => {
     // Load token from storage on mount (in case it changed)
     const storedToken = tokenStorage.get();
-    let shouldUpdateToken = false;
-    if (storedToken && storedToken !== token) {
-      shouldUpdateToken = true;
+    
+    // Update token if it changed
+    if (storedToken !== token) {
+      setToken(storedToken);
     }
 
     // If we have a token but no user, fetch user profile
     if (storedToken && !user) {
-      authApi
-        .getMe()
-        .then((response) => {
-          if (response.data) {
-            setUser(response.data);
-          }
-        })
-        .catch((error) => {
-          // Token might be invalid, clear it
-          console.error("Failed to fetch user profile:", error);
-          tokenStorage.remove();
-          setToken(null);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    } else {
-      // Use setTimeout to avoid synchronous setState in effect
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 0);
-    }
+      // Fetch user profile asynchronously (don't block UI)
+      // Use requestIdleCallback or setTimeout to ensure router is ready first
+      const fetchUser = () => {
+        authApi
+          .getMe()
+          .then((response) => {
+            if (response.data) {
+              setUser(response.data);
+            }
+          })
+          .catch((error) => {
+            // Token might be invalid, clear it
+            console.error("Failed to fetch user profile:", error);
+            tokenStorage.remove();
+            setToken(null);
+          })
+          .finally(() => {
+            setIsLoading(false);
+          });
+      };
 
-    // Update token after other state updates - use setTimeout to defer
-    if (shouldUpdateToken) {
-      setTimeout(() => {
-        setToken(storedToken);
-      }, 0);
+      // Use requestIdleCallback if available, otherwise setTimeout
+      // This ensures the router and other critical initialization happens first
+      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+        requestIdleCallback(fetchUser, { timeout: 100 });
+      } else {
+        setTimeout(fetchUser, 0);
+      }
+    } else if (!storedToken) {
+      // No token, no need to load - set loading to false immediately
+      setIsLoading(false);
     }
-  }, [token, user]);
+    // If we have both token and user, we're already loaded
+    else if (storedToken && user) {
+      setIsLoading(false);
+    }
+  }, []); // Only run once on mount
 
   const login = (newToken: string, newUser: User) => {
     tokenStorage.set(newToken);
