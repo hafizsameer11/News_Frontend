@@ -2,6 +2,45 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
 
+// Helper function to extract hostname and port from API URL
+const getBackendImagePatterns = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    return [];
+  }
+
+  try {
+    const url = new URL(apiUrl);
+    const hostname = url.hostname;
+    const port = url.port;
+    const protocol = url.protocol.replace(":", "") as "http" | "https";
+
+    const patterns = [
+      {
+        protocol: protocol,
+        hostname: hostname,
+        ...(port && { port: port }),
+        pathname: "/**",
+      },
+    ];
+
+    // Also add the opposite protocol (http if https, https if http)
+    // This ensures images work regardless of protocol
+    const oppositeProtocol = protocol === "https" ? "http" : "https";
+    patterns.push({
+      protocol: oppositeProtocol,
+      hostname: hostname,
+      ...(port && { port: port }),
+      pathname: "/**",
+    });
+
+    return patterns;
+  } catch (error) {
+    console.warn("Failed to parse NEXT_PUBLIC_API_URL for image patterns:", error);
+    return [];
+  }
+};
+
 const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone", // Enable standalone output for Docker (required for Dokploy)
@@ -129,17 +168,8 @@ const nextConfig: NextConfig = {
         hostname: "www.pehoxu.cc",
         pathname: "/**",
       },
-      // Backend API domain
-      {
-        protocol: "https",
-        hostname: "news-backend.hmstech.org",
-        pathname: "/**",
-      },
-      {
-        protocol: "http",
-        hostname: "news-backend.hmstech.org",
-        pathname: "/**",
-      },
+      // Backend API domain (dynamically extracted from NEXT_PUBLIC_API_URL)
+      ...getBackendImagePatterns(),
       // Allow any external image (for flexibility - you can restrict this in production)
       // Note: These wildcard patterns are at the end to avoid interfering with specific patterns
       {

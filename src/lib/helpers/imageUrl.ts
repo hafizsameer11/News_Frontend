@@ -1,4 +1,4 @@
-import { API_CONFIG } from "@/lib/api/apiConfig";
+import { API_CONFIG, getBackendBaseUrl, getBackendHostname } from "@/lib/api/apiConfig";
 
 /**
  * Converts a relative image URL to an absolute URL using the backend domain
@@ -6,22 +6,32 @@ import { API_CONFIG } from "@/lib/api/apiConfig";
  * If the URL is already absolute and not localhost, it returns it as-is
  * 
  * @param url - The image URL (can be relative like "/uploads/..." or absolute)
- * @returns The full absolute URL using the production backend domain
+ * @returns The full absolute URL using the backend domain from API_CONFIG
  * 
  * @example
- * getImageUrl("/uploads/image.jpg") // "https://news-backend.hmstech.org/uploads/image.jpg"
- * getImageUrl("http://localhost:3001/uploads/image.jpg") // "https://news-backend.hmstech.org/uploads/image.jpg"
- * getImageUrl("https://example.com/image.jpg") // "https://example.com/image.jpg"
+ * getImageUrl("/uploads/image.jpg") // Uses backend URL from API_CONFIG
+ * getImageUrl("http://localhost:3001/uploads/image.jpg") // Replaces localhost with backend URL
+ * getImageUrl("https://example.com/image.jpg") // Returns as-is (external URL)
  */
 export function getImageUrl(url: string | null | undefined): string {
   if (!url) return "";
   
-  // Get base URL from API config (remove /api/v1 to get the root)
-  const baseUrl = API_CONFIG.BASE_URL.replace("/api/v1", "");
-  const backendHostname = new URL(baseUrl).hostname;
+  // Get base URL and hostname from API config
+  const baseUrl = getBackendBaseUrl();
+  const backendHostname = getBackendHostname();
+  
+  // If no backend URL is configured, return the URL as-is (or empty if relative)
+  if (!baseUrl || !backendHostname) {
+    // If it's already an absolute URL, return it
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+    // If it's relative and no backend is configured, return empty or the relative URL
+    return url.startsWith("/") ? url : `/${url}`;
+  }
   
   // Clean up any duplicate base URLs in the URL
-  // Handle cases like "https://news-backend.hmstech.org/https://news-backend.hmstech.org/uploads/..."
+  // Handle cases where the backend URL is duplicated in the path
   if (url.includes(`https://${backendHostname}/https://`) || url.includes(`http://${backendHostname}/http://`)) {
     // Extract the last occurrence of the actual URL
     const urlMatch = url.match(/https?:\/\/[^\/]+(\/.*)$/);
@@ -80,12 +90,17 @@ export function getImageUrl(url: string | null | undefined): string {
 export function normalizeImageUrl(url: string | null | undefined): string {
   if (!url) return "";
   
-  // Get base URL from API config
-  const baseUrl = API_CONFIG.BASE_URL.replace("/api/v1", "");
-  const backendHostname = new URL(baseUrl).hostname;
+  // Get base URL and hostname from API config
+  const baseUrl = getBackendBaseUrl();
+  const backendHostname = getBackendHostname();
+  
+  // If no backend URL is configured, return the URL as-is
+  if (!baseUrl || !backendHostname) {
+    return url;
+  }
   
   // First, check for and remove duplicate base URLs
-  // Handle cases like "https://news-backend.hmstech.org/https://news-backend.hmstech.org/uploads/..."
+  // Handle cases where the backend URL is duplicated in the path
   const escapedHostname = backendHostname.replace(/\./g, '\\.');
   const duplicatePattern = new RegExp(`https?://${escapedHostname}/https?://${escapedHostname}`, 'g');
   
@@ -120,11 +135,7 @@ export function normalizeImageUrl(url: string | null | undefined): string {
   return normalized;
 }
 
-/**
- * Gets the backend base URL (without /api/v1)
- * Useful for constructing URLs to static assets
- */
-export function getBackendBaseUrl(): string {
-  return API_CONFIG.BASE_URL.replace("/api/v1", "");
-}
+// getBackendBaseUrl is now exported from @/lib/api/apiConfig
+// Re-export it here for backward compatibility
+export { getBackendBaseUrl } from "@/lib/api/apiConfig";
 
