@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Ad } from "@/types/ads.types";
 import { adsApi } from "@/lib/api/modules/ads.api";
 import { getSlotDimensions } from "@/lib/helpers/ad-rotation";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 interface AdDisplayProps {
   ad: Ad;
@@ -105,19 +106,39 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
 
   const dimensions = getAdDimensions();
 
+  // Get normalized image URL
+  const imageUrl = useMemo(() => {
+    return getImageUrl(ad.imageUrl);
+  }, [ad.imageUrl]);
+
+  // Track if image optimization fails
+  const [imageOptimizationFailed, setImageOptimizationFailed] = useState(false);
+
   // Check if image is from localhost to disable optimization
   const isLocalhost = useMemo(() => {
-    if (typeof ad.imageUrl === "string") {
+    if (typeof imageUrl === "string") {
       return (
-        ad.imageUrl.includes("localhost") || ad.imageUrl.includes("127.0.0.1")
+        imageUrl.includes("localhost") || imageUrl.includes("127.0.0.1")
       );
     }
     return false;
-  }, [ad.imageUrl]);
+  }, [imageUrl]);
+
+  // Check if image is from API domain - use unoptimized if Next.js optimization fails
+  const isApiDomain = useMemo(() => {
+    if (typeof imageUrl === "string") {
+      return imageUrl.includes("api.tgcalabriareport.com");
+    }
+    return false;
+  }, [imageUrl]);
 
   // In development, disable optimization for localhost URLs to avoid fetch issues
+  // For API domain, use unoptimized to avoid Next.js Image optimization failures
+  // (Next.js server might not be able to fetch from API domain)
   const shouldUnoptimize =
-    process.env.NODE_ENV === "development" && isLocalhost;
+    imageOptimizationFailed ||
+    isApiDomain ||
+    (process.env.NODE_ENV === "development" && isLocalhost);
 
   // Responsive classes - only apply after mount to avoid hydration mismatch
   // Sidebar ads should not be centered, all others should be centered by default
@@ -126,7 +147,7 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
   const responsiveClasses = !isMounted
     ? "w-full"
     : isMobile
-    ? "w-full max-w-full min-w-[300px]"
+    ? "w-full max-w-full min-w-[300px] mx-auto"
     : isSidebar
     ? "w-full min-w-[250px] max-w-[250px]"
     : slot === "TOP_BANNER" ||
@@ -135,8 +156,8 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
       slot === "HEADER" ||
       slot === "INLINE" ||
       slot === "FOOTER"
-    ? "w-full max-w-[728px] min-w-[300px]"
-    : "w-full max-w-full";
+    ? "w-full max-w-[728px] min-w-[300px] mx-auto"
+    : "w-full max-w-full mx-auto";
 
   // Merge className properly - ensure centering for non-sidebar ads
   const mergedClassName = isSidebar
@@ -156,19 +177,12 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
           className="relative overflow-hidden rounded bg-gray-100 w-full"
           style={{ aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
         >
-          {ad.imageUrl && ad.imageUrl.trim() !== "" ? (
+          {imageUrl && imageUrl.trim() !== "" ? (
             <Image
-              src={ad.imageUrl}
+              src={imageUrl}
               alt={ad.title}
               fill
-              className={
-                slot === "FOOTER" ||
-                slot === "INLINE" ||
-                slot === "MID_PAGE" ||
-                slot === "BETWEEN_SECTIONS"
-                  ? "object-cover"
-                  : "object-contain"
-              }
+              className="object-cover w-full h-full"
               quality={85}
               loading={isAboveFold ? "eager" : "lazy"}
               priority={isAboveFold}
@@ -176,6 +190,11 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
               sizes="(max-width: 768px) 100vw, 728px"
               style={{ transition: "none" }}
               onError={(e) => {
+                // If optimization failed, try unoptimized version
+                if (!imageOptimizationFailed && !shouldUnoptimize) {
+                  setImageOptimizationFailed(true);
+                  return;
+                }
                 // Handle broken images
                 const target = e.target as HTMLImageElement;
                 target.style.display = "none";

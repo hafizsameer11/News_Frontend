@@ -1,13 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { statsApi } from "@/lib/api/modules/stats.api";
 import {
-  AdminStats,
   TrendData,
   NewsPopularityItem,
   UserEngagement,
   CategoryPerformanceItem,
   ConversionMetrics,
-  DashboardData,
   StatsResponse,
   DashboardResponse,
 } from "@/types/stats.types";

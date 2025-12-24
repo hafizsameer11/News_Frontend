@@ -1,13 +1,24 @@
 import { apiClient } from "../apiClient";
 import {
   StatsResponse,
-  TrendsResponse,
   NewsPopularityResponse,
   UserEngagementResponse,
   CategoryPerformanceResponse,
   ConversionMetricsResponse,
   DashboardResponse,
 } from "@/types/stats.types";
+
+interface TrendsApiResponse {
+  data?: {
+    period?: string;
+    trends?: {
+      views?: unknown[];
+      news?: unknown[];
+      users?: unknown[];
+      revenue?: unknown[];
+    };
+  };
+}
 
 export const statsApi = {
   // Get admin statistics
@@ -17,7 +28,7 @@ export const statsApi = {
 
   // Get trends
   getTrends: (period: "daily" | "weekly" | "monthly" = "daily") => {
-    return apiClient.get<any>(`/stats/trends?period=${period}`);
+    return apiClient.get<TrendsApiResponse>(`/stats/trends?period=${period}`);
   },
 
   // Get news popularity

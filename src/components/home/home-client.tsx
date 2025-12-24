@@ -235,7 +235,7 @@ export function HomeClient({
 
               {/* More Stories - Horizontal Cards */}
               {newsData.moreStories.length > 0 && (
-                <div className="container mx-auto px-4 py-6">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 max-w-7xl">
                   <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900">
                     {t("news.altreNotizie")}
                   </h2>
@@ -250,7 +250,7 @@ export function HomeClient({
               {/* Additional Featured Grid */}
               {allNews.length > 20 && (
                 <>
-                  <div className="container mx-auto px-4 py-6">
+                  <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 max-w-7xl">
                     <AdSlot slot="BETWEEN_SECTIONS" />
                   </div>
                   <FeaturedGrid

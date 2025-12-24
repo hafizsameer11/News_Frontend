@@ -49,7 +49,7 @@ export function UtilityLinksDropdown() {
     },
     {
       href: "/sports",
-      label: language === "it" ? "Sport" : "Sports",
+      label: language === "it" ? "Sport - Calcio" : "Sports - Football",
       icon: (
         <svg
           className="w-4 h-4"

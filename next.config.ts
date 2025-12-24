@@ -168,6 +168,17 @@ const nextConfig: NextConfig = {
         hostname: "www.pehoxu.cc",
         pathname: "/**",
       },
+      // API domain for tgcalabriareport.com
+      {
+        protocol: "https",
+        hostname: "api.tgcalabriareport.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "api.tgcalabriareport.com",
+        pathname: "/**",
+      },
       // Backend API domain (dynamically extracted from NEXT_PUBLIC_API_URL)
       ...getBackendImagePatterns(),
       // Allow any external image (for flexibility - you can restrict this in production)

@@ -17,6 +17,7 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { Ad, AdResponse } from "@/types/ads.types";
 import { formatDate } from "@/lib/helpers/formatDate";
 import { InputWithClear } from "@/components/ui/input-with-clear";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 export default function AdminAdsPage() {
   const [page, setPage] = useState(1);
@@ -278,7 +279,7 @@ export default function AdminAdsPage() {
                           <td className="px-4 py-3">
                             <div className="w-24 h-16 relative rounded overflow-hidden bg-gray-100">
                               <img
-                                src={ad.imageUrl}
+                                src={getImageUrl(ad.imageUrl)}
                                 alt={ad.title}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {

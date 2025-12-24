@@ -7,6 +7,7 @@ import { Ad } from "@/types/ads.types";
 import { adsApi } from "@/lib/api/modules/ads.api";
 import Link from "next/link";
 import Image from "next/image";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 export function TickerAd() {
   const pathname = usePathname();
@@ -96,7 +97,7 @@ export function TickerAd() {
               <div className="relative w-[300px] h-[60px] sm:w-[728px] sm:h-[90px] flex-shrink-0">
                 {ad.imageUrl && ad.imageUrl.trim() !== "" ? (
                   <Image
-                    src={ad.imageUrl}
+                    src={getImageUrl(ad.imageUrl)}
                     alt={ad.title}
                     width={728}
                     height={90}
@@ -105,8 +106,9 @@ export function TickerAd() {
                     loading="lazy"
                     style={{ width: "auto", height: "auto" }}
                     unoptimized={
-                      ad.imageUrl.includes("localhost") ||
-                      ad.imageUrl.includes("127.0.0.1")
+                      getImageUrl(ad.imageUrl).includes("localhost") ||
+                      getImageUrl(ad.imageUrl).includes("127.0.0.1") ||
+                      getImageUrl(ad.imageUrl).includes("api.tgcalabriareport.com")
                     }
                   />
                 ) : (

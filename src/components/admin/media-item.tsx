@@ -2,7 +2,7 @@
 
 import { Media } from "@/types/media.types";
 import { useState } from "react";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { DeleteConfirmModal } from "./delete-confirm-modal";
 import { MediaImageModal } from "./media-image-modal";
 import { MediaVideoModal } from "./media-video-modal";
@@ -217,16 +217,12 @@ export function MediaItem({
               </div>
             ) : imageUrl && imageUrl.trim() !== "" ? (
               <div className="relative w-full h-full">
-                <Image
+                <OptimizedImage
                   src={imageUrl}
                   alt={media.caption || "Media"}
                   fill
                   className="object-cover"
                   onError={() => setImageError(true)}
-                  unoptimized={
-                    imageUrl.includes("localhost") ||
-                    imageUrl.includes("127.0.0.1")
-                  }
                 />
                 {/* Enlarge button */}
                 <button

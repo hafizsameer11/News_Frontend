@@ -1,4 +1,4 @@
-import { API_CONFIG, getBackendBaseUrl, getBackendHostname } from "@/lib/api/apiConfig";
+import { getBackendBaseUrl, getBackendHostname } from "@/lib/api/apiConfig";
 
 /**
  * Converts a relative image URL to an absolute URL using the backend domain

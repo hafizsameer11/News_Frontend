@@ -2,6 +2,7 @@
 
 import Image, { ImageProps } from "next/image";
 import { useMemo, useState, useRef, useEffect } from "react";
+import { getImageUrl } from "@/lib/helpers/imageUrl";
 
 /**
  * Optimized Image component that automatically handles localhost URLs in development
@@ -13,42 +14,61 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
   const [imageError, setImageError] = useState(false);
   const prevSrcRef = useRef(src);
 
-  // Check for localhost or external domains that might need unoptimized
-  const isLocalhost = useMemo(() => {
+  // Normalize image URL
+  const normalizedSrc = useMemo(() => {
     if (typeof src === "string") {
-      return src.includes("localhost") || src.includes("127.0.0.1");
+      return getImageUrl(src);
     }
-    return false;
+    return src;
   }, [src]);
 
-  // Disable optimization ONLY for localhost URLs in development to avoid fetch issues
-  // In production, enable optimization for all domains including backend
+  // Check for localhost or external domains that might need unoptimized
+  const isLocalhost = useMemo(() => {
+    if (typeof normalizedSrc === "string") {
+      return normalizedSrc.includes("localhost") || normalizedSrc.includes("127.0.0.1");
+    }
+    return false;
+  }, [normalizedSrc]);
+
+  // Check if image is from API domain - use unoptimized to avoid Next.js Image optimization failures
+  const isApiDomain = useMemo(() => {
+    if (typeof normalizedSrc === "string") {
+      return normalizedSrc.includes("api.tgcalabriareport.com");
+    }
+    return false;
+  }, [normalizedSrc]);
+
+  // Disable optimization for localhost URLs in development and API domain to avoid fetch issues
   // MUST be called before any conditional returns (React Hooks rules)
   const shouldUnoptimize = useMemo(() => {
-    // Only unoptimize in development for localhost
+    // Unoptimize in development for localhost
     if (process.env.NODE_ENV === "development" && isLocalhost) {
       return true;
     }
-    // In production, always optimize (Next.js will handle it)
+    // Unoptimize for API domain to avoid Next.js Image optimization failures
+    if (isApiDomain) {
+      return true;
+    }
+    // In production, optimize other domains
     return false;
-  }, [src, isLocalhost]);
+  }, [normalizedSrc, isLocalhost, isApiDomain]);
 
   // Reset error state when src changes - use setTimeout to defer
   useEffect(() => {
-    if (prevSrcRef.current !== src && imageError) {
+    if (prevSrcRef.current !== normalizedSrc && imageError) {
       const timer = setTimeout(() => {
         setImageError(false);
       }, 0);
-      prevSrcRef.current = src;
+      prevSrcRef.current = normalizedSrc;
       return () => clearTimeout(timer);
     } else {
-      prevSrcRef.current = src;
+      prevSrcRef.current = normalizedSrc;
     }
-  }, [src, imageError]);
+  }, [normalizedSrc, imageError]);
 
   // Don't render if src is missing or empty
   // Check for null, undefined, empty string, or empty string after trim
-  const isValidSrc = src !== null && src !== undefined && src !== "" && (typeof src !== "string" || src.trim() !== "");
+  const isValidSrc = normalizedSrc !== null && normalizedSrc !== undefined && normalizedSrc !== "" && (typeof normalizedSrc !== "string" || normalizedSrc.trim() !== "");
   
   if (!isValidSrc) {
     const fill = "fill" in props && props.fill;
@@ -152,7 +172,7 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
   return (
     <Image
       {...imageProps}
-      src={src}
+      src={normalizedSrc}
       alt={alt}
       style={style}
       unoptimized={shouldUnoptimize}

@@ -28,7 +28,7 @@ const saveSeenIds = (ids: Set<string>) => {
 };
 
 export const useBreakingNews = (enabled: boolean = true) => {
-  const [seenIds, setSeenIds] = useState<Set<string>>(getSeenIds);
+  const [_seenIds, setSeenIds] = useState<Set<string>>(getSeenIds);
   const [newBreakingNews, setNewBreakingNews] = useState<News[]>([]);
   const [isPageVisible, setIsPageVisible] = useState(() => {
     if (typeof window !== "undefined") {

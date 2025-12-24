@@ -51,7 +51,7 @@ export const horoscopeApi = {
         success: true,
         data: horoscopes,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching daily horoscopes:", error);
       return {
         success: false,
@@ -68,7 +68,7 @@ export const horoscopeApi = {
   },
 
   // Get horoscope for a specific sign
-  getBySign: async (sign: ZodiacSign, type: "daily" | "weekly" = "daily"): Promise<HoroscopeDetailResponse> => {
+  getBySign: async (sign: ZodiacSign, _type: "daily" | "weekly" = "daily"): Promise<HoroscopeDetailResponse> => {
     try {
       const response = await fetch(`/api/horoscope?zodiac=${sign}`);
       if (!response.ok) {
@@ -83,7 +83,7 @@ export const horoscopeApi = {
         };
       }
       throw new Error("Invalid response from API");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error fetching horoscope for ${sign}:`, error);
       return {
         success: false,

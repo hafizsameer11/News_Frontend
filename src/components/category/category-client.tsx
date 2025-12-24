@@ -81,11 +81,13 @@ export function CategoryClient({ category, initialNews, structuredData: initialS
   });
 
   const categoryNews = newsData?.data?.news || initialNews || [];
-  const categoryName = language === "it" ? category?.nameIt : category?.nameEn;
+  const categoryName = category 
+    ? (language === "it" ? category.nameIt : category.nameEn)
+    : null;
   const categoryDescription = category?.description
-    ? language === "it"
+    ? (language === "it"
       ? category.descriptionIt
-      : category.descriptionEn
+      : category.descriptionEn)
     : null;
 
   // Show loading state
@@ -315,13 +317,17 @@ export function CategoryClient({ category, initialNews, structuredData: initialS
               {newsData?.data?.meta && newsData.data.meta.totalPages > 1 && (
                 <div className="mt-8 flex justify-center items-center gap-4">
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       const newPage = Math.max(1, page - 1);
                       setPage(newPage);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     disabled={page === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 active:bg-gray-100 transition touch-manipulation"
+                    style={{ touchAction: "manipulation", userSelect: "none" }}
+                    type="button"
                   >
                     {t("common.previous")}
                   </button>
@@ -330,13 +336,17 @@ export function CategoryClient({ category, initialNews, structuredData: initialS
                     {language === "it" ? "di" : "of"} {newsData.data.meta.totalPages}
                   </span>
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       const newPage = Math.min(newsData.data.meta.totalPages, page + 1);
                       setPage(newPage);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     disabled={page === newsData.data.meta.totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 active:bg-gray-100 transition touch-manipulation"
+                    style={{ touchAction: "manipulation", userSelect: "none" }}
+                    type="button"
                   >
                     {t("common.next")}
                   </button>

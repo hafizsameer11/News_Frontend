@@ -42,16 +42,16 @@ export function TrendingBar({ trendingNews: initialTrendingNews = [] }: Trending
   return (
     <div className="bg-gray-50 border-b border-gray-200">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl">
-        <div className="flex items-center gap-4 py-2 overflow-x-auto">
-          <span className="text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">
+        <div className="flex items-center gap-4 py-2 overflow-x-auto scrollbar-hide scroll-smooth">
+          <span className="text-xs font-semibold text-gray-500 uppercase whitespace-nowrap flex-shrink-0">
             {language === "it" ? "In Tendenza" : "Trending"}
           </span>
-          <div className="flex items-center gap-4 flex-1 min-w-0">
+          <div className="flex items-center gap-4 flex-1 min-w-0 whitespace-nowrap">
             {items.map((item, index) => (
-              <div key={item.id} className="flex items-center gap-4 min-w-0 flex-shrink-0">
+              <div key={item.id} className="flex items-center gap-4 flex-shrink-0">
                 <Link
                   href={`/news/${item.slug || item.id}`}
-                  className="text-sm font-medium text-gray-700 hover:text-red-600 transition max-w-[200px] truncate block"
+                  className="text-sm font-medium text-gray-700 hover:text-red-600 transition whitespace-nowrap"
                   title={item.title}
                 >
                   {item.title}
@@ -64,6 +64,15 @@ export function TrendingBar({ trendingNews: initialTrendingNews = [] }: Trending
           </div>
         </div>
       </div>
+      <style jsx>{`
+        .scrollbar-hide {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+        }
+      `}</style>
     </div>
   );
 }

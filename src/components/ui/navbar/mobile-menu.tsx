@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -26,8 +26,39 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
   const [expandedCategories, setExpandedCategories] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(new Set());
 
+  // Check if we're in a dashboard route
+  const isDashboardRoute = pathname?.startsWith("/admin") || 
+                          pathname?.startsWith("/editor") || 
+                          pathname?.startsWith("/advertiser") || 
+                          pathname?.startsWith("/dashboard");
+
+  // Auto-expand categories when menu opens (if not in dashboard)
+  // Use setTimeout to avoid calling setState synchronously within effect
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset when menu closes - defer state update to avoid cascading renders
+      const timer = setTimeout(() => {
+        setExpandedCategories(false);
+        setExpandedCategoryIds(new Set());
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    // Only auto-expand if not in dashboard and categories are available
+    if (!isDashboardRoute && categories.length > 0) {
+      // Use setTimeout to defer state update and avoid cascading renders
+      const timer = setTimeout(() => {
+        setExpandedCategories(true);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isDashboardRoute, categories.length]);
+
   // Get root categories for hierarchical display
   const rootCategories = useMemo(() => {
+    if (!categories || categories.length === 0) {
+      return [];
+    }
     return getRootCategories(categories);
   }, [categories]);
 
@@ -85,10 +116,17 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
             <button
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 toggleCategory(category.id);
               }}
-              className="p-2 text-gray-500 hover:text-red-600 transition"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="p-2 text-gray-500 hover:text-red-600 active:text-red-700 transition"
+              style={{ touchAction: "manipulation", userSelect: "none" }}
               aria-expanded={isExpanded}
+              type="button"
             >
               <svg
                 className={`w-5 h-5 transition-transform ${isExpanded ? "rotate-180" : ""}`}
@@ -117,29 +155,41 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
     );
   };
 
-  if (!isOpen) return null;
-
   const userInitials = user ? getUserInitials(user.name) : "";
   const roleName = user ? getRoleDisplayName(user.role, language) : "";
+
+  // Don't render anything if not open
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-        onClick={onClose}
+        className="fixed inset-0 bg-black bg-opacity-50 z-[60] lg:hidden transition-opacity duration-300"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }}
+        onMouseDown={(e) => {
+          e.preventDefault();
+        }}
         aria-hidden="true"
+        style={{ zIndex: 60 }}
       />
 
       {/* Menu Panel */}
       <div
         id="mobile-menu"
-        className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-[70] transform transition-transform duration-300 ease-in-out lg:hidden translate-x-0"
         role="dialog"
         aria-modal="true"
         aria-label={language === "it" ? "Menu di navigazione" : "Navigation menu"}
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        style={{ zIndex: 70 }}
       >
         <div className="flex flex-col h-full overflow-y-auto">
           {/* Header */}
@@ -183,10 +233,20 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
               {/* Categories Accordion */}
               <div>
                 <button
-                  onClick={() => setExpandedCategories(!expandedCategories)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setExpandedCategories((prev) => !prev);
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 active:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset"
+                  style={{ touchAction: "manipulation", userSelect: "none" }}
                   aria-expanded={expandedCategories}
                   aria-controls="mobile-categories-list"
+                  type="button"
                 >
                   <span>{language === "it" ? "Categorie" : "Categories"}</span>
                   <svg
@@ -210,9 +270,15 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
                     role="region" 
                     aria-label={language === "it" ? "Lista categorie" : "Categories list"}
                   >
-                    {rootCategories
-                      .sort((a, b) => a.order - b.order)
-                      .map((category) => renderCategoryTree(category, 0))}
+                    {rootCategories.length > 0 ? (
+                      rootCategories
+                        .sort((a, b) => a.order - b.order)
+                        .map((category) => renderCategoryTree(category, 0))
+                    ) : (
+                      <div className="px-4 py-3 text-sm text-gray-500">
+                        {language === "it" ? "Nessuna categoria disponibile" : "No categories available"}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

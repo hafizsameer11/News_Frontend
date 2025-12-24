@@ -32,7 +32,7 @@ export default function TGPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8 max-w-7xl">
         <h1 className="text-4xl font-bold mb-8">TG Calabria - Video News</h1>
 
         {error && <ErrorMessage error={error} className="mb-6" />}

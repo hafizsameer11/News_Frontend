@@ -65,7 +65,7 @@ export function HeroSection({
             </h2>
             <div className="space-y-3">
               {rightColumnStories.length > 0 ? (
-                rightColumnStories.map((story) => (
+                rightColumnStories.slice(0, 5).map((story) => (
                   <HeadlineCard key={story.id} news={story} />
                 ))
               ) : (

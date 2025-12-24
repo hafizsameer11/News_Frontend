@@ -130,7 +130,7 @@ export const useBehaviorTracking = () => {
     // Prevent duplicate requests
     if (pendingRequestsRef.current.has(requestKey)) {
       if (process.env.NODE_ENV === "development") {
-        console.debug("Analytics tracking skipped: duplicate request", requestKey);
+        console.warn("Analytics tracking skipped: duplicate request", requestKey);
       }
       return;
     }

@@ -11,7 +11,7 @@ export async function generateTranslatedMetadata(
     title?: string;
     description?: string;
     keywords?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }
 ): Promise<Metadata> {
   const language = await getServerLanguage(cookies());

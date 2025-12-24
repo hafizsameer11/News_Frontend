@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useCategories } from "@/lib/hooks/useCategories";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -19,6 +19,44 @@ export function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted] = useState(() => typeof window !== "undefined");
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const lastInteractionRef = useRef<number>(0);
+
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
+  }, []);
+
+  // Ensure button is clickable on mobile by adding direct event listeners
+  useEffect(() => {
+    const button = menuButtonRef.current;
+    if (!button) return;
+
+    // Direct event handler that definitely works
+    const handleInteraction = (e: Event) => {
+      // Prevent double-firing: ignore if last interaction was less than 300ms ago
+      const now = Date.now();
+      if (now - lastInteractionRef.current < 300) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      lastInteractionRef.current = now;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      setIsMobileMenuOpen((prev) => !prev);
+    };
+
+    // Use capture phase to ensure we catch the event early
+    // Add both click and touchend to support all devices
+    button.addEventListener("click", handleInteraction, { capture: true, passive: false });
+    button.addEventListener("touchend", handleInteraction, { capture: true, passive: false });
+
+    return () => {
+      button.removeEventListener("click", handleInteraction, { capture: true } as EventListenerOptions);
+      button.removeEventListener("touchend", handleInteraction, { capture: true } as EventListenerOptions);
+    };
+  }, []);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -51,8 +89,8 @@ export function Navbar() {
 
       {/* Main Navigation Bar */}
       <nav
-        className="bg-white border-b border-gray-200 w-full sticky top-0"
-        style={{ position: "sticky", top: 0, zIndex: 50, overflow: "visible" }}
+        className="bg-white border-b border-gray-200 w-full sticky top-0 z-50"
+        style={{ position: "sticky", top: 0, zIndex: 50 }}
         role="navigation"
         aria-label={t("aria.mainNavigation")}
       >
@@ -62,14 +100,28 @@ export function Navbar() {
             style={{ overflow: "visible" }}
           >
             {/* Left: Hamburger + Logo */}
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-3 shrink-0" style={{ position: "relative", zIndex: 100 }}>
               {/* Hamburger Menu - Mobile Only */}
               <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 text-gray-900 hover:text-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded"
-                aria-label={t("aria.toggleMenu")}
+                ref={menuButtonRef}
+                className="lg:hidden p-2 text-gray-900 hover:text-red-600 active:text-red-700 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded relative"
+                style={{ 
+                  position: "relative", 
+                  zIndex: 101,
+                  pointerEvents: "auto",
+                  touchAction: "manipulation",
+                  WebkitTapHighlightColor: "transparent",
+                  cursor: "pointer",
+                  userSelect: "none",
+                  WebkitUserSelect: "none",
+                  MozUserSelect: "none",
+                  msUserSelect: "none",
+                  isolation: "isolate"
+                }}
+                aria-label={t("aria.toggleMenu") || "Toggle menu"}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
+                type="button"
               >
                 {isMobileMenuOpen ? (
                   <svg
@@ -174,7 +226,7 @@ export function Navbar() {
       {/* Mobile Menu */}
       <MobileMenu
         isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
+        onClose={closeMobileMenu}
         categories={categories}
       />
     </>

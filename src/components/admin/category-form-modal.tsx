@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Category, CreateCategoryInput, UpdateCategoryInput } from "@/types/category.types";
 import { slugify } from "@/lib/helpers/slugify";
 import { ErrorMessage } from "@/components/ui/error-message";
@@ -31,6 +32,9 @@ export function CategoryFormModal({
   error,
 }: CategoryFormModalProps) {
   const { t, language } = useLanguage();
+  const [mounted, setMounted] = useState(false);
+  const isMountedRef = useRef(true);
+  
   const [formData, setFormData] = useState({
     nameEn: "",
     nameIt: "",
@@ -44,6 +48,14 @@ export function CategoryFormModal({
   const [autoGenerateSlug, setAutoGenerateSlug] = useState(true);
   const [autoOrder, setAutoOrder] = useState(true);
   const MAX_DEPTH = 3; // Maximum depth: 0=root, 1=child, 2=grandchild, 3=great-grandchild
+
+  // Handle mounting for portal
+  useEffect(() => {
+    setMounted(true);
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Calculate depth if parent is selected
   const selectedParentDepth = useMemo(() => {
@@ -71,7 +83,7 @@ export function CategoryFormModal({
 
   // Auto-calculate order when parent changes (if auto-order is enabled)
   useEffect(() => {
-    if (autoOrder && !category) {
+    if (autoOrder && !category && isMountedRef.current) {
       setFormData((prev) => ({ ...prev, order: maxOrderForParent }));
     }
   }, [formData.parentId, maxOrderForParent, autoOrder, category]);
@@ -100,6 +112,8 @@ export function CategoryFormModal({
     : categories;
 
   useEffect(() => {
+    if (!isMountedRef.current) return;
+    
     if (category) {
       setFormData({
         nameEn: category.nameEn,
@@ -127,9 +141,12 @@ export function CategoryFormModal({
   }, [category]);
 
   const handleNameEnChange = (nameEn: string) => {
-    setFormData({ ...formData, nameEn });
+    if (!isMountedRef.current) return;
+    
     if (autoGenerateSlug) {
       setFormData((prev) => ({ ...prev, nameEn, slug: slugify(nameEn) }));
+    } else {
+      setFormData((prev) => ({ ...prev, nameEn }));
     }
   };
 
@@ -167,8 +184,12 @@ export function CategoryFormModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isMountedRef.current) return;
+    
     if (validateForm()) {
       const submitData: CreateCategoryInput | UpdateCategoryInput = {
         nameEn: formData.nameEn.trim(),
@@ -190,7 +211,10 @@ export function CategoryFormModal({
         submitData.parentId = null;
       }
 
-      onSubmit(submitData);
+      // Use setTimeout to ensure state updates happen after form submission
+      if (isMountedRef.current) {
+        onSubmit(submitData);
+      }
     }
   };
 
@@ -226,10 +250,25 @@ export function CategoryFormModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories, category?.id]);
 
-  return (
+  // Don't render until mounted (prevents hydration issues)
+  if (!mounted || typeof window === "undefined") {
+    return null;
+  }
+
+  const modalContent = (
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={(e) => e.target === e.currentTarget && !isLoading && onClose()}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isLoading && isMountedRef.current) {
+          onClose();
+        }
+      }}
+      onMouseDown={(e) => {
+        // Prevent click events from propagating during form submission
+        if (isLoading) {
+          e.preventDefault();
+        }
+      }}
     >
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
@@ -499,5 +538,7 @@ export function CategoryFormModal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
 

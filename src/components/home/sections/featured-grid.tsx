@@ -22,7 +22,7 @@ export function FeaturedGrid({
       : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
 
   return (
-    <div className="container mx-auto px-4 py-4 md:py-6">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-4 md:py-6 max-w-7xl">
       {title && (
         <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 md:mb-6 text-gray-900">
           {title}
