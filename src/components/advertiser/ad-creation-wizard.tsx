@@ -43,6 +43,7 @@ export function AdCreationWizard({ onComplete, onCancel }: AdCreationWizardProps
     endDate: "",
   });
   const [stepErrors, setStepErrors] = useState<Record<number, Record<string, string>>>({});
+  const [conflictError, setConflictError] = useState<string>("");
 
   const totalSteps = 4;
 
@@ -67,6 +68,13 @@ export function AdCreationWizard({ onComplete, onCancel }: AdCreationWizardProps
 
   const validateStep = (step: number): boolean => {
     const errors: Record<string, string> = {};
+
+    // Check for conflict error on step 3
+    if (step === 3 && conflictError) {
+      errors.conflict = conflictError;
+      setStepError(step, errors);
+      return false;
+    }
 
     if (step === 1) {
       if (!formData.title.trim()) {
@@ -93,6 +101,16 @@ export function AdCreationWizard({ onComplete, onCancel }: AdCreationWizardProps
       if (formData.startDate && formData.endDate) {
         const start = new Date(formData.startDate);
         const end = new Date(formData.endDate);
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
+        // Check if start date is in the past
+        if (start < now) {
+          errors.startDate = language === "it"
+            ? "La data di inizio non può essere nel passato"
+            : "Start date cannot be in the past";
+        }
+
         if (start >= end) {
           errors.endDate = language === "it" 
             ? "La data di fine deve essere successiva alla data di inizio" 
@@ -167,6 +185,7 @@ export function AdCreationWizard({ onComplete, onCancel }: AdCreationWizardProps
             formData={formData}
             updateFormData={updateFormData}
             errors={getStepErrors(3)}
+            setConflictError={setConflictError}
           />
         );
       case 4:

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Ad } from "@/types/ads.types";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { MediaLibraryModal } from "./media-library-modal";
@@ -8,6 +8,7 @@ import { Media } from "@/types/media.types";
 import { convertPriceToNumber } from "@/lib/helpers/ad-pricing";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { getImageUrl, normalizeImageUrl } from "@/lib/helpers/imageUrl";
+import { adsApi } from "@/lib/api/modules/ads.api";
 
 interface AdFormModalProps {
   ad?: Ad | null;
@@ -69,6 +70,7 @@ export function AdFormModal({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  const [isCheckingConflict, setIsCheckingConflict] = useState(false);
 
   const handleMediaSelect = (media: Media) => {
     if (media.type === "IMAGE") {
@@ -79,6 +81,63 @@ export function AdFormModal({
     }
     setShowMediaLibrary(false);
   };
+
+  // Check for booking conflicts
+  const checkBookingConflict = useCallback(async () => {
+    if (!formData.startDate || !formData.endDate) return;
+
+    const start = new Date(formData.startDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    // Don't check if start date is in the past (will be caught by validation)
+    if (start < now) return;
+
+    // Only check conflicts if position is specified (slider ads can have multiple on same date)
+    if (!formData.position) return;
+
+    setIsCheckingConflict(true);
+    try {
+      const response = await adsApi.checkConflict({
+        startDate: new Date(formData.startDate).toISOString(),
+        endDate: new Date(formData.endDate).toISOString(),
+        position: formData.position || null,
+        excludeAdId: ad?.id,
+      });
+
+      if (response.data.data.isConflict && response.data.data.conflictingAd) {
+        setErrors((prev) => ({
+          ...prev,
+          startDate: language === "it"
+            ? `Questa data e posizione sono già prenotate dall'annuncio: "${response.data.data.conflictingAd.title}". Seleziona una data o posizione diversa.`
+            : `This date and position are already booked by ad: "${response.data.data.conflictingAd.title}". Please select a different date or position.`,
+        }));
+      } else {
+        // Clear conflict error if no conflict
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          if (newErrors.startDate?.includes("already booked")) {
+            delete newErrors.startDate;
+          }
+          return newErrors;
+        });
+      }
+    } catch (error) {
+      // Silently fail conflict check - don't block form submission
+      console.error("Failed to check booking conflict:", error);
+    } finally {
+      setIsCheckingConflict(false);
+    }
+  }, [formData.startDate, formData.endDate, formData.position, ad?.id, language]);
+
+  // Check for conflicts when dates or position change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      checkBookingConflict();
+    }, 500); // Debounce conflict check
+
+    return () => clearTimeout(timeoutId);
+  }, [checkBookingConflict]);
 
   useEffect(() => {
     if (ad) {
@@ -214,6 +273,17 @@ export function AdFormModal({
     if (formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      // Check if start date is in the past
+      if (start < now) {
+        newErrors.startDate =
+          language === "it"
+            ? "La data di inizio non può essere nel passato"
+            : "Start date cannot be in the past";
+      }
+
       if (end <= start) {
         newErrors.endDate =
           language === "it"
@@ -484,41 +554,6 @@ export function AdFormModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {language === "it" ? "Posizione" : "Position"}
-                <span
-                  className="ml-1 text-xs font-normal text-gray-500"
-                  title={
-                    language === "it"
-                      ? "Opzionale: Zona di posizionamento specifica all'interno della pagina (es. Header, Sidebar, Footer). Diverso dal Tipo che definisce le dimensioni."
-                      : "Optional: Specific placement zone within the page (e.g., Header, Sidebar, Footer). Different from Type which defines dimensions."
-                  }
-                >
-                  ({language === "it" ? "Opzionale" : "Optional"})
-                </span>
-              </label>
-              <select
-                value={formData.position}
-                onChange={(e) =>
-                  setFormData({ ...formData, position: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
-              >
-                {AD_POSITIONS.map((position) => (
-                  <option key={position.value} value={position.value}>
-                    {position.label}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-xs text-gray-500">
-                {language === "it"
-                  ? "Zona di posizionamento specifica nella pagina (es. Header, Sidebar, Footer). Diverso dal Tipo che definisce dimensioni e comportamento."
-                  : "Specific placement zone on the page (e.g., Header, Sidebar, Footer). Different from Type which defines dimensions and behavior."}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
                 {t("admin.price")} (€)
                 <span
                   className="ml-1 text-xs font-normal text-gray-500"
@@ -571,17 +606,27 @@ export function AdFormModal({
               <input
                 type="datetime-local"
                 value={formData.startDate}
+                min={new Date().toISOString().slice(0, 16)}
                 onChange={(e) => {
                   setFormData({ ...formData, startDate: e.target.value });
-                  if (errors.startDate) setErrors({ ...errors, startDate: "" });
+                  if (errors.startDate) {
+                    const newErrors = { ...errors };
+                    delete newErrors.startDate;
+                    setErrors(newErrors);
+                  }
                 }}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.startDate ? "border-red-500" : "border-gray-300"
                 }`}
-                disabled={isLoading}
+                disabled={isLoading || isCheckingConflict}
               />
               {errors.startDate && (
                 <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>
+              )}
+              {isCheckingConflict && (
+                <p className="mt-1 text-xs text-gray-500">
+                  {language === "it" ? "Verifica conflitti..." : "Checking conflicts..."}
+                </p>
               )}
             </div>
 
@@ -593,14 +638,19 @@ export function AdFormModal({
               <input
                 type="datetime-local"
                 value={formData.endDate}
+                min={formData.startDate || new Date().toISOString().slice(0, 16)}
                 onChange={(e) => {
                   setFormData({ ...formData, endDate: e.target.value });
-                  if (errors.endDate) setErrors({ ...errors, endDate: "" });
+                  if (errors.endDate) {
+                    const newErrors = { ...errors };
+                    delete newErrors.endDate;
+                    setErrors(newErrors);
+                  }
                 }}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.endDate ? "border-red-500" : "border-gray-300"
                 }`}
-                disabled={isLoading}
+                disabled={isLoading || isCheckingConflict}
               />
               {errors.endDate && (
                 <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>

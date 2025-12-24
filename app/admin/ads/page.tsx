@@ -12,6 +12,7 @@ import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { AdFormModal } from "@/components/admin/ad-form-modal";
 import { DeleteConfirmModal } from "@/components/admin/delete-confirm-modal";
+import { AdCalendarModal } from "@/components/admin/ad-calendar-modal";
 import { ClearFilterButton } from "@/components/ui/clear-filter-button";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { Ad, AdResponse } from "@/types/ads.types";
@@ -25,6 +26,7 @@ export default function AdminAdsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [editingAd, setEditingAd] = useState<Ad | null>(null);
   const [deletingAd, setDeletingAd] = useState<Ad | null>(null);
 
@@ -134,12 +136,23 @@ export default function AdminAdsPage() {
         <h1 className="text-3xl font-bold text-gray-900">
           {t("admin.adManagement")}
         </h1>
-        <button
-          onClick={handleCreate}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
-        >
-          + {t("admin.createAd")}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setIsCalendarOpen(true)}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition whitespace-nowrap flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            {language === "it" ? "Calendario" : "Calendar"}
+          </button>
+          <button
+            onClick={handleCreate}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
+          >
+            + {t("admin.createAd")}
+          </button>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -460,6 +473,9 @@ export default function AdminAdsPage() {
           error={createMutation.error || updateMutation.error}
         />
       )}
+
+      {/* Calendar Modal */}
+      <AdCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
 
       {/* Delete Confirmation Modal */}
       {deletingAd && (

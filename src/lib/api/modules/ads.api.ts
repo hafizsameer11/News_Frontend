@@ -67,5 +67,23 @@ export const adsApi = {
   getAdvertiserAnalytics: () => {
     return apiClient.get<import("@/types/ads.types").AdvertiserAnalyticsResponse>("/ads/analytics/me");
   },
+
+  // Get calendar data (booked dates)
+  getCalendar: (year?: number, month?: number) => {
+    const params = new URLSearchParams();
+    if (year !== undefined) params.append("year", year.toString());
+    if (month !== undefined) params.append("month", month.toString());
+    return apiClient.get<{ data: Record<string, Array<{ position: string | null; type: string; title: string; id: string; status: string }>> }>(
+      `/ads/calendar${params.toString() ? `?${params.toString()}` : ""}`
+    );
+  },
+
+  // Check booking conflict
+  checkConflict: (data: { startDate: string; endDate: string; position?: string | null; excludeAdId?: string }) => {
+    return apiClient.post<{ data: { isConflict: boolean; conflictingAd?: { id: string; title: string } } }>(
+      "/ads/check-conflict",
+      data
+    );
+  },
 };
 

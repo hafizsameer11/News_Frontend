@@ -5,7 +5,6 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { formatDate } from "@/lib/helpers/formatDate";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { WeatherWidget } from "@/components/weather/weather-widget";
-import { UtilityLinksDropdown } from "./utility-links-dropdown";
 
 export function UtilityBar() {
   const { language } = useLanguage();
@@ -67,9 +66,8 @@ export function UtilityBar() {
             )}
           </div>
 
-          {/* Right: Utility Links, Language Switcher & Weather */}
+          {/* Right: Language Switcher & Weather */}
           <div className="flex items-center gap-3">
-            <UtilityLinksDropdown />
             <LanguageSwitcher compact />
             <WeatherWidget />
           </div>
