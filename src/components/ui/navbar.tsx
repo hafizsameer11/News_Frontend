@@ -20,42 +20,13 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted] = useState(() => typeof window !== "undefined");
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const lastInteractionRef = useRef<number>(0);
+
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen((prev) => !prev);
+  }, []);
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
-  }, []);
-
-  // Ensure button is clickable on mobile by adding direct event listeners
-  useEffect(() => {
-    const button = menuButtonRef.current;
-    if (!button) return;
-
-    // Direct event handler that definitely works
-    const handleInteraction = (e: Event) => {
-      // Prevent double-firing: ignore if last interaction was less than 300ms ago
-      const now = Date.now();
-      if (now - lastInteractionRef.current < 300) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-      lastInteractionRef.current = now;
-      
-      e.preventDefault();
-      e.stopPropagation();
-      setIsMobileMenuOpen((prev) => !prev);
-    };
-
-    // Use capture phase to ensure we catch the event early
-    // Add both click and touchend to support all devices
-    button.addEventListener("click", handleInteraction, { capture: true, passive: false });
-    button.addEventListener("touchend", handleInteraction, { capture: true, passive: false });
-
-    return () => {
-      button.removeEventListener("click", handleInteraction, { capture: true } as EventListenerOptions);
-      button.removeEventListener("touchend", handleInteraction, { capture: true } as EventListenerOptions);
-    };
   }, []);
 
   // Close mobile menu on route change
@@ -104,6 +75,7 @@ export function Navbar() {
               {/* Hamburger Menu - Mobile Only */}
               <button
                 ref={menuButtonRef}
+                onClick={toggleMobileMenu}
                 className="lg:hidden p-2 text-gray-900 hover:text-red-600 active:text-red-700 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded relative"
                 style={{ 
                   position: "relative", 
@@ -223,12 +195,14 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
-      <MobileMenu
-        isOpen={isMobileMenuOpen}
-        onClose={closeMobileMenu}
-        categories={categories}
-      />
+      {/* Mobile Menu - Only render after mount to prevent hydration issues */}
+      {isMounted && (
+        <MobileMenu
+          isOpen={isMobileMenuOpen}
+          onClose={closeMobileMenu}
+          categories={categories}
+        />
+      )}
     </>
   );
 }

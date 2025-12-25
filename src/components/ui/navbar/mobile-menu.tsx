@@ -158,35 +158,39 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
   const userInitials = user ? getUserInitials(user.name) : "";
   const roleName = user ? getRoleDisplayName(user.role, language) : "";
 
-  // Don't render anything if not open
-  if (!isOpen) {
-    return null;
-  }
-
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-[60] lg:hidden transition-opacity duration-300"
+        className={`fixed inset-0 bg-black z-[60] lg:hidden transition-opacity duration-300 ${
+          isOpen ? "bg-opacity-50 opacity-100 pointer-events-auto" : "bg-opacity-0 opacity-0 pointer-events-none"
+        }`}
         onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onClose();
+          if (isOpen) {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }
         }}
         onMouseDown={(e) => {
-          e.preventDefault();
+          if (isOpen) {
+            e.preventDefault();
+          }
         }}
-        aria-hidden="true"
+        aria-hidden={!isOpen}
         style={{ zIndex: 60 }}
       />
 
       {/* Menu Panel */}
       <div
         id="mobile-menu"
-        className="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-[70] transform transition-transform duration-300 ease-in-out lg:hidden translate-x-0"
+        className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-[70] transform transition-transform duration-300 ease-in-out lg:hidden ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
         role="dialog"
-        aria-modal="true"
+        aria-modal={isOpen ? "true" : "false"}
         aria-label={language === "it" ? "Menu di navigazione" : "Navigation menu"}
+        aria-hidden={!isOpen}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
         style={{ zIndex: 70 }}
