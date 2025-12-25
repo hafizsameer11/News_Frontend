@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { climatiqApi, TravelMode, CarType, CarSize, AirClass, LocationInput, ClimatiqResponse } from "@/lib/api/modules/climatiq.api";
-import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 
 interface TravelEmissionsCalculatorProps {
@@ -38,7 +37,22 @@ export function TravelEmissionsCalculator({ onResult }: TravelEmissionsCalculato
       const originLocation: LocationInput = { query: origin };
       const destinationLocation: LocationInput = { query: destination };
 
-      const request: any = {
+      interface TravelRequest {
+        travel_mode: TravelMode;
+        origin: LocationInput;
+        destination: LocationInput;
+        year?: number;
+        distance_km?: number;
+        car_details?: {
+          car_type: CarType;
+          car_size: CarSize;
+        };
+        air_details?: {
+          class: AirClass;
+        };
+      }
+
+      const request: TravelRequest = {
         travel_mode: travelMode,
         origin: originLocation,
         destination: destinationLocation,
@@ -67,8 +81,9 @@ export function TravelEmissionsCalculator({ onResult }: TravelEmissionsCalculato
       if (onResult) {
         onResult(response);
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to calculate emissions. Please try again.");
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setError(error.message || "Failed to calculate emissions. Please try again.");
     } finally {
       setIsLoading(false);
     }

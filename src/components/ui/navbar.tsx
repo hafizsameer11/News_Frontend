@@ -21,10 +21,6 @@ export function Navbar() {
   const [isMounted] = useState(() => typeof window !== "undefined");
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  const toggleMobileMenu = useCallback(() => {
-    setIsMobileMenuOpen((prev) => !prev);
-  }, []);
-
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
   }, []);
@@ -33,7 +29,12 @@ export function Navbar() {
   const prevPathnameRef = useRef(pathname);
   useEffect(() => {
     if (prevPathnameRef.current !== pathname && isMobileMenuOpen) {
-      setIsMobileMenuOpen(false);
+      // Use setTimeout to defer state update and avoid cascading renders
+      const timer = setTimeout(() => {
+        setIsMobileMenuOpen(false);
+      }, 0);
+      prevPathnameRef.current = pathname;
+      return () => clearTimeout(timer);
     }
     prevPathnameRef.current = pathname;
   }, [pathname, isMobileMenuOpen]);
@@ -72,24 +73,10 @@ export function Navbar() {
         return;
       }
 
-      console.log("Button found:", {
-        element: button,
-        display: window.getComputedStyle(button).display,
-        visibility: window.getComputedStyle(button).visibility,
-        pointerEvents: window.getComputedStyle(button).pointerEvents,
-        zIndex: window.getComputedStyle(button).zIndex,
-        rect: button.getBoundingClientRect()
-      });
-
       const handleClick = (e: MouseEvent | TouchEvent) => {
-        console.log("Direct event listener fired!", e.type);
         e.preventDefault();
         e.stopPropagation();
-        setIsMobileMenuOpen((prev) => {
-          const newState = !prev;
-          console.log("Menu state changed:", prev, "->", newState);
-          return newState;
-        });
+        setIsMobileMenuOpen((prev) => !prev);
       };
 
       // Remove any existing listeners first
@@ -123,28 +110,6 @@ export function Navbar() {
 
   const categories = (categoriesData as { data?: Category[] } | undefined)?.data || [];
 
-  // Debug: Log state changes and verify menu rendering
-  useEffect(() => {
-    if (isMounted) {
-      console.log("📱 Mobile menu state changed:", isMobileMenuOpen);
-      
-      // Check if menu element exists
-      if (isMobileMenuOpen) {
-        setTimeout(() => {
-          const menuEl = document.getElementById("mobile-menu");
-          console.log("Menu element check:", menuEl ? "FOUND" : "NOT FOUND", menuEl);
-          if (menuEl) {
-            console.log("Menu styles:", {
-              display: window.getComputedStyle(menuEl).display,
-              transform: window.getComputedStyle(menuEl).transform,
-              visibility: window.getComputedStyle(menuEl).visibility,
-              zIndex: window.getComputedStyle(menuEl).zIndex
-            });
-          }
-        }, 100);
-      }
-    }
-  }, [isMobileMenuOpen, isMounted]);
 
   return (
     <>
@@ -169,29 +134,14 @@ export function Navbar() {
               <button
                 ref={menuButtonRef}
                 onClick={(e) => {
-                  console.log("React onClick handler fired");
                   e.preventDefault();
                   e.stopPropagation();
-                  setIsMobileMenuOpen((prev) => {
-                    console.log("React onClick - toggling:", prev, "->", !prev);
-                    return !prev;
-                  });
-                }}
-                onMouseDown={(e) => {
-                  console.log("React onMouseDown fired");
-                  e.preventDefault();
-                }}
-                onTouchStart={(e) => {
-                  console.log("React onTouchStart fired");
+                  setIsMobileMenuOpen((prev) => !prev);
                 }}
                 onTouchEnd={(e) => {
-                  console.log("React onTouchEnd fired");
                   e.preventDefault();
                   e.stopPropagation();
-                  setIsMobileMenuOpen((prev) => {
-                    console.log("React onTouchEnd - toggling:", prev, "->", !prev);
-                    return !prev;
-                  });
+                  setIsMobileMenuOpen((prev) => !prev);
                 }}
                 className="lg:hidden p-2 text-gray-900 hover:text-red-600 active:text-red-700 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded relative"
                 style={{ 

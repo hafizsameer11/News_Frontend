@@ -51,7 +51,7 @@ export function OptimizedImage(props: ImageProps & { alt: string }) {
     }
     // In production, optimize other domains
     return false;
-  }, [normalizedSrc, isLocalhost, isApiDomain]);
+  }, [isLocalhost, isApiDomain]);
 
   // Reset error state when src changes - use setTimeout to defer
   useEffect(() => {

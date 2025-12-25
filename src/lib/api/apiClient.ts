@@ -37,14 +37,14 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => {
     // Normalize image URLs in response data to prevent duplicates
-    const normalizeResponseData = (data: any): any => {
+    const normalizeResponseData = (data: unknown): unknown => {
       if (!data || typeof data !== "object") return data;
       
       if (Array.isArray(data)) {
         return data.map(normalizeResponseData);
       }
       
-      const normalized: any = {};
+      const normalized: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(data)) {
         if (key === "mainImage" || key === "url" || key === "thumbnailUrl" || key === "imageUrl") {
           // Normalize image URLs
@@ -54,11 +54,12 @@ axiosInstance.interceptors.response.use(
           normalized[key] = normalizeResponseData(value);
         } else if (key === "news" && Array.isArray(value)) {
           // Normalize news array
-          normalized[key] = value.map((item: any) => {
-            if (item && typeof item === "object") {
+          normalized[key] = value.map((item: unknown) => {
+            if (item && typeof item === "object" && item !== null && "mainImage" in item) {
+              const itemObj = item as { mainImage?: string; [key: string]: unknown };
               return {
-                ...item,
-                mainImage: item.mainImage ? normalizeImageUrl(item.mainImage) : item.mainImage,
+                ...itemObj,
+                mainImage: itemObj.mainImage ? normalizeImageUrl(itemObj.mainImage) : itemObj.mainImage,
               };
             }
             return item;

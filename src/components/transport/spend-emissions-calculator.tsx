@@ -49,8 +49,9 @@ export function SpendEmissionsCalculator({ onResult }: SpendEmissionsCalculatorP
       if (onResult) {
         onResult(response);
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to calculate emissions. Please try again.");
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setError(error.message || "Failed to calculate emissions. Please try again.");
     } finally {
       setIsLoading(false);
     }

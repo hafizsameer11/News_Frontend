@@ -289,7 +289,7 @@ export function UserSidebar({
 }: UserSidebarProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const { logout } = useAuth();
   const [internalCollapsed, setInternalCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
@@ -374,9 +374,8 @@ export function UserSidebar({
 
       <nav className="space-y-1 overflow-y-auto flex-1">
         {userMenuItems.map((item) => {
-          const isExactMatch = pathname === item.href;
           // Check if this is a child route (pathname starts with href + "/")
-          const isChildRoute = pathname?.startsWith(item.href + "/");
+          // Note: isExactMatch and isChildRoute are calculated but not used in current implementation
 
           // Find the most specific matching route
           // Sort items by length (longest first) to prioritize more specific routes

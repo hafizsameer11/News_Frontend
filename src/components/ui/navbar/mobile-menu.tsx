@@ -19,23 +19,14 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
-  const [isMounted, setIsMounted] = useState(false);
+  // Initialize isMounted based on whether we're on the client
+  const [isMounted] = useState(() => typeof window !== "undefined");
   const { user, logout, isAuthenticated } = useAuth();
   const { language } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const [expandedCategories, setExpandedCategories] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(new Set());
-
-  // Only render on client to avoid hydration errors
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return null;
-  }
-
 
   // Check if we're in a dashboard route
   const isDashboardRoute = pathname?.startsWith("/admin") || 
@@ -46,6 +37,8 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
   // Auto-expand categories when menu opens (if not in dashboard)
   // Use setTimeout to avoid calling setState synchronously within effect
   useEffect(() => {
+    if (!isMounted) return;
+    
     if (!isOpen) {
       // Reset when menu closes - defer state update to avoid cascading renders
       const timer = setTimeout(() => {
@@ -63,7 +56,7 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, isDashboardRoute, categories.length]);
+  }, [isOpen, isDashboardRoute, categories.length, isMounted]);
 
   // Get root categories for hierarchical display
   const rootCategories = useMemo(() => {
@@ -166,11 +159,9 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
     );
   };
 
-  const userInitials = user ? getUserInitials(user.name) : "";
-  const roleName = user ? getRoleDisplayName(user.role, language) : "";
-
   // Ensure menu is visible when open
   useEffect(() => {
+    if (!isMounted) return;
     if (isOpen && typeof window !== "undefined") {
       const menuEl = document.getElementById("mobile-menu");
       if (menuEl) {
@@ -181,7 +172,15 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
         menuEl.style.zIndex = "9999";
       }
     }
-  }, [isOpen]);
+  }, [isOpen, isMounted]);
+
+  const userInitials = user ? getUserInitials(user.name) : "";
+  const roleName = user ? getRoleDisplayName(user.role, language) : "";
+
+  // Don't render until mounted to avoid hydration errors
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <>
