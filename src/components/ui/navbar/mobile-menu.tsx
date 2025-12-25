@@ -19,12 +19,23 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
   const { language } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const [expandedCategories, setExpandedCategories] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(new Set());
+
+  // Only render on client to avoid hydration errors
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
+
 
   // Check if we're in a dashboard route
   const isDashboardRoute = pathname?.startsWith("/admin") || 
@@ -158,42 +169,63 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
   const userInitials = user ? getUserInitials(user.name) : "";
   const roleName = user ? getRoleDisplayName(user.role, language) : "";
 
+  // Ensure menu is visible when open
+  useEffect(() => {
+    if (isOpen && typeof window !== "undefined") {
+      const menuEl = document.getElementById("mobile-menu");
+      if (menuEl) {
+        menuEl.style.display = "block";
+        menuEl.style.transform = "translateX(0)";
+        menuEl.style.visibility = "visible";
+        menuEl.style.pointerEvents = "auto";
+        menuEl.style.zIndex = "9999";
+      }
+    }
+  }, [isOpen]);
+
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className={`fixed inset-0 bg-black z-[60] lg:hidden transition-opacity duration-300 ${
-          isOpen ? "bg-opacity-50 opacity-100 pointer-events-auto" : "bg-opacity-0 opacity-0 pointer-events-none"
-        }`}
-        onClick={(e) => {
-          if (isOpen) {
+      {/* Backdrop - Only show when open */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black lg:hidden transition-opacity duration-300 bg-opacity-50 opacity-100 pointer-events-auto"
+          onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onClose();
-          }
-        }}
-        onMouseDown={(e) => {
-          if (isOpen) {
+          }}
+          onMouseDown={(e) => {
             e.preventDefault();
-          }
-        }}
-        aria-hidden={!isOpen}
-        style={{ zIndex: 60 }}
-      />
+          }}
+          aria-hidden="false"
+          style={{ zIndex: 9998 }}
+        />
+      )}
 
-      {/* Menu Panel */}
+      {/* Menu Panel - Always rendered for smooth transitions */}
       <div
         id="mobile-menu"
-        className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-[70] transform transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        data-open={isOpen ? "true" : "false"}
+        data-testid="mobile-menu-panel"
         role="dialog"
         aria-modal={isOpen ? "true" : "false"}
         aria-label={language === "it" ? "Menu di navigazione" : "Navigation menu"}
         aria-hidden={!isOpen}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
-        style={{ zIndex: 70 }}
+        style={{ 
+          zIndex: 9999, 
+          display: "block",
+          transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+          WebkitTransform: isOpen ? "translateX(0)" : "translateX(-100%)",
+          pointerEvents: isOpen ? "auto" : "none",
+          visibility: "visible",
+          backgroundColor: "#ffffff",
+          boxShadow: isOpen ? "2px 0 10px rgba(0,0,0,0.1)" : "none"
+        }}
       >
         <div className="flex flex-col h-full overflow-y-auto">
           {/* Header */}

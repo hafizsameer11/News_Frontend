@@ -1,6 +1,6 @@
 # NEWS NEXT Frontend
 
-Enterprise-grade frontend starter for NEWS NEXT - Edizione Calabria platform.
+Enterprise-grade frontend starter for Tg Calabria - Edizione Calabria platform.
 
 ## Tech Stack
 

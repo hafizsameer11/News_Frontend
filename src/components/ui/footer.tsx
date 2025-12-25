@@ -129,7 +129,7 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-8 lg:gap-8 xl:gap-10">
           {/* About Section */}
           <div className="sm:col-span-2 lg:col-span-2 flex flex-col">
-            <h3 className="text-xl font-bold mb-4 text-white">NEWS NEXT</h3>
+            <h3 className="text-xl font-bold mb-4 text-white">TG CALABRIA</h3>
             <p className="text-gray-400 mb-4 text-sm leading-relaxed">
               {t("footer.about.description")}
             </p>

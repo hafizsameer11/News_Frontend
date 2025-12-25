@@ -41,3 +41,55 @@ body {
 nav[role="navigation"] div.flex.items-center.gap-3.shrink-0 > div.hidden {
   display: none !important;
 }
+
+/* Ensure mobile menu button is always clickable */
+button[data-testid="mobile-menu-button"] {
+  pointer-events: auto !important;
+  z-index: 10000 !important;
+  position: relative !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+}
+
+button[data-testid="mobile-menu-button"] svg {
+  pointer-events: none !important;
+}
+
+/* Ensure nothing overlays the button */
+button[data-testid="mobile-menu-button"]::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Ensure mobile menu is visible when open */
+#mobile-menu[data-open="true"] {
+  transform: translateX(0) !important;
+  -webkit-transform: translateX(0) !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  display: block !important;
+  opacity: 1 !important;
+}
+
+#mobile-menu[data-open="false"] {
+  transform: translateX(-100%) !important;
+  -webkit-transform: translateX(-100%) !important;
+  pointer-events: none !important;
+}
+
+/* Force mobile menu to be visible on mobile devices */
+@media (max-width: 1023px) {
+  #mobile-menu {
+    display: block !important;
+  }
+}
+
+/* Hide on desktop */
+@media (min-width: 1024px) {
+  #mobile-menu {
+    display: none !important;
+  }
+}

@@ -16,7 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function AdminSettingsPage() {
   const { language, setLanguage, t } = useLanguage();
-  const [siteName, setSiteName] = useState("NEWS NEXT");
+  const [siteName, setSiteName] = useState("TG CALABRIA");
   const [defaultLanguage, setDefaultLanguage] = useState<"en" | "it">(language);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(
@@ -149,7 +149,7 @@ export default function AdminSettingsPage() {
               value={siteName}
               onChange={(e) => setSiteName(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="NEWS NEXT"
+              placeholder="TG CALABRIA"
             />
             {config?.siteName && (
               <p className="mt-1 text-xs text-gray-500">

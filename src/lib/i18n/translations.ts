@@ -650,7 +650,7 @@ export const translations = {
     dashboard: {
       title: "Dashboard",
       myDashboard: "My Dashboard",
-      welcome: "Welcome to NEWS NEXT",
+      welcome: "Welcome to TG CALABRIA",
       exploreNews: "Explore News",
       chatWithAdmin: "Chat with Admin",
       becomeAdvertiser: "Become an Advertiser",
@@ -760,7 +760,7 @@ export const translations = {
     },
     // Metadata
     metadata: {
-      siteTitle: "NEWS NEXT - Edizione Calabria",
+      siteTitle: "TG CALABRIA - Edizione Calabria",
       siteDescription: "Next-generation digital news platform for Calabria",
     },
     // Error Pages
@@ -780,7 +780,7 @@ export const translations = {
     // Footer
     footer: {
       about: {
-        title: "About NEWS NEXT",
+        title: "About TG CALABRIA",
         description: "Your trusted source for news in Calabria. Stay informed with the latest updates.",
         contact: "Contact",
         email: "Email",
@@ -834,16 +834,16 @@ export const translations = {
         transcripts: "Transcripts",
       },
       social: {
-        follow: "Follow NEWS NEXT",
+        follow: "Follow TG CALABRIA",
         facebook: "Facebook",
         twitter: "Twitter",
         instagram: "Instagram",
         youtube: "YouTube",
       },
       copyright: {
-        text: "© 2025 NEWS NEXT. All Rights Reserved.",
+        text: "© 2025 TG CALABRIA. All Rights Reserved.",
         rightsReserved: "All Rights Reserved.",
-        trademark: "NEWS NEXT™",
+        trademark: "TG CALABRIA™",
       },
       newsletter: {
         title: "Newsletter",
@@ -1506,7 +1506,7 @@ export const translations = {
     dashboard: {
       title: "Dashboard",
       myDashboard: "La Mia Dashboard",
-      welcome: "Benvenuto su NEWS NEXT",
+      welcome: "Benvenuto su TG CALABRIA",
       exploreNews: "Esplora Notizie",
       chatWithAdmin: "Chat con Admin",
       becomeAdvertiser: "Diventa Inserzionista",
@@ -1616,7 +1616,7 @@ export const translations = {
     },
     // Metadata
     metadata: {
-      siteTitle: "NEWS NEXT - Edizione Calabria",
+      siteTitle: "TG CALABRIA - Edizione Calabria",
       siteDescription: "Piattaforma digitale di notizie di nuova generazione per la Calabria",
     },
     // Error Pages
@@ -1636,7 +1636,7 @@ export const translations = {
     // Footer
     footer: {
       about: {
-        title: "Informazioni su NEWS NEXT",
+        title: "Informazioni su TG CALABRIA",
         description: "La tua fonte affidabile di notizie in Calabria. Resta informato con gli ultimi aggiornamenti.",
         contact: "Contatti",
         email: "Email",
@@ -1690,16 +1690,16 @@ export const translations = {
         transcripts: "Trascrizioni",
       },
       social: {
-        follow: "Segui NEWS NEXT",
+        follow: "Segui TG CALABRIA",
         facebook: "Facebook",
         twitter: "Twitter",
         instagram: "Instagram",
         youtube: "YouTube",
       },
       copyright: {
-        text: "© 2025 NEWS NEXT. Tutti i diritti riservati.",
+        text: "© 2025 TG CALABRIA. Tutti i diritti riservati.",
         rightsReserved: "Tutti i diritti riservati.",
-        trademark: "NEWS NEXT™",
+        trademark: "TG CALABRIA™",
       },
       newsletter: {
         title: "Newsletter",

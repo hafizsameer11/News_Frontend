@@ -256,7 +256,7 @@ export function AdvertiserSidebar({
               isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
             )}
           >
-            <h1 className="text-xl font-bold text-red-600">NEWS NEXT</h1>
+            <h1 className="text-xl font-bold text-red-600">TG CALABRIA</h1>
             <p className="text-gray-400 text-xs">
               {language === "it"
                 ? "Pannello Inserzionista"

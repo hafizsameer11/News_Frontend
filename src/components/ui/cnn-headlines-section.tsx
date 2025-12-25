@@ -19,7 +19,7 @@ export function CNNHeadlinesSection({ headlines = [] }: CNNHeadlinesSectionProps
         <div className="relative z-10">
           <div className="flex items-center justify-center mb-2">
             <div className="text-white">
-              <div className="text-2xl font-bold">NEWS NEXT</div>
+              <div className="text-2xl font-bold">TG CALABRIA</div>
               <div className="text-xs uppercase tracking-wider">Headlines</div>
             </div>
           </div>

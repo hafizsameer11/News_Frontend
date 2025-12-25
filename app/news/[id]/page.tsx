@@ -81,11 +81,11 @@ export async function generateMetadata({
   const language = await getServerLanguage(cookies());
   return {
     title:
-      language === "it" ? "Articolo | NEWS NEXT" : "News Article | NEWS NEXT",
+      language === "it" ? "Articolo | TG CALABRIA" : "News Article | TG CALABRIA",
     description:
       language === "it"
-        ? "Leggi l'ultimo articolo di NEWS NEXT"
-        : "Read the latest news article on NEWS NEXT",
+        ? "Leggi l'ultimo articolo di TG CALABRIA"
+        : "Read the lat est news article on TG CALABRIA",
   };
 }
 

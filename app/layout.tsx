@@ -27,7 +27,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NEWS NEXT - Edizione Calabria",
+  title: " Tg Calabria - Edizione Calabria",
   description: "Next-generation digital news platform for Calabria",
 };
 

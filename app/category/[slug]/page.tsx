@@ -45,8 +45,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   // Always return valid metadata, even if fetching fails
   const fallbackMetadata: Metadata = {
-    title: "Category | NEWS NEXT",
-    description: "Browse news articles by category on NEWS NEXT",
+    title: "Category | TG CALABRIA",
+    description: "Browse news articles by category on TG CALABRIA",
   };
 
   try {
@@ -95,11 +95,11 @@ export async function generateMetadata({
   try {
     const language = await getServerLanguage(cookies());
     return {
-      title: language === "it" ? "Categoria | NEWS NEXT" : "Category | NEWS NEXT",
-      description:
+      title: language === "it" ? "Categoria | TG CALABRIA" : "Category | TG CALABRIA",
+      description:  
         language === "it"
-          ? "Sfoglia gli articoli di notizie per categoria su NEWS NEXT"
-          : "Browse news articles by category on NEWS NEXT",
+          ? "Sfoglia gli articoli di notizie per categoria su TG CALABRIA"
+          : "Browse news articles by category on TG CALABRIA",
     };
   } catch (error) {
     // Ultimate fallback if even language detection fails

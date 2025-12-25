@@ -65,7 +65,7 @@ export async function generateMetadata({
   
   if (!normalizedSign) {
     return {
-      title: "Horoscope | NEWS NEXT",
+      title: "Horoscope | TG CALABRIA",
       description: "Horoscope page",
     };
   }
@@ -76,18 +76,18 @@ export async function generateMetadata({
   const element = signData?.element || "";
 
   return {
-    title: `${signName} Horoscope | NEWS NEXT`,
+    title: `${signName} Horoscope | TG CALABRIA`,
     description: `Read your daily horoscope for ${signName}. Get insights, predictions, and guidance for ${signName} zodiac sign.`,
     keywords: `horoscope, ${signName}, zodiac sign, daily horoscope, astrology${element ? `, ${element}` : ""}`,
     openGraph: {
-      title: `${signName} Horoscope | NEWS NEXT`,
+      title: `${signName} Horoscope | TG CALABRIA`,
       description: `Read your daily horoscope for ${signName}.`,
       type: "website",
       url: `${baseUrl}/horoscope/${sign.toLowerCase()}`,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${signName} Horoscope | NEWS NEXT`,
+      title: `${signName} Horoscope | TG CALABRIA`,
       description: `Read your daily horoscope for ${signName}.`,
     },
     alternates: {

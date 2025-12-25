@@ -81,7 +81,7 @@ export default function EditorLayout({ children }: { children: React.ReactNode }
         <div className="p-4 flex-shrink-0 border-b border-gray-800">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-red-600">NEWS NEXT</h1>
+              <h1 className="text-xl font-bold text-red-600">TG CALABRIA</h1>
               <p className="text-gray-400 text-xs">Editor Panel</p>
             </div>
             <button
@@ -121,7 +121,7 @@ export default function EditorLayout({ children }: { children: React.ReactNode }
               />
             </svg>
           </button>
-          <h1 className="text-xl font-bold text-red-600">NEWS NEXT</h1>
+          <h1 className="text-xl font-bold text-red-600">TG CALABRIA</h1>
           <div className="w-10" /> {/* Spacer for centering */}
         </div>
 

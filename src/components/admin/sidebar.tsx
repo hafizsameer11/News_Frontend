@@ -208,7 +208,7 @@ export function AdminSidebar({
       {showHeader && (
         <div className="mb-4 flex items-center justify-between">
           <div className={cn("transition-all duration-300", shouldShowCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
-            <h1 className="text-xl font-bold text-red-600">NEWS NEXT</h1>
+            <h1 className="text-xl font-bold text-red-600">TG CALABRIA</h1>
             <p className="text-gray-400 text-xs">{t("admin.panel")}</p>
           </div>
           <button
