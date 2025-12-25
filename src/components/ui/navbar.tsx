@@ -20,6 +20,7 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted] = useState(() => typeof window !== "undefined");
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const touchStartTimeRef = useRef<number>(0);
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
@@ -62,50 +63,24 @@ export function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
-  // Test button clickability and add direct handler
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    
-    const checkButton = () => {
-      const button = menuButtonRef.current;
-      if (!button) {
-        console.warn("Button ref not available");
-        return;
-      }
+  // Handle button click with proper event handling
+  const handleMenuToggle = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    // Prevent double-toggling if touch event just fired (within 300ms)
+    const timeSinceTouch = Date.now() - touchStartTimeRef.current;
+    if (timeSinceTouch < 300) {
+      return;
+    }
+    setIsMobileMenuOpen((prev) => !prev);
+  }, []);
 
-      const handleClick = (e: MouseEvent | TouchEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsMobileMenuOpen((prev) => !prev);
-      };
-
-      // Remove any existing listeners first
-      button.removeEventListener("click", handleClick as EventListener);
-      button.removeEventListener("touchend", handleClick as EventListener);
-      
-      // Add new listeners
-      button.addEventListener("click", handleClick as EventListener, true);
-      button.addEventListener("touchend", handleClick as EventListener, true);
-      button.addEventListener("mousedown", handleClick as EventListener, true);
-
-      return () => {
-        button.removeEventListener("click", handleClick as EventListener, true);
-        button.removeEventListener("touchend", handleClick as EventListener, true);
-        button.removeEventListener("mousedown", handleClick as EventListener, true);
-      };
-    };
-
-    // Check immediately and after a delay
-    const cleanup1 = checkButton();
-    const timer = setTimeout(() => {
-      const cleanup2 = checkButton();
-      return cleanup2;
-    }, 500);
-
-    return () => {
-      cleanup1?.();
-      clearTimeout(timer);
-    };
+  // Handle touch start separately to ensure it works on mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    touchStartTimeRef.current = Date.now();
+    // Don't preventDefault on touchstart to allow natural touch behavior
+    setIsMobileMenuOpen((prev) => !prev);
   }, []);
 
   const categories = (categoriesData as { data?: Category[] } | undefined)?.data || [];
@@ -133,28 +108,26 @@ export function Navbar() {
               {/* Hamburger Menu - Mobile Only */}
               <button
                 ref={menuButtonRef}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsMobileMenuOpen((prev) => !prev);
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsMobileMenuOpen((prev) => !prev);
-                }}
+                onClick={handleMenuToggle}
+                onTouchStart={handleTouchStart}
                 className="lg:hidden p-2 text-gray-900 hover:text-red-600 active:text-red-700 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded relative"
                 style={{ 
                   position: "relative", 
                   zIndex: 10000,
                   pointerEvents: "auto",
                   touchAction: "manipulation",
+                  WebkitTouchCallout: "none",
+                  WebkitTapHighlightColor: "transparent",
+                  userSelect: "none",
                   cursor: "pointer",
-                  minWidth: "40px",
-                  minHeight: "40px",
+                  minWidth: "44px",
+                  minHeight: "44px",
                   backgroundColor: "transparent",
                   border: "none",
-                  isolation: "isolate"
+                  isolation: "isolate",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
                 }}
                 aria-label={t("aria.toggleMenu") || "Toggle menu"}
                 aria-expanded={isMobileMenuOpen}
