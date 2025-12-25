@@ -5,6 +5,7 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { formatDate } from "@/lib/helpers/formatDate";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { WeatherWidget } from "@/components/weather/weather-widget";
+import { UtilityLinksDropdown } from "./utility-links-dropdown";
 
 export function UtilityBar() {
   const { language } = useLanguage();
@@ -58,16 +59,19 @@ export function UtilityBar() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl" style={{ overflow: "visible" }}>
         <div className="flex items-center justify-between h-8">
-          {/* Left: Date */}
-          <div className="text-gray-600" suppressHydrationWarning>
-            {formatDate(
-              currentDate || new Date(),
-              language === "it" ? "EEEE, d MMMM yyyy" : "EEEE, MMMM d, yyyy"
-            )}
+          {/* Left: Utility Links - appear before date */}
+          <div className="flex items-center gap-2">
+            <UtilityLinksDropdown />
           </div>
 
-          {/* Right: Language Switcher & Weather */}
+          {/* Right: Date, Language Switcher & Weather */}
           <div className="flex items-center gap-3">
+            <div className="text-gray-600" suppressHydrationWarning>
+              {formatDate(
+                currentDate || new Date(),
+                language === "it" ? "EEEE, d MMMM yyyy" : "EEEE, MMMM d, yyyy"
+              )}
+            </div>
             <LanguageSwitcher compact />
             <WeatherWidget />
           </div>

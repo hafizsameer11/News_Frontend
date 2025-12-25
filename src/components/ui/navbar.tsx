@@ -12,7 +12,6 @@ import { CategoryNav } from "./navbar/category-nav";
 import { UserMenu } from "./navbar/user-menu";
 import { MobileMenu } from "./navbar/mobile-menu";
 import { SearchDropdown } from "./navbar/search-dropdown";
-import { UtilityLinksDropdown } from "./navbar/utility-links-dropdown";
 export function Navbar() {
   const { data: categoriesData, isLoading } = useCategories();
   const { t } = useLanguage();
@@ -100,7 +99,7 @@ export function Navbar() {
             className="flex items-center justify-between h-16"
             style={{ overflow: "visible" }}
           >
-            {/* Left: Hamburger + Utility Links + Logo */}
+            {/* Left: Hamburger + Logo */}
             <div className="flex items-center gap-3 shrink-0" style={{ position: "relative", zIndex: 100 }}>
               {/* Hamburger Menu - Mobile Only */}
               <button
@@ -154,11 +153,6 @@ export function Navbar() {
                   </svg>
                 )}
               </button>
-
-              {/* Utility Links - Desktop Only, aligned with date field */}
-              <div className="hidden lg:flex items-center">
-                <UtilityLinksDropdown />
-              </div>
 
               {/* Logo - Red CNN Style */}
               <Link

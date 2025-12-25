@@ -36,3 +36,8 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Hide utility links in navbar - they should only appear in utility bar */
+nav[role="navigation"] div.flex.items-center.gap-3.shrink-0 > div.hidden {
+  display: none !important;
+}
