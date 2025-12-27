@@ -47,6 +47,7 @@ export function formatDate(
 
 /**
  * Format relative time (e.g., "2 hours ago")
+ * After 1 hour, shows the actual date instead of "X hours ago"
  */
 export function formatRelativeTime(
   date: string | Date,
@@ -54,6 +55,18 @@ export function formatRelativeTime(
 ): string {
   try {
     const dateObj = typeof date === "string" ? parseISO(date) : date;
+    const now = new Date();
+    const diffInMs = now.getTime() - dateObj.getTime();
+    const diffInHours = diffInMs / (1000 * 60 * 60);
+    
+    // If more than 1 hour has passed, show the actual date instead of "X hours ago"
+    if (diffInHours >= 1) {
+      const locale = getDateLocale(language);
+      // Use a short date format (e.g., "Jan 1" or "1 gen" in Italian)
+      return format(dateObj, "MMM dd", { locale });
+    }
+    
+    // Less than 1 hour: show relative time (e.g., "5 minutes ago")
     const locale = getDateLocale(language);
     return formatDistanceToNow(dateObj, { addSuffix: true, locale });
   } catch {

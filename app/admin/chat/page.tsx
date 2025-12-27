@@ -8,6 +8,9 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import { ConversationList } from "@/components/chat/conversation-list";
 import { UserList } from "@/components/chat/user-list";
 import { ChatWindow } from "@/components/chat/chat-window";
+import { SelectedOperator } from "@/components/admin/selected-operator";
+import { CreateMemo } from "@/components/admin/create-memo";
+import { MemoList } from "@/components/admin/memo-list";
 import { cn } from "@/lib/helpers/cn";
 
 export default function AdminChatPage() {
@@ -135,7 +138,7 @@ export default function AdminChatPage() {
             </div>
           </div>
 
-          {/* Chat Window - Full width on mobile when selected */}
+          {/* Main Content Area - Split layout for chat and memos */}
           <div
             className={cn(
               "flex-1 flex flex-col min-h-0",
@@ -190,14 +193,41 @@ export default function AdminChatPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex-1 min-h-0">
-                  <ChatWindow
-                    partnerId={selectedPartnerId}
-                    partnerName={selectedPartner.name}
-                    partnerAvatar={selectedPartner.avatar}
-                    currentUserId={user.id}
-                    currentUserName={user.name}
-                  />
+
+                {/* Split Layout: Left (Chat) and Right (Memos) */}
+                <div className="flex-1 flex gap-4 p-4 min-h-0 overflow-hidden">
+                  {/* Left Side: Selected Operator + Quick Chat */}
+                  <div className="flex-1 flex flex-col gap-4 min-w-0">
+                    <SelectedOperator operator={selectedPartner} />
+                    <div className="flex-1 min-h-0 bg-white rounded-lg border border-gray-200 overflow-hidden">
+                      <div className="p-3 border-b border-gray-200">
+                        <h3 className="font-bold text-gray-700">Quick Chat</h3>
+                        <p className="text-xs text-gray-500">
+                          Chat opened with {selectedPartner.name}.
+                        </p>
+                      </div>
+                      <div className="flex-1 min-h-0">
+                        <ChatWindow
+                          partnerId={selectedPartnerId}
+                          partnerName={selectedPartner.name}
+                          partnerAvatar={selectedPartner.avatar}
+                          currentUserId={user.id}
+                          currentUserName={user.name}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Side: Create Memo + Memo List */}
+                  <div className="w-80 flex flex-col gap-4 min-w-0">
+                    <CreateMemo
+                      userId={selectedPartnerId}
+                      userName={selectedPartner.name}
+                    />
+                    <div className="flex-1 min-h-0">
+                      <MemoList userId={selectedPartnerId} />
+                    </div>
+                  </div>
                 </div>
               </>
             ) : (
