@@ -21,7 +21,8 @@ export function SocialShareButtons({
 
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
-  const encodedDescription = encodeURIComponent(description);
+  // Description encoding kept for potential future use in share links
+  const _encodedDescription = encodeURIComponent(description);
 
   const shareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,

@@ -20,7 +20,8 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted] = useState(() => typeof window !== "undefined");
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const touchStartTimeRef = useRef<number>(0);
+  const lastToggleTimeRef = useRef<number>(0);
+  const touchHandledRef = useRef<boolean>(false);
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
@@ -63,25 +64,40 @@ export function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
-  // Handle button click with proper event handling
-  const handleMenuToggle = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-    // Prevent double-toggling if touch event just fired (within 300ms)
-    const timeSinceTouch = Date.now() - touchStartTimeRef.current;
-    if (timeSinceTouch < 300) {
+  // Unified toggle handler - works for both touch and click
+  const handleToggle = useCallback(() => {
+    const now = Date.now();
+    // Very short debounce (150ms) to prevent accidental double-taps, but allow quick single taps
+    if (now - lastToggleTimeRef.current < 150) {
       return;
     }
+    lastToggleTimeRef.current = now;
     setIsMobileMenuOpen((prev) => !prev);
   }, []);
 
-  // Handle touch start separately to ensure it works on mobile
+  // Handle touch start - immediate response on Android (fires as soon as finger touches)
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    touchStartTimeRef.current = Date.now();
-    // Don't preventDefault on touchstart to allow natural touch behavior
-    setIsMobileMenuOpen((prev) => !prev);
-  }, []);
+    touchHandledRef.current = true;
+    handleToggle();
+    // Reset after a short delay to allow click event to be ignored
+    setTimeout(() => {
+      touchHandledRef.current = false;
+    }, 400);
+  }, [handleToggle]);
+
+  // Handle click - only fire if not from touch event
+  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    // If this click came from a touch event, ignore it
+    if (touchHandledRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    
+    e.stopPropagation();
+    handleToggle();
+  }, [handleToggle]);
 
   const categories = (categoriesData as { data?: Category[] } | undefined)?.data || [];
 
@@ -108,7 +124,7 @@ export function Navbar() {
               {/* Hamburger Menu - Mobile Only */}
               <button
                 ref={menuButtonRef}
-                onClick={handleMenuToggle}
+                onClick={handleClick}
                 onTouchStart={handleTouchStart}
                 className="lg:hidden p-2 text-gray-900 hover:text-red-600 active:text-red-700 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded relative"
                 style={{ 
@@ -116,8 +132,7 @@ export function Navbar() {
                   zIndex: 10000,
                   pointerEvents: "auto",
                   touchAction: "manipulation",
-                  WebkitTouchCallout: "none",
-                  WebkitTapHighlightColor: "transparent",
+                  WebkitTapHighlightColor: "rgba(220, 38, 38, 0.2)",
                   userSelect: "none",
                   cursor: "pointer",
                   minWidth: "44px",
@@ -127,7 +142,12 @@ export function Navbar() {
                   isolation: "isolate",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center"
+                  justifyContent: "center",
+                  WebkitUserSelect: "none",
+                  MozUserSelect: "none",
+                  msUserSelect: "none",
+                  outline: "none",
+                  WebkitTouchCallout: "none"
                 }}
                 aria-label={t("aria.toggleMenu") || "Toggle menu"}
                 aria-expanded={isMobileMenuOpen}

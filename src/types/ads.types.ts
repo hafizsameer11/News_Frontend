@@ -2,7 +2,8 @@
 export interface Ad {
   id: string;
   title: string;
-  type: "BANNER_TOP" | "BANNER_SIDE" | "INLINE" | "FOOTER" | "SLIDER" | "TICKER" | "POPUP" | "STICKY";
+  name?: string; // Optional display name for easier identification (especially for ticker ads)
+  type: "BANNER_TOP" | "BANNER_SIDE" | "INLINE" | "FOOTER" | "SLIDER" | "SLIDER_TOP" | "TICKER" | "POPUP" | "STICKY";
   imageUrl: string;
   targetLink: string;
   position?: string;
@@ -41,16 +42,19 @@ export interface AdResponse {
 
 export interface CreateAdInput {
   title: string;
+  name?: string; // Optional display name for easier identification
   type: Ad["type"];
   imageUrl: string;
-  targetLink: string;
+  targetLink?: string; // Optional now
   position?: string;
   startDate: string;
   endDate: string;
+  price?: number; // Optional, can be calculated automatically
 }
 
 export interface UpdateAdInput {
   title?: string;
+  name?: string; // Optional display name for easier identification
   type?: Ad["type"];
   imageUrl?: string;
   targetLink?: string;
@@ -58,6 +62,7 @@ export interface UpdateAdInput {
   startDate?: string;
   endDate?: string;
   status?: Ad["status"];
+  price?: number; // Optional
 }
 
 export interface AdAnalytics {

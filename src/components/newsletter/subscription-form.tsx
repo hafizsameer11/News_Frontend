@@ -56,9 +56,9 @@ export function SubscriptionForm({
       onSuccess?.();
       // Reset success message after 8 seconds (longer visibility)
       setTimeout(() => setSuccess(false), 8000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err?.response?.data?.message || t("toast.actionFailed");
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message || t("toast.actionFailed");
       setError(errorMessage);
       showToast(errorMessage, "error", 6000);
     }

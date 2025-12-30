@@ -12,7 +12,7 @@ interface ConversationListProps {
   selectedPartnerId?: string;
   onSelectConversation: (partnerId: string) => void;
   isLoading?: boolean;
-  error?: any;
+  error?: unknown;
 }
 
 export function ConversationList({

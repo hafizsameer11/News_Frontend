@@ -11,10 +11,10 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1 border border-gray-200 rounded">
+      <div className="flex items-center gap-0.5 sm:gap-1 border border-gray-200 rounded flex-shrink-0">
         <button
           onClick={() => setLanguage("en")}
-          className={`px-2 py-0.5 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-red-500 ${
+          className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-red-500 ${
             language === "en"
               ? "bg-red-600 text-white"
               : "bg-transparent text-gray-700 hover:bg-gray-100"
@@ -26,7 +26,7 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
         </button>
         <button
           onClick={() => setLanguage("it")}
-          className={`px-2 py-0.5 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-red-500 ${
+          className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-red-500 ${
             language === "it"
               ? "bg-red-600 text-white"
               : "bg-transparent text-gray-700 hover:bg-gray-100"

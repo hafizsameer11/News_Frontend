@@ -65,13 +65,14 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
       { threshold: 0.5 } // Track when 50% visible
     );
 
-    if (adRef.current) {
-      observer.observe(adRef.current);
+    const currentRef = adRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (adRef.current) {
-        observer.unobserve(adRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [ad.id]);
@@ -164,50 +165,78 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
     ? `ad-slot ${className} ${responsiveClasses}`.trim()
     : `ad-slot ${responsiveClasses} ${className}`.trim();
 
+  // Check if the URL is a video
+  const isVideo = useMemo(() => {
+    if (!imageUrl || typeof imageUrl !== "string") return false;
+    return /\.(mp4|webm|ogg|mov)$/i.test(imageUrl);
+  }, [imageUrl]);
+
+  const adContent = (
+    <div
+      className="relative overflow-hidden rounded bg-gray-100 w-full"
+      style={{ aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
+    >
+      {imageUrl && imageUrl.trim() !== "" ? (
+        isVideo ? (
+          <video
+            src={imageUrl}
+            controls
+            className="w-full h-full object-cover"
+            playsInline
+            preload="metadata"
+          >
+            Your browser does not support the video tag.
+          </video>
+        ) : (
+          <Image
+            src={imageUrl}
+            alt={ad.title}
+            fill
+            className="object-cover w-full h-full"
+            quality={85}
+            loading={isAboveFold ? "eager" : "lazy"}
+            priority={isAboveFold}
+            unoptimized={shouldUnoptimize}
+            sizes="(max-width: 768px) 100vw, 728px"
+            style={{ transition: "none" }}
+            onError={(e) => {
+              // If optimization failed, try unoptimized version
+              if (!imageOptimizationFailed && !shouldUnoptimize) {
+                setImageOptimizationFailed(true);
+                return;
+              }
+              // Handle broken images
+              const target = e.target as HTMLImageElement;
+              target.style.display = "none";
+            }}
+          />
+        )
+      ) : (
+        <div className="w-full h-32 bg-gray-200 flex items-center justify-center">
+          <p className="text-xs text-gray-500">No media</p>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div ref={adRef} className={mergedClassName}>
-      <Link
-        href={ad.targetLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleClick}
-        className="block hover:opacity-90 transition-opacity w-full"
-      >
-        <div
-          className="relative overflow-hidden rounded bg-gray-100 w-full"
-          style={{ aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
+      {ad.targetLink && ad.targetLink.trim() ? (
+        <Link
+          href={ad.targetLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleClick}
+          className="block hover:opacity-90 transition-opacity w-full"
         >
-          {imageUrl && imageUrl.trim() !== "" ? (
-            <Image
-              src={imageUrl}
-              alt={ad.title}
-              fill
-              className="object-cover w-full h-full"
-              quality={85}
-              loading={isAboveFold ? "eager" : "lazy"}
-              priority={isAboveFold}
-              unoptimized={shouldUnoptimize}
-              sizes="(max-width: 768px) 100vw, 728px"
-              style={{ transition: "none" }}
-              onError={(e) => {
-                // If optimization failed, try unoptimized version
-                if (!imageOptimizationFailed && !shouldUnoptimize) {
-                  setImageOptimizationFailed(true);
-                  return;
-                }
-                // Handle broken images
-                const target = e.target as HTMLImageElement;
-                target.style.display = "none";
-              }}
-            />
-          ) : (
-            <div className="w-full h-32 bg-gray-200 flex items-center justify-center">
-              <p className="text-xs text-gray-500">No image</p>
-            </div>
-          )}
+          {adContent}
+        </Link>
+      ) : (
+        <div className="w-full">
+          {adContent}
         </div>
-        <p className="text-xs text-gray-500 mt-1 text-center">Advertisement</p>
-      </Link>
+      )}
+      <p className="text-xs text-gray-500 mt-1 text-center">Advertisement</p>
     </div>
   );
 }

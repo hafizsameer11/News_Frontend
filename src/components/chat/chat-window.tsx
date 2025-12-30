@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   useMessages,
   useSendMessage,
@@ -26,7 +26,7 @@ export function ChatWindow({
   partnerName,
   partnerAvatar,
   currentUserId,
-  currentUserName,
+  currentUserName: _currentUserName,
 }: ChatWindowProps) {
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -35,7 +35,7 @@ export function ChatWindow({
   const markAsReadMutation = useMarkAsRead();
   const { t, language } = useLanguage();
 
-  const messages = data?.data?.messages || [];
+  const messages = useMemo(() => data?.data?.messages || [], [data?.data?.messages]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -47,7 +47,7 @@ export function ChatWindow({
     if (partnerId) {
       markAsReadMutation.mutate(partnerId);
     }
-  }, [partnerId]);
+  }, [partnerId, markAsReadMutation]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();

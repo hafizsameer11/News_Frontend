@@ -25,7 +25,7 @@ export function AdContainer({ ads, slot, className = "" }: AdContainerProps) {
     }
     return 0;
   });
-  const [isMounted, setIsMounted] = useState(
+  const [isMounted] = useState(
     () => typeof window !== "undefined"
   );
 

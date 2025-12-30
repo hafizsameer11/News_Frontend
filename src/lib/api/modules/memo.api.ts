@@ -1,10 +1,10 @@
 import { apiClient } from "../apiClient";
-import { MemosResponse, CreateMemoInput } from "@/types/memo.types";
+import { MemosResponse, CreateMemoInput, Memo } from "@/types/memo.types";
 
 export const memoApi = {
   // Create a new memo
   createMemo: (data: CreateMemoInput) => {
-    return apiClient.post<{ data: any }>("/memo", data);
+    return apiClient.post<{ data: Memo }>("/memo", data);
   },
 
   // Get all memos for a specific user

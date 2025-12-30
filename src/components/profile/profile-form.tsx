@@ -7,6 +7,7 @@ import { FormField } from "@/components/ui/form-field";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { Loading } from "@/components/ui/loading";
 import { useLanguage } from "@/providers/LanguageProvider";
+import Image from "next/image";
 
 export function ProfileForm() {
   const { user } = useAuth();
@@ -172,11 +173,17 @@ export function ProfileForm() {
           placeholder="https://example.com/avatar.jpg"
         />
         {formData.avatar && (
-          <div className="mt-2">
-            <img
+          <div className="mt-2 relative h-20 w-20">
+            <Image
               src={formData.avatar}
               alt="Avatar preview"
-              className="h-20 w-20 rounded-full object-cover"
+              fill
+              className="rounded-full object-cover"
+              unoptimized={
+                formData.avatar.includes("localhost") ||
+                formData.avatar.includes("127.0.0.1") ||
+                formData.avatar.includes("api.tgcalabriareport.com")
+              }
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
               }}

@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import { useAdBySlot } from "@/lib/hooks/useAds";
 import { AdDisplay } from "./ad-display";
 import { selectAdForRotation, getCachedAd, cacheSelectedAd } from "@/lib/helpers/ad-rotation";
-import { Ad } from "@/types/ads.types";
 import { useMemo, useEffect } from "react";
 
 export function StickyHeaderAd() {

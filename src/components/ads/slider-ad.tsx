@@ -4,11 +4,12 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { useAdByType } from "@/lib/hooks/useAds";
 import { AdDisplay } from "./ad-display";
-import { Ad } from "@/types/ads.types";
 
 export function SliderAd() {
   const pathname = usePathname();
-  const { data, isLoading, error } = useAdByType("SLIDER", 5);
+  // Fetch both SLIDER and SLIDER_TOP ads for the homepage hero section
+  const { data: sliderData, isLoading: sliderLoading, error: sliderError } = useAdByType("SLIDER", 5);
+  const { data: sliderTopData, isLoading: sliderTopLoading, error: sliderTopError } = useAdByType("SLIDER_TOP", 5);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -21,13 +22,24 @@ export function SliderAd() {
     pathname?.startsWith("/editor") ||
     pathname?.startsWith("/admin-login");
 
-  // Derive selected ads from data instead of using effect
+  // Derive selected ads from data - prioritize SLIDER_TOP, fallback to SLIDER
   const selectedAds = useMemo(() => {
-    if (data?.data?.ads && data.data.ads.length > 0) {
-      return data.data.ads.filter((ad) => ad.type === "SLIDER");
+    // First, try to get SLIDER_TOP ads (homepage hero slider)
+    if (sliderTopData?.data?.ads && sliderTopData.data.ads.length > 0) {
+      const sliderTopAds = sliderTopData.data.ads.filter((ad) => ad.type === "SLIDER_TOP");
+      if (sliderTopAds.length > 0) {
+        return sliderTopAds;
+      }
+    }
+    // Fallback to regular SLIDER ads
+    if (sliderData?.data?.ads && sliderData.data.ads.length > 0) {
+      return sliderData.data.ads.filter((ad) => ad.type === "SLIDER");
     }
     return [];
-  }, [data]);
+  }, [sliderTopData, sliderData]);
+
+  const isLoading = sliderLoading || sliderTopLoading;
+  const error = sliderError || sliderTopError;
 
   // Auto-rotate ads every 5 seconds
   useEffect(() => {
