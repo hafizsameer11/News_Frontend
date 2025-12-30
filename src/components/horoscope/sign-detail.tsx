@@ -1,6 +1,6 @@
 "use client";
 
-import { Horoscope, ZodiacSign } from "@/types/horoscope.types";
+import { Horoscope } from "@/types/horoscope.types";
 import { SignInfo, signDataMap } from "./sign-info";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";

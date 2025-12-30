@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCategories } from "@/lib/hooks/useCategories";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { Loading } from "@/components/ui/loading";
+import { Category } from "@/types/category.types";
 
 interface RelatedCategoriesProps {
   currentCategoryId: string;
@@ -35,8 +36,8 @@ export function RelatedCategories({
   }
 
   // Flatten categories
-  const flattenCategories = (cats: any[]): any[] => {
-    const result: any[] = [];
+  const flattenCategories = (cats: Category[]): Category[] => {
+    const result: Category[] = [];
     for (const cat of cats) {
       result.push(cat);
       if (cat.children && cat.children.length > 0) {

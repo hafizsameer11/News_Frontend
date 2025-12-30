@@ -9,9 +9,7 @@ import { News } from "@/types/news.types";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { StructuredData as StructuredDataType } from "@/types/seo.types";
 import { AdSlot } from "@/components/ads/ad-slot";
-import { SliderAd } from "@/components/ads/slider-ad";
 import { TickerAd } from "@/components/ads/ticker-ad";
-import { MostReadSidebar } from "@/components/news/most-read-sidebar";
 import { useNewsInfinite } from "@/lib/hooks/useNews";
 import { Loading } from "@/components/ui/loading";
 import { HomepageSection } from "@/lib/api/modules/homepage.api";
@@ -19,7 +17,7 @@ import { HomepageSections } from "./homepage-sections";
 import { HeroSection } from "./sections/hero-section";
 import { FeaturedGrid } from "./sections/featured-grid";
 import { CategoryBlocks } from "./sections/category-blocks";
-import { HorizontalCard, GridCard } from "@/components/news/cnn-news-card";
+import { HorizontalCard } from "@/components/news/cnn-news-card";
 
 interface HomeClientProps {
   allNews: News[];
@@ -32,7 +30,7 @@ export function HomeClient({
   structuredData,
   sections = [],
 }: HomeClientProps) {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Use infinite query for loading more news
@@ -53,7 +51,8 @@ export function HomeClient({
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
-    if (!loadMoreRef.current) return;
+    const currentRef = loadMoreRef.current;
+    if (!currentRef) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -64,11 +63,11 @@ export function HomeClient({
       { threshold: 0.1 }
     );
 
-    observer.observe(loadMoreRef.current);
+    observer.observe(currentRef);
 
     return () => {
-      if (loadMoreRef.current) {
-        observer.unobserve(loadMoreRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -162,11 +161,6 @@ export function HomeClient({
         <Navbar />
         <TickerAd />
         <TrendingBar news={newsData.trendingNews} />
-
-        {/* Slider Ad - Hero section replacement */}
-        <div className="w-full">
-          <SliderAd />
-        </div>
 
         <main className="grow">
           {/* Render homepage sections if available, otherwise use default layout */}

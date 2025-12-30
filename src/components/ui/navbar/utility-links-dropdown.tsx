@@ -86,13 +86,13 @@ export function UtilityLinksDropdown() {
   ];
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
       {links.map((link) => (
         <Link
           key={link.href}
           href={link.href}
           prefetch={true}
-          className="text-xs text-gray-600 hover:text-red-600 transition whitespace-nowrap"
+          className="text-[10px] sm:text-sm font-bold text-gray-900 hover:text-red-600 transition whitespace-nowrap flex-shrink-0"
         >
           {link.label}
         </Link>

@@ -5,7 +5,7 @@ import { HomepageSection } from "@/lib/api/modules/homepage.api";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getImageUrl } from "@/lib/helpers/imageUrl";
 import { formatRelativeTime, formatDate } from "@/lib/helpers/formatDate";
-import { AdSlot } from "@/components/ads/ad-slot";
+import { News } from "@/types/news.types";
 
 interface HomepageSectionsProps {
   sections: HomepageSection[];
@@ -67,7 +67,7 @@ function HeroSliderSection({
   news,
 }: {
   section: HomepageSection;
-  news: any[];
+  news: News[];
 }) {
   const mainStory = news[0];
   const sideStories = news.slice(1, 4);
@@ -87,16 +87,39 @@ function HeroSliderSection({
               <div className="group cursor-pointer">
                 <div className="relative h-96 mb-4 overflow-hidden rounded-lg">
                   {mainStory.mainImage && mainStory.mainImage.trim() !== "" ? (
-                    <OptimizedImage
-                      src={getImageUrl(mainStory.mainImage)}
-                      alt={mainStory.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      priority
-                      loading="eager"
-                      quality={85}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
-                    />
+                    mainStory.mainImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                      <div className="relative w-full h-full">
+                        <video
+                          src={getImageUrl(mainStory.mainImage)}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <div className="bg-white/90 rounded-full p-4">
+                            <svg
+                              className="w-12 h-12 text-gray-900"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <OptimizedImage
+                        src={getImageUrl(mainStory.mainImage)}
+                        alt={mainStory.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        priority
+                        loading="eager"
+                        quality={85}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
+                      />
+                    )
                   ) : (
                     <div className="w-full h-full bg-gray-200"></div>
                   )}
@@ -124,15 +147,38 @@ function HeroSliderSection({
               <div className="group cursor-pointer">
                 <div className="relative h-32 mb-2 overflow-hidden rounded">
                   {story.mainImage && story.mainImage.trim() !== "" ? (
-                    <OptimizedImage
-                      src={getImageUrl(story.mainImage)}
-                      alt={story.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                      quality={75}
-                      sizes="(max-width: 768px) 100vw, 400px"
-                    />
+                    story.mainImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                      <div className="relative w-full h-full">
+                        <video
+                          src={getImageUrl(story.mainImage)}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <div className="bg-white/80 rounded-full p-2">
+                            <svg
+                              className="w-6 h-6 text-gray-900"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <OptimizedImage
+                        src={getImageUrl(story.mainImage)}
+                        alt={story.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        quality={75}
+                        sizes="(max-width: 768px) 100vw, 400px"
+                      />
+                    )
                   ) : (
                     <div className="w-full h-full bg-gray-200"></div>
                   )}
@@ -157,7 +203,7 @@ function BreakingTickerSection({
   news,
 }: {
   section: HomepageSection;
-  news: any[];
+  news: News[];
 }) {
   return (
     <div className="mb-12">
@@ -188,7 +234,7 @@ function FeaturedSection({
   news,
 }: {
   section: HomepageSection;
-  news: any[];
+  news: News[];
 }) {
   return (
     <div className="mb-12">
@@ -203,12 +249,35 @@ function FeaturedSection({
             <div className="group cursor-pointer">
               <div className="relative h-48 mb-3 overflow-hidden rounded">
                 {story.mainImage && story.mainImage.trim() !== "" ? (
-                  <OptimizedImage
-                    src={story.mainImage}
-                    alt={story.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  story.mainImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                    <div className="relative w-full h-full">
+                      <video
+                        src={getImageUrl(story.mainImage)}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="bg-white/80 rounded-full p-3">
+                          <svg
+                            className="w-8 h-8 text-gray-900"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <OptimizedImage
+                      src={getImageUrl(story.mainImage)}
+                      alt={story.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  )
                 ) : (
                   <div className="w-full h-full bg-gray-200"></div>
                 )}
@@ -237,7 +306,7 @@ function CategoryBlockSection({
   news,
 }: {
   section: HomepageSection;
-  news: any[];
+  news: News[];
 }) {
   return (
     <div className="mb-12">
@@ -252,12 +321,35 @@ function CategoryBlockSection({
             <div className="group cursor-pointer">
               <div className="relative h-32 mb-2 overflow-hidden rounded">
                 {story.mainImage ? (
-                  <OptimizedImage
-                    src={story.mainImage}
-                    alt={story.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  story.mainImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                    <div className="relative w-full h-full">
+                      <video
+                        src={getImageUrl(story.mainImage)}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="bg-white/80 rounded-full p-2">
+                          <svg
+                            className="w-6 h-6 text-gray-900"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <OptimizedImage
+                      src={getImageUrl(story.mainImage)}
+                      alt={story.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  )
                 ) : (
                   <div className="w-full h-full bg-gray-200"></div>
                 )}
@@ -281,7 +373,7 @@ function ManualListSection({
   news,
 }: {
   section: HomepageSection;
-  news: any[];
+  news: News[];
 }) {
   return (
     <div className="mb-12">
@@ -296,12 +388,35 @@ function ManualListSection({
             <div className="flex gap-4 group cursor-pointer border-b border-gray-200 pb-4 hover:bg-gray-50 p-2 rounded transition">
               <div className="relative w-32 h-32 shrink-0 overflow-hidden rounded">
                 {story.mainImage ? (
-                  <OptimizedImage
-                    src={story.mainImage}
-                    alt={story.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  story.mainImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                    <div className="relative w-full h-full">
+                      <video
+                        src={getImageUrl(story.mainImage)}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="bg-white/80 rounded-full p-2">
+                          <svg
+                            className="w-5 h-5 text-gray-900"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <OptimizedImage
+                      src={getImageUrl(story.mainImage)}
+                      alt={story.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  )
                 ) : (
                   <div className="w-full h-full bg-gray-200"></div>
                 )}

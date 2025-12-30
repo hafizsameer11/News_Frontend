@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { useAdByType } from "@/lib/hooks/useAds";
 import { AdDisplay } from "./ad-display";
-import { Ad } from "@/types/ads.types";
 
 export function StickyAd() {
   const pathname = usePathname();

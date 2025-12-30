@@ -12,14 +12,12 @@ import { formatDate, formatRelativeTime } from "@/lib/helpers/formatDate";
 import Link from "next/link";
 import { seoApi } from "@/lib/api/modules/seo.api";
 import { StructuredData } from "@/components/seo/StructuredData";
-import { newsApi } from "@/lib/api/modules/news.api";
 import { SocialShareButtons } from "@/components/news/social-share-buttons";
 import { ImageGallery } from "@/components/news/image-gallery";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { TrendingArticles } from "@/components/news/trending-articles";
 import { BookmarkButton } from "@/components/bookmarks/bookmark-button";
 import { useMediaStatus } from "@/lib/hooks/useMediaStatus";
-import { API_CONFIG } from "@/lib/api/apiConfig";
 import { News, NewsDetail } from "@/types/news.types";
 import { StructuredData as StructuredDataType } from "@/types/seo.types";
 import { getImageUrl } from "@/lib/helpers/imageUrl";
@@ -227,21 +225,33 @@ export function NewsDetailClient({
                 </div>
               )}
 
-              {/* Main Image */}
+              {/* Main Image/Video */}
               {news.mainImage &&
                 news.mainImage.trim() !== "" &&
                 !shouldShowFallback && (
                   <div className="relative w-full h-96 md:h-[500px] mb-8 rounded-lg overflow-hidden">
-                    <OptimizedImage
-                      src={getImageUrl(news.mainImage)}
-                      alt={news.title}
-                      fill
-                      className="object-cover"
-                      priority
-                      loading="eager"
-                      quality={85}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
-                    />
+                    {news.mainImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                      <video
+                        src={getImageUrl(news.mainImage)}
+                        controls
+                        className="w-full h-full object-cover"
+                        playsInline
+                        preload="metadata"
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <OptimizedImage
+                        src={getImageUrl(news.mainImage)}
+                        alt={news.title}
+                        fill
+                        className="object-cover"
+                        priority
+                        loading="eager"
+                        quality={85}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
+                      />
+                    )}
                   </div>
                 )}
               {/* Fallback for rejected/pending media */}

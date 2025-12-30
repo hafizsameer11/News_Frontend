@@ -22,7 +22,7 @@ export function UserList({
   isLoading,
   error,
 }: UserListProps) {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
 
   if (isLoading) {
     return (

@@ -80,6 +80,7 @@ export interface CreateNewsInput {
   isFeatured?: boolean;
   isTG?: boolean;
   scheduledFor?: string;
+  publishedAt?: string; // Retroactive publishing date (allows past dates)
 }
 
 export interface UpdateNewsInput extends Partial<CreateNewsInput> {
@@ -96,5 +97,6 @@ export interface UpdateNewsInput extends Partial<CreateNewsInput> {
   isFeatured?: boolean;
   isTG?: boolean;
   scheduledFor?: string;
+  publishedAt?: string; // Retroactive publishing date (allows past dates)
 }
 

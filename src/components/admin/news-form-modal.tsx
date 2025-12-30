@@ -83,6 +83,7 @@ export function NewsFormModal({
         mainImage: news.mainImage || "",
         tags: "",
         scheduledFor: (news as any).scheduledFor,
+        publishedAt: news.publishedAt,
       };
     }
     return {
@@ -98,6 +99,7 @@ export function NewsFormModal({
       mainImage: "",
       tags: "",
       scheduledFor: undefined,
+      publishedAt: undefined,
     };
   }, [news]);
 
@@ -108,8 +110,16 @@ export function NewsFormModal({
     return null;
   }, [news]);
 
+  const initialPublishedDate = useMemo<Date | null>(() => {
+    if (news && news.publishedAt) {
+      return new Date(news.publishedAt);
+    }
+    return null;
+  }, [news]);
+
   const [formData, setFormData] = useState<CreateNewsInput>(initialFormData);
   const [scheduledDate, setScheduledDate] = useState<Date | null>(initialScheduledDate);
+  const [publishedDate, setPublishedDate] = useState<Date | null>(initialPublishedDate);
   const { t, language, formatDateTime } = useLanguage();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [autoGenerateSlug, setAutoGenerateSlug] = useState(!news);
@@ -250,11 +260,12 @@ export function NewsFormModal({
       // Normalize mainImage URL before submitting to prevent duplicates
       const normalizedMainImage = formData.mainImage ? normalizeImageUrl(formData.mainImage) : "";
       
-      // Convert scheduled date to ISO string if set
+      // Convert scheduled date and published date to ISO string if set
       const submitData = {
         ...formData,
         mainImage: normalizedMainImage,
         scheduledFor: scheduledDate ? scheduledDate.toISOString() : undefined,
+        publishedAt: publishedDate ? publishedDate.toISOString() : undefined,
       };
 
       // Store social posting preference before submitting
@@ -598,9 +609,88 @@ export function NewsFormModal({
               </div>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {language === "it"
+                  ? "Data di Pubblicazione (Retroattiva)"
+                  : "Published Date (Retroactive)"}
+              </label>
+              <div className="space-y-2">
+                <DatePicker
+                  selected={publishedDate}
+                  onChange={(date) => {
+                    setPublishedDate(date);
+                    if (date) {
+                      setFormData({
+                        ...formData,
+                        publishedAt: date.toISOString(),
+                      });
+                    } else {
+                      setFormData({
+                        ...formData,
+                        publishedAt: undefined,
+                      });
+                    }
+                  }}
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  dateFormat="MMMM d, yyyy h:mm aa"
+                  placeholderText={
+                    language === "it"
+                      ? "Seleziona data e ora (opzionale, consente date passate)"
+                      : "Select date and time (optional, allows past dates)"
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isLoading}
+                />
+                {publishedDate && (
+                  <div className="flex items-center gap-2 text-sm text-blue-600">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span>
+                      {language === "it"
+                        ? "Pubblicato il"
+                        : "Published on"}:{" "}
+                      {formatDateTime(publishedDate, {
+                        dateFormat: "PP",
+                        timeFormat: "p",
+                      })}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPublishedDate(null);
+                        setFormData({ ...formData, publishedAt: undefined });
+                      }}
+                      className="ml-auto text-red-600 hover:text-red-800 text-xs"
+                    >
+                      {language === "it" ? "Cancella" : "Clear"}
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">
+                  {language === "it"
+                    ? "Imposta una data di pubblicazione passata per retroattivare la notizia. Se non impostata, verrà utilizzata la data corrente quando viene pubblicata."
+                    : "Set a past publication date to retroactively publish news. If not set, current date will be used when publishing."}
+                </p>
+              </div>
+            </div>
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Main Image
+                Main Image/Video
               </label>
               <div className="space-y-2">
                 <div className="flex gap-2">
@@ -611,9 +701,13 @@ export function NewsFormModal({
                       // Normalize URL when user manually enters it to prevent duplicates
                       const normalizedUrl = normalizeImageUrl(e.target.value);
                       setFormData({ ...formData, mainImage: normalizedUrl });
+                      // Clear selectedMedia if URL is manually changed
+                      if (selectedMedia && selectedMedia.url !== normalizedUrl) {
+                        setSelectedMedia(null);
+                      }
                     }}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com/image.jpg or select from library"
+                    placeholder="https://example.com/image.jpg or video.mp4"
                     disabled={isLoading}
                   />
                   <button
@@ -646,6 +740,12 @@ export function NewsFormModal({
                         <img
                           src={getImageUrl(selectedMedia.url)}
                           alt={selectedMedia.caption || "Selected"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : selectedMedia.type === "VIDEO" && selectedMedia.thumbnailUrl ? (
+                        <img
+                          src={getImageUrl(selectedMedia.thumbnailUrl)}
+                          alt={selectedMedia.caption || "Selected Video"}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -691,6 +791,32 @@ export function NewsFormModal({
                         />
                       </svg>
                     </button>
+                  </div>
+                )}
+                {/* Preview of main image/video */}
+                {formData.mainImage && !selectedMedia && (
+                  <div className="mt-2">
+                    {formData.mainImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                      <video
+                        src={formData.mainImage}
+                        controls
+                        className="max-h-48 w-auto rounded border border-gray-300"
+                        onError={(e) => {
+                          (e.target as HTMLVideoElement).style.display = "none";
+                        }}
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <img
+                        src={formData.mainImage}
+                        alt="Preview"
+                        className="max-h-48 w-auto rounded border border-gray-300"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    )}
                   </div>
                 )}
               </div>
@@ -1105,32 +1231,37 @@ export function NewsFormModal({
             // Validate media status before allowing selection
             if (media.processingStatus === "FAILED") {
               alert(
-                "Cannot use rejected media. Please select an approved image."
+                "Cannot use rejected media. Please select an approved image or video."
               );
               return;
             }
             if (media.processingStatus === "PENDING") {
               alert(
-                "Cannot use pending media. Please wait for admin approval or select an approved image."
+                "Cannot use pending media. Please wait for admin approval or select an approved image or video."
               );
               return;
             }
             if (media.processingStatus !== "COMPLETED") {
-              alert("Please select an approved image with COMPLETED status.");
+              alert("Please select an approved image or video with COMPLETED status.");
               return;
             }
-            setSelectedMedia(media);
-            // Normalize the URL to prevent duplicates before storing
-            const normalizedUrl = normalizeImageUrl(media.url);
-            setFormData({
-              ...formData,
-              mainImage: normalizedUrl,
-              mainImageId: media.id,
-            });
-            setIsMediaLibraryOpen(false);
+            // Allow both IMAGE and VIDEO types
+            if (media.type === "IMAGE" || media.type === "VIDEO") {
+              setSelectedMedia(media);
+              // Normalize the URL to prevent duplicates before storing
+              const normalizedUrl = normalizeImageUrl(media.url);
+              setFormData({
+                ...formData,
+                mainImage: normalizedUrl,
+                mainImageId: media.id,
+              });
+              setIsMediaLibraryOpen(false);
+            } else {
+              alert("Please select an image or video. Documents are not supported as main media.");
+            }
           }}
-          filterType="IMAGE"
-          title="Select Main Image"
+          filterType="ALL"
+          title="Select Main Image or Video"
         />
 
         {/* Preview Modal */}

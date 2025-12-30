@@ -77,10 +77,10 @@ export function WeatherWidget() {
     return (
       <Link
         href="/weather"
-        className="hidden md:flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-red-600 transition"
+        className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-3 py-1 sm:py-2 text-xs text-gray-700 hover:text-red-600 transition flex-shrink-0"
       >
-        <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-        <span className="text-xs">Weather</span>
+        <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+        <span className="text-[10px] sm:text-xs">Weather</span>
       </Link>
     );
   }
@@ -90,21 +90,21 @@ export function WeatherWidget() {
   }
 
   return (
-    <div className="hidden md:block relative">
+    <div className="relative flex-shrink-0">
       <div className="flex items-center gap-2">
         {/* City Selector Dropdown */}
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:text-red-600 transition border border-gray-200 rounded hover:border-red-600"
+            className="flex items-center gap-0.5 sm:gap-1 px-1 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs text-gray-600 hover:text-red-600 transition border border-gray-200 rounded hover:border-red-600"
             title="Change city"
             aria-label="Select weather city"
           >
-            <span className="text-[10px] max-w-[60px] truncate">
+            <span className="text-[9px] sm:text-[10px] max-w-[50px] sm:max-w-[60px] truncate">
               {typeof weather.city === "string" ? weather.city : weather.city.name}
             </span>
             <svg
-              className={`w-3 h-3 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -144,22 +144,22 @@ export function WeatherWidget() {
         {/* Weather Display */}
         <Link
           href="/weather"
-          className="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-700 hover:text-red-600 transition border border-gray-200 rounded hover:border-red-600"
+          className="flex items-center gap-1 sm:gap-1.5 px-1 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs text-gray-700 hover:text-red-600 transition border border-gray-200 rounded hover:border-red-600"
           title={`${typeof weather.city === "string" ? weather.city : weather.city.name}: ${Math.round(weather.temperature)}°C - ${weather.conditionDescription}. Humidity: ${weather.humidity}%, Wind: ${weather.windSpeed} m/s`}
         >
           {weather.icon && (
-            <div className="w-5 h-5 relative">
+            <div className="w-4 h-4 sm:w-5 sm:h-5 relative">
               <Image
                 src={getWeatherIcon(weather.icon)}
                 alt={weather.condition}
-                width={20}
-                height={20}
-                className="object-contain"
+                width={16}
+                height={16}
+                className="object-contain sm:w-5 sm:h-5"
                 quality={75}
               />
             </div>
           )}
-          <span className="text-xs font-semibold leading-tight whitespace-nowrap">
+          <span className="text-[10px] sm:text-xs font-semibold leading-tight whitespace-nowrap">
             {Math.round(weather.temperature)}°C
           </span>
         </Link>

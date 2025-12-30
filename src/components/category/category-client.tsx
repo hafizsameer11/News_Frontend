@@ -10,14 +10,17 @@ import { ErrorMessage } from "@/components/ui/error-message";
 import Link from "next/link";
 import { RelatedCategories } from "@/components/category/related-categories";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { StructuredData as StructuredDataType } from "@/types/seo.types";
 import { seoApi } from "@/lib/api/modules/seo.api";
 import { useCategories } from "@/lib/hooks/useCategories";
-import { getSubcategories, getParentCategory, getCategoryPath, getSubcategoriesRecursive } from "@/lib/helpers/category-helpers";
+import { getSubcategories, getParentCategory, getCategoryPath } from "@/lib/helpers/category-helpers";
+import { Category } from "@/types/category.types";
+import { News } from "@/types/news.types";
 
 interface CategoryClientProps {
-  category: any;
-  initialNews: any[];
-  structuredData?: any;
+  category: Category | null;
+  initialNews: News[];
+  structuredData?: StructuredDataType | null;
 }
 
 export function CategoryClient({ category, initialNews, structuredData: initialStructuredData }: CategoryClientProps) {
@@ -25,11 +28,11 @@ export function CategoryClient({ category, initialNews, structuredData: initialS
   const pathname = usePathname();
   const { language, t } = useLanguage();
   const [page, setPage] = useState(Number(searchParams?.get("page")) || 1);
-  const [structuredData, setStructuredData] = useState<any>(initialStructuredData);
+  const [structuredData, setStructuredData] = useState<StructuredDataType | null>(initialStructuredData);
   
   // Fetch all categories to get subcategories and parent
   const { data: categoriesData } = useCategories();
-  const allCategories = categoriesData?.data || [];
+  const allCategories = useMemo(() => categoriesData?.data || [], [categoriesData]);
   
   // Get subcategories for this category (direct children only - grandchildren accessible through children pages)
   const subcategories = useMemo(() => {

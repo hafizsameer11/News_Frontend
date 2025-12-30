@@ -178,16 +178,24 @@ export function MediaItem({
             : "border-gray-200 hover:border-gray-300"
         }`}
         onClick={() => {
+          // Only handle click for images or when not in selection mode
+          // Videos in selection mode are handled by the Select button
+          if (media.type === "VIDEO" && onSelect) {
+            // Don't handle click on video container when in selection mode
+            // The Select button handles it
+            return;
+          }
+          
           // Prevent selection of FAILED or PENDING media
           if (media.processingStatus === "FAILED") {
             alert(
-              "Cannot select rejected media. Please select an approved image."
+              "Cannot select rejected media. Please select an approved image or video."
             );
             return;
           }
           if (media.processingStatus === "PENDING") {
             alert(
-              "Cannot select pending media. Please wait for admin approval or select an approved image."
+              "Cannot select pending media. Please wait for admin approval or select an approved image or video."
             );
             return;
           }
@@ -263,10 +271,7 @@ export function MediaItem({
               </div>
             )
           ) : media.type === "VIDEO" ? (
-            <div
-              className="relative w-full h-full cursor-pointer"
-              onClick={handleVideoClick}
-            >
+            <div className="relative w-full h-full">
               {media.thumbnailUrl ? (
                 imageError ? (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center">
@@ -298,18 +303,60 @@ export function MediaItem({
                   </svg>
                 </div>
               )}
-              {/* Play button overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="bg-white/90 rounded-full p-4">
-                  <svg
-                    className="w-8 h-8 text-gray-900"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+              
+              {/* Hover overlay - Different behavior for selection vs browse mode */}
+              {onSelect ? (
+                // Selection mode: Show "Select" button
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Prevent selection of FAILED or PENDING media
+                      if (media.processingStatus === "FAILED") {
+                        alert("Cannot select rejected media. Please select an approved video.");
+                        return;
+                      }
+                      if (media.processingStatus === "PENDING") {
+                        alert("Cannot select pending media. Please wait for admin approval or select an approved video.");
+                        return;
+                      }
+                      onSelect(media);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium shadow-lg transition-colors flex items-center gap-2"
+                    title="Select this video"
                   >
-                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                  </svg>
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Select
+                  </button>
                 </div>
-              </div>
+              ) : (
+                // Browse mode: Show play button that opens video modal
+                <div
+                  className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  onClick={handleVideoClick}
+                >
+                  <div className="bg-white/90 rounded-full p-4">
+                    <svg
+                      className="w-8 h-8 text-gray-900"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+              
               {media.duration && (
                 <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
                   {Math.floor(media.duration / 60)}:

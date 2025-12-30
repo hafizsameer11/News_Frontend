@@ -34,7 +34,7 @@ export function WeatherPageClient() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl py-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 md:mb-0">Weather - Calabria Cities</h1>
           <div className="flex items-center gap-4">

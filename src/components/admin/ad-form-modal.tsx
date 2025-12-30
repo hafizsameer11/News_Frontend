@@ -24,6 +24,7 @@ const AD_TYPES = [
   { value: "INLINE", label: "Inline" },
   { value: "FOOTER", label: "Footer" },
   { value: "SLIDER", label: "Slider" },
+  { value: "SLIDER_TOP", label: "Slider Top (Homepage Hero)" },
   { value: "TICKER", label: "Ticker" },
   { value: "POPUP", label: "Popup" },
   { value: "STICKY", label: "Sticky" },
@@ -58,6 +59,7 @@ export function AdFormModal({
   const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
     title: "",
+    name: "", // Optional display name for easier identification (especially for ticker ads)
     type: "BANNER_TOP" as Ad["type"],
     imageUrl: "",
     targetLink: "",
@@ -73,7 +75,7 @@ export function AdFormModal({
   const [isCheckingConflict, setIsCheckingConflict] = useState(false);
 
   const handleMediaSelect = (media: Media) => {
-    if (media.type === "IMAGE") {
+    if (media.type === "IMAGE" || media.type === "VIDEO") {
       // Normalize URL to prevent duplicates
       const normalizedUrl = normalizeImageUrl(media.url);
       setFormData({ ...formData, imageUrl: normalizedUrl });
@@ -178,6 +180,7 @@ export function AdFormModal({
       setTimeout(() => {
         setFormData({
           title: ad.title,
+          name: ad.name || "", // Support name field if available
           type: ad.type,
           imageUrl: ad.imageUrl,
           targetLink: ad.targetLink,
@@ -243,12 +246,8 @@ export function AdFormModal({
       }
     }
 
-    if (!formData.targetLink.trim()) {
-      newErrors.targetLink =
-        language === "it"
-          ? "Il link di destinazione è obbligatorio"
-          : "Target link is required";
-    } else {
+    // Target link is now optional, but if provided, must be valid URL
+    if (formData.targetLink.trim()) {
       try {
         new URL(formData.targetLink);
       } catch {
@@ -316,21 +315,30 @@ export function AdFormModal({
         title: formData.title.trim(),
         type: formData.type,
         imageUrl: normalizeImageUrl(formData.imageUrl.trim()), // Normalize to prevent duplicates
-        targetLink: formData.targetLink.trim(),
         startDate: new Date(formData.startDate).toISOString(),
         endDate: new Date(formData.endDate).toISOString(),
       };
+
+      // Only include name if provided (it's optional)
+      if (formData.name && formData.name.trim() !== "") {
+        submitData.name = formData.name.trim();
+      }
+
+      // Only include targetLink if provided (it's optional now)
+      if (formData.targetLink.trim()) {
+        submitData.targetLink = formData.targetLink.trim();
+      }
 
       // Only include position if it's selected (not empty)
       if (formData.position && formData.position.trim() !== "") {
         submitData.position = formData.position.trim();
       }
 
-      // Only include price if it's provided and valid
+      // Only include price if it's provided and valid - ensure it's sent as a number
       if (formData.price && formData.price.trim() !== "") {
         const priceValue = parseFloat(formData.price);
         if (!isNaN(priceValue) && priceValue >= 0) {
-          submitData.price = priceValue;
+          submitData.price = priceValue; // Send as number, not string
         }
       }
 
@@ -388,6 +396,41 @@ export function AdFormModal({
               )}
             </div>
 
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {language === "it" ? "Nome Visualizzazione" : "Display Name"}
+                <span
+                  className="ml-1 text-xs font-normal text-gray-500"
+                  title={
+                    language === "it"
+                      ? "Opzionale: Nome per identificare facilmente l'annuncio (specialmente per annunci ticker)"
+                      : "Optional: Name to easily identify the ad (especially for ticker ads)"
+                  }
+                >
+                  ({language === "it" ? "Opzionale" : "Optional"})
+                </span>
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => {
+                  setFormData({ ...formData, name: e.target.value });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={
+                  language === "it"
+                    ? "Es: Ticker Promozione Natale"
+                    : "E.g.: Christmas Promotion Ticker"
+                }
+                disabled={isLoading}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                {language === "it"
+                  ? "Utile per identificare facilmente gli annunci ticker nella lista"
+                  : "Useful for easily identifying ticker ads in the list"}
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {t("admin.type")} <span className="text-red-500">*</span>
@@ -428,6 +471,8 @@ export function AdFormModal({
                         ? "Slider"
                         : type.value === "TICKER"
                         ? "Ticker"
+                        : type.value === "SLIDER_TOP"
+                        ? "Slider Superiore (Hero Homepage)"
                         : type.value === "POPUP"
                         ? "Popup"
                         : "Fisso"
@@ -437,8 +482,8 @@ export function AdFormModal({
               </select>
               <p className="mt-1 text-xs text-gray-500">
                 {language === "it"
-                  ? "Il tipo di annuncio definisce le dimensioni e il comportamento (es. Banner Top: 728x90px, Slider: 1920x600px)"
-                  : "Ad type defines the size and behavior (e.g., Banner Top: 728x90px, Slider: 1920x600px)"}
+                  ? "Il tipo di annuncio definisce le dimensioni e il comportamento (es. Banner Top: 728x90px, Slider: 1920x600px, Slider Top: per la sezione hero della homepage)"
+                  : "Ad type defines the size and behavior (e.g., Banner Top: 728x90px, Slider: 1920x600px, Slider Top: for homepage hero section)"}
               </p>
             </div>
 
@@ -483,7 +528,7 @@ export function AdFormModal({
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {language === "it" ? "URL Immagine" : "Image URL"}{" "}
+                {language === "it" ? "URL Immagine/Video" : "Image/Video URL"}{" "}
                 <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-2">
@@ -499,7 +544,7 @@ export function AdFormModal({
                   className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.imageUrl ? "border-red-500" : "border-gray-300"
                   }`}
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="https://example.com/image.jpg or video.mp4"
                   disabled={isLoading}
                 />
                 <button
@@ -516,22 +561,44 @@ export function AdFormModal({
               )}
               {formData.imageUrl && (
                 <div className="mt-2">
-                  <img
-                    src={formData.imageUrl}
-                    alt="Preview"
-                    className="h-24 w-auto rounded border border-gray-300"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
+                  {formData.imageUrl.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                    <video
+                      src={formData.imageUrl}
+                      controls
+                      className="max-h-48 w-auto rounded border border-gray-300"
+                      onError={(e) => {
+                        (e.target as HTMLVideoElement).style.display = "none";
+                      }}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img
+                      src={formData.imageUrl}
+                      alt="Preview"
+                      className="h-24 w-auto rounded border border-gray-300"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </div>
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {language === "it" ? "Link di Destinazione" : "Target Link"}{" "}
-                <span className="text-red-500">*</span>
+                {language === "it" ? "Link di Destinazione" : "Target Link"}
+                <span
+                  className="ml-1 text-xs font-normal text-gray-500"
+                  title={
+                    language === "it"
+                      ? "Opzionale: Link a cui reindirizzare quando si clicca sull'annuncio"
+                      : "Optional: Link to redirect to when clicking the ad"
+                  }
+                >
+                  ({language === "it" ? "Opzionale" : "Optional"})
+                </span>
               </label>
               <input
                 type="url"
@@ -544,12 +611,17 @@ export function AdFormModal({
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.targetLink ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="https://example.com"
+                placeholder="https://example.com (optional)"
                 disabled={isLoading}
               />
               {errors.targetLink && (
                 <p className="mt-1 text-sm text-red-600">{errors.targetLink}</p>
               )}
+              <p className="mt-1 text-xs text-gray-500">
+                {language === "it"
+                  ? "Opzionale: Se non specificato, l'annuncio non sarà cliccabile"
+                  : "Optional: If not specified, the ad will not be clickable"}
+              </p>
             </div>
 
             <div>
@@ -708,11 +780,11 @@ export function AdFormModal({
           isOpen={showMediaLibrary}
           onClose={() => setShowMediaLibrary(false)}
           onSelect={handleMediaSelect}
-          filterType="IMAGE"
+          filterType="ALL"
           title={
             language === "it"
-              ? "Seleziona Immagine dalla Libreria Media"
-              : "Select Image from Media Library"
+              ? "Seleziona Immagine o Video dalla Libreria Media"
+              : "Select Image or Video from Media Library"
           }
         />
       </div>
