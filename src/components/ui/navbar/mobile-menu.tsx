@@ -20,7 +20,12 @@ interface MobileMenuProps {
 
 export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
   // Initialize isMounted based on whether we're on the client
-  const [isMounted] = useState(() => typeof window !== "undefined");
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Only set mounted on client side after component mounts
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const { user, logout, isAuthenticated } = useAuth();
   const { language } = useLanguage();
   const router = useRouter();
@@ -201,7 +206,7 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
         />
       )}
 
-      {/* Menu Panel - Always rendered for smooth transitions */}
+      {/* Menu Panel - Always rendered for smooth transitions, but positioned off-screen when closed */}
       <div
         id="mobile-menu"
         className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:hidden ${
@@ -217,11 +222,11 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
         onMouseDown={(e) => e.stopPropagation()}
         style={{ 
           zIndex: 9999, 
-          display: "block",
+          display: isOpen ? "block" : "none",
           transform: isOpen ? "translateX(0)" : "translateX(-100%)",
           WebkitTransform: isOpen ? "translateX(0)" : "translateX(-100%)",
           pointerEvents: isOpen ? "auto" : "none",
-          visibility: "visible",
+          visibility: isOpen ? "visible" : "hidden",
           backgroundColor: "#ffffff",
           boxShadow: isOpen ? "2px 0 10px rgba(0,0,0,0.1)" : "none"
         }}

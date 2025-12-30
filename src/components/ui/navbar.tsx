@@ -64,31 +64,53 @@ export function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
-  // Unified toggle handler - works for both touch and click
+  // Unified toggle handler - simple and reliable
   const handleToggle = useCallback(() => {
     const now = Date.now();
-    // Very short debounce (150ms) to prevent accidental double-taps, but allow quick single taps
-    if (now - lastToggleTimeRef.current < 150) {
+    // Prevent rapid double-taps (100ms debounce)
+    if (now - lastToggleTimeRef.current < 100) {
       return;
     }
     lastToggleTimeRef.current = now;
     setIsMobileMenuOpen((prev) => !prev);
   }, []);
 
-  // Handle touch start - immediate response on Android (fires as soon as finger touches)
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLButtonElement>) => {
+  // Handle touch end - most reliable for Android
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLButtonElement>) => {
     e.stopPropagation();
+    // Only preventDefault if cancelable (not during scroll)
+    if (e.cancelable) {
+      e.preventDefault();
+    }
     touchHandledRef.current = true;
     handleToggle();
-    // Reset after a short delay to allow click event to be ignored
+    // Reset flag after delay to prevent click event
     setTimeout(() => {
       touchHandledRef.current = false;
-    }, 400);
+    }, 300);
   }, [handleToggle]);
 
-  // Handle click - only fire if not from touch event
+  // Handle pointer down for modern browsers
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    // For touch/pen, handle immediately
+    if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+      e.stopPropagation();
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+      touchHandledRef.current = true;
+      handleToggle();
+      // Reset flag after delay
+      setTimeout(() => {
+        touchHandledRef.current = false;
+      }, 300);
+    }
+    // For mouse, let onClick handle it
+  }, [handleToggle]);
+
+  // Handle click - for mouse and as fallback
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    // If this click came from a touch event, ignore it
+    // Ignore if this came from a touch event
     if (touchHandledRef.current) {
       e.preventDefault();
       e.stopPropagation();
@@ -96,6 +118,7 @@ export function Navbar() {
     }
     
     e.stopPropagation();
+    e.preventDefault();
     handleToggle();
   }, [handleToggle]);
 
@@ -125,7 +148,8 @@ export function Navbar() {
               <button
                 ref={menuButtonRef}
                 onClick={handleClick}
-                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onPointerDown={handlePointerDown}
                 className="lg:hidden p-2 text-gray-900 hover:text-red-600 active:text-red-700 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded relative"
                 style={{ 
                   position: "relative", 
