@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { News } from "@/types/news.types";
 import { formatRelativeTime } from "@/lib/helpers/formatDate";
@@ -9,6 +10,14 @@ import { OptimizedImage } from "./optimized-image";
 import { BookmarkButton } from "@/components/bookmarks/bookmark-button";
 import { getImageUrl } from "@/lib/helpers/imageUrl";
 
+// Helper function to check if breaking news is still fresh (within 1 hour)
+function isBreakingNewsFresh(createdAt: string | Date): boolean {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const hoursSinceCreation = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+  return hoursSinceCreation <= 1; // Hide after 1 hour
+}
+
 interface NewsCardProps {
   news: News;
   featured?: boolean;
@@ -17,6 +26,23 @@ interface NewsCardProps {
 
 export function NewsCard({ news, featured = false, className }: NewsCardProps) {
   const { language, t } = useLanguage();
+  
+  // Check if breaking badge should be shown (only if news is breaking AND fresh)
+  // Use state to allow periodic updates
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+  
+  useEffect(() => {
+    // Update every minute to check if badge should be hidden
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  const shouldShowBreaking = useMemo(() => {
+    return news.isBreaking && isBreakingNewsFresh(news.createdAt);
+  }, [news.isBreaking, news.createdAt, currentTime]);
   
   return (
     <Link
@@ -63,7 +89,7 @@ export function NewsCard({ news, featured = false, className }: NewsCardProps) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             )}
-            {news.isBreaking && (
+            {shouldShowBreaking && (
               <span className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 text-xs font-bold z-10">
                 {t("news.breaking")}
               </span>

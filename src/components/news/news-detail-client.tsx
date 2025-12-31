@@ -22,6 +22,14 @@ import { News, NewsDetail } from "@/types/news.types";
 import { StructuredData as StructuredDataType } from "@/types/seo.types";
 import { getImageUrl } from "@/lib/helpers/imageUrl";
 
+// Helper function to check if breaking news is still fresh (within 1 hour)
+function isBreakingNewsFresh(createdAt: string | Date): boolean {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const hoursSinceCreation = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+  return hoursSinceCreation <= 1; // Hide after 1 hour
+}
+
 interface NewsDetailClientProps {
   initialNews: News | NewsDetail | null;
   initialStructuredData?: StructuredDataType | null;
@@ -36,6 +44,18 @@ export function NewsDetailClient({
   const params = useParams();
   const idOrSlug = params?.id as string;
   const { language, t, formatNumber } = useLanguage();
+
+  // Use state to allow periodic updates for breaking badge
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+  
+  useEffect(() => {
+    // Update every minute to check if badge should be hidden
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Use initial data or fetch if needed
   const { data: newsData, isLoading, error } = useNewsDetail(idOrSlug);
@@ -217,7 +237,7 @@ export function NewsDetailClient({
               )}
 
               {/* Breaking Badge */}
-              {news.isBreaking && (
+              {news.isBreaking && isBreakingNewsFresh(news.createdAt) && (
                 <div className="mb-6">
                   <span className="inline-block bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold">
                     {t("news.breaking")}

@@ -307,8 +307,8 @@ export function AdvertiserSidebar({
 
       <nav className="space-y-1 overflow-y-auto flex-1">
         {advertiserMenuItems.map((item) => {
-          const isExactMatch = pathname === item.href;
-          const isChildRoute = pathname?.startsWith(item.href + "/");
+          const _isExactMatch = pathname === item.href;
+          const _isChildRoute = pathname?.startsWith(item.href + "/");
 
           // Find the most specific matching route
           // Sort items by length (longest first) to prioritize more specific routes

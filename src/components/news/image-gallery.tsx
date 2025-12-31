@@ -55,7 +55,7 @@ export function ImageGallery({ content, mainImage, className = "" }: ImageGaller
               }
             }
           });
-        } catch (_error) {
+        } catch {
           // Ignore DOMParser errors - regex is the primary method
         }
       }

@@ -19,13 +19,8 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
-  // Initialize isMounted based on whether we're on the client
-  const [isMounted, setIsMounted] = useState(false);
-  
-  // Only set mounted on client side after component mounts
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  // Initialize isMounted based on whether we're on the client (lazy initialization)
+  const [isMounted] = useState(() => typeof window !== "undefined");
   const { user, logout, isAuthenticated } = useAuth();
   const { language } = useLanguage();
   const router = useRouter();

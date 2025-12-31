@@ -4,7 +4,6 @@ import { useState } from "react";
 import { WizardFormData } from "../ad-creation-wizard";
 import { MediaLibraryModal } from "@/components/admin/media-library-modal";
 import { Media } from "@/types/media.types";
-import { API_CONFIG } from "@/lib/api/apiConfig";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { useLanguage } from "@/providers/LanguageProvider";
 

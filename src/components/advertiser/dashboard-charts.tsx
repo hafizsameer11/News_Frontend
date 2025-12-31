@@ -7,8 +7,6 @@ import { ErrorMessage } from "@/components/ui/error-message";
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -56,8 +54,13 @@ export function DashboardCharts() {
 
   // Backend doesn't return impressionsOverTime/clicksOverTime by default
   // Check if time series data exists
+  interface TimeSeriesItem {
+    date: string;
+    count: number;
+  }
+  
   const hasTimeSeriesData = analytics.ads?.some(
-    (ad: any) => ad.impressionsOverTime || ad.clicksOverTime
+    (ad) => ad.impressionsOverTime || ad.clicksOverTime
   );
 
   // Prepare data for charts - only if time series data exists
@@ -66,16 +69,16 @@ export function DashboardCharts() {
 
   if (hasTimeSeriesData && analytics.ads) {
     impressionsData = analytics.ads
-      .flatMap((ad: any) => ad.impressionsOverTime || [])
-      .reduce((acc: Record<string, number>, item: any) => {
+      .flatMap((ad) => ad.impressionsOverTime || [])
+      .reduce((acc: Record<string, number>, item: TimeSeriesItem) => {
         const date = item.date;
         acc[date] = (acc[date] || 0) + item.count;
         return acc;
       }, {});
 
     clicksData = analytics.ads
-      .flatMap((ad: any) => ad.clicksOverTime || [])
-      .reduce((acc: Record<string, number>, item: any) => {
+      .flatMap((ad) => ad.clicksOverTime || [])
+      .reduce((acc: Record<string, number>, item: TimeSeriesItem) => {
         const date = item.date;
         acc[date] = (acc[date] || 0) + item.count;
         return acc;
@@ -97,7 +100,7 @@ export function DashboardCharts() {
     : [];
 
   const adTypeDistribution = analytics.ads.reduce(
-    (acc: Record<string, number>, ad) => {
+    (acc: Record<string, number>, _ad) => {
       // We need to get ad type from somewhere - for now using a placeholder
       acc["Total"] = (acc["Total"] || 0) + 1;
       return acc;

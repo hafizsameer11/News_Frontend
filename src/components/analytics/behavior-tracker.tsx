@@ -25,7 +25,7 @@ export function BehaviorTracker({ children }: BehaviorTrackerProps) {
   // Update user ref when user changes
   useEffect(() => {
     userRef.current = user ? { id: user.id, email: user.email } : null;
-  }, [user?.id, user?.email]);
+  }, [user]);
 
   // Track page views on route change - only when pathname actually changes
   useEffect(() => {
@@ -44,7 +44,7 @@ export function BehaviorTracker({ children }: BehaviorTrackerProps) {
       // Debounce the tracking call to prevent rapid-fire requests
       debounceTimerRef.current = setTimeout(() => {
         // Extract additional metadata from pathname for news pages
-        const metadata: Record<string, any> = {
+        const metadata: Record<string, string | undefined> = {
           userId: userRef.current?.id,
           userEmail: userRef.current?.email,
           timestamp: new Date().toISOString(),

@@ -98,7 +98,7 @@ export function PlacementStep({ formData, updateFormData, errors, setConflictErr
     } finally {
       setIsCheckingConflict(false);
     }
-  }, [formData.startDate, formData.endDate, formData.position, language]);
+  }, [formData.startDate, formData.endDate, formData.position, language, setParentConflictError]);
 
   // Check for conflicts when dates or position change
   useEffect(() => {

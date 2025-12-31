@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { News } from "@/types/news.types";
@@ -8,6 +8,14 @@ import { OptimizedImage } from "@/components/ui/optimized-image";
 import { formatDate, formatRelativeTime } from "@/lib/helpers/formatDate";
 import { cn } from "@/lib/helpers/cn";
 import { getImageUrl } from "@/lib/helpers/imageUrl";
+
+// Helper function to check if breaking news is still fresh (within 1 hour)
+function isBreakingNewsFresh(createdAt: string | Date): boolean {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const hoursSinceCreation = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+  return hoursSinceCreation <= 1; // Hide after 1 hour
+}
 
 interface BaseCardProps {
   news: News;
@@ -25,6 +33,23 @@ export const HeroCard = memo(function HeroCard({ news, className }: BaseCardProp
       router.push(`/category/${news.category.slug}`);
     }
   };
+
+  // Check if breaking badge should be shown (only if news is breaking AND fresh)
+  // Use state to allow periodic updates
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+  
+  useEffect(() => {
+    // Update every minute to check if badge should be hidden
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  const shouldShowBreaking = useMemo(() => {
+    return news.isBreaking && isBreakingNewsFresh(news.createdAt);
+  }, [news.isBreaking, news.createdAt, currentTime]);
 
   return (
     <Link href={`/news/${news.slug || news.id}`} className={cn("block group", className)}>
@@ -69,7 +94,7 @@ export const HeroCard = memo(function HeroCard({ news, className }: BaseCardProp
               <p className="text-xs text-gray-500">Image not available</p>
             </div>
           )}
-          {news.isBreaking && (
+          {shouldShowBreaking && (
             <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded text-sm font-bold">
               BREAKING
             </div>
@@ -181,6 +206,23 @@ export const HeadlineCard = memo(function HeadlineCard({ news, className }: Base
 
 // Grid Card - Medium size for grid layouts
 export const GridCard = memo(function GridCard({ news, className }: BaseCardProps) {
+  // Check if breaking badge should be shown (only if news is breaking AND fresh)
+  // Use state to allow periodic updates
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+  
+  useEffect(() => {
+    // Update every minute to check if badge should be hidden
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  const shouldShowBreaking = useMemo(() => {
+    return news.isBreaking && isBreakingNewsFresh(news.createdAt);
+  }, [news.isBreaking, news.createdAt, currentTime]);
+
   return (
     <Link
       href={`/news/${news.slug || news.id}`}
@@ -222,7 +264,7 @@ export const GridCard = memo(function GridCard({ news, className }: BaseCardProp
             <p className="text-xs text-gray-500">Image not available</p>
           </div>
         )}
-        {news.isBreaking && (
+        {shouldShowBreaking && (
           <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold">
             BREAKING
           </div>

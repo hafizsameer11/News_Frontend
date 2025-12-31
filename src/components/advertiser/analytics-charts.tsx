@@ -4,6 +4,7 @@ import { useAdvertiserAnalytics } from "@/lib/hooks/useAnalytics";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
+import { AdAnalytics } from "@/types/ads.types";
 import {
   LineChart,
   Line,
@@ -48,7 +49,7 @@ export function AnalyticsCharts({ startDate, endDate }: AnalyticsChartsProps) {
   // Backend doesn't return impressionsOverTime/clicksOverTime, so we'll create simple charts
   // from the ads data if available, or show a message
   const hasTimeSeriesData = analytics.ads?.some(
-    (ad: any) => ad.impressionsOverTime || ad.clicksOverTime
+    (ad: AdAnalytics) => ad.impressionsOverTime || ad.clicksOverTime
   );
 
   // Filter data by date range
