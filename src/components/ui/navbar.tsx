@@ -139,7 +139,7 @@ export function Navbar() {
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl" style={{ overflow: "visible" }}>
           <div
-            className="flex items-center justify-between h-16"
+            className="flex items-center justify-between h-16 min-w-0"
             style={{ overflow: "visible" }}
           >
             {/* Left: Hamburger + Logo */}

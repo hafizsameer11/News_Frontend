@@ -39,32 +39,13 @@ export function CategoryNav({ categories, isLoading }: CategoryNavProps) {
     return getRootCategories(categories);
   }, [categories]);
 
-  // Show first 6 root categories in main nav on desktop, rest in "More" dropdown
-  // On smaller screens, show even fewer
-  const [windowWidth, setWindowWidth] = useState(() => {
-    if (typeof window !== "undefined") {
-      return window.innerWidth;
-    }
-    return 1024;
-  });
-
+  // Show max 5 root categories in main nav, rest in "More" dropdown
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (typeof window !== "undefined") {
-        setWindowWidth(window.innerWidth);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Determine how many categories to show based on screen size
-  const maxVisibleCategories =
-    windowWidth >= 1280 ? 7 : windowWidth >= 1024 ? 6 : 5;
+  // Always show max 5 categories to prevent UI overflow
+  const maxVisibleCategories = 5;
   const mainCategories = rootCategories.slice(0, maxVisibleCategories);
   const moreCategories = rootCategories.slice(maxVisibleCategories);
 
@@ -104,11 +85,11 @@ export function CategoryNav({ categories, isLoading }: CategoryNavProps) {
 
   return (
     <div
-      className="hidden lg:flex items-center space-x-1 flex-1 justify-center px-4 relative"
+      className="hidden lg:flex items-center space-x-1 flex-1 justify-center px-4 relative min-w-0"
       style={{ overflow: "visible" }}
     >
       <div
-        className="flex items-center space-x-1 flex-shrink-0 overflow-x-auto scrollbar-hide"
+        className="flex items-center space-x-1 flex-shrink-0 overflow-x-auto scrollbar-hide max-w-full"
         style={{ overflowY: "visible" }}
       >
         {/* eslint-disable-next-line react-hooks/refs */}

@@ -174,11 +174,6 @@ export function HomeClient({
                     <Loading />
                   </div>
                 )}
-                {!hasNextPage && allNews.length > 20 && (
-                  <div className="text-center py-8 text-gray-500">
-                    {t("news.youveSeenAllArticles")}
-                  </div>
-                )}
               </div>
             </>
           ) : (
@@ -265,11 +260,6 @@ export function HomeClient({
                 {isFetchingNextPage && (
                   <div className="flex justify-center py-8">
                     <Loading />
-                  </div>
-                )}
-                {!hasNextPage && allNews.length > 20 && (
-                  <div className="text-center py-8 text-gray-500">
-                    {t("news.youveSeenAllArticles")}
                   </div>
                 )}
               </div>

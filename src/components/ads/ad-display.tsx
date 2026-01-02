@@ -151,9 +151,9 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
     ? "w-full max-w-full min-w-[300px] mx-auto"
     : isSidebar
     ? "w-full min-w-[250px] max-w-[250px]"
+    : slot === "MID_PAGE" || slot === "BETWEEN_SECTIONS"
+    ? "w-full max-w-full mx-auto"
     : slot === "TOP_BANNER" ||
-      slot === "MID_PAGE" ||
-      slot === "BETWEEN_SECTIONS" ||
       slot === "HEADER" ||
       slot === "INLINE" ||
       slot === "FOOTER"
@@ -171,22 +171,44 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
     return /\.(mp4|webm|ogg|mov)$/i.test(imageUrl);
   }, [imageUrl]);
 
+  // For MID_PAGE and BETWEEN_SECTIONS, allow flexible sizing to show full image
+  // TOP_BANNER and HEADER should maintain fixed dimensions
+  const isFlexibleSlot = slot === "MID_PAGE" || slot === "BETWEEN_SECTIONS";
+
   const adContent = (
     <div
-      className="relative overflow-hidden rounded bg-gray-100 w-full"
-      style={{ aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
+      className={`relative overflow-hidden rounded bg-gray-100 w-full ${
+        isFlexibleSlot ? "flex items-center justify-center" : ""
+      }`}
+      style={
+        isFlexibleSlot
+          ? {} // No fixed height - let image determine height
+          : { aspectRatio: `${dimensions.width} / ${dimensions.height}` }
+      }
     >
       {imageUrl && imageUrl.trim() !== "" ? (
         isVideo ? (
           <video
             src={imageUrl}
             controls
-            className="w-full h-full object-cover"
+            className={isFlexibleSlot ? "w-full h-auto max-h-[600px] object-contain" : "w-full h-full object-cover"}
             playsInline
             preload="metadata"
           >
             Your browser does not support the video tag.
           </video>
+        ) : isFlexibleSlot ? (
+          // For flexible slots, use regular img to allow natural sizing and show full image
+          <img
+            src={typeof imageUrl === "string" ? imageUrl : ""}
+            alt={ad.title}
+            className="w-full h-auto max-h-[600px] object-contain"
+            style={{ transition: "none", display: "block" }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = "none";
+            }}
+          />
         ) : (
           <Image
             src={imageUrl}
@@ -198,7 +220,7 @@ export function AdDisplay({ ad, className = "", slot }: AdDisplayProps) {
             priority={isAboveFold}
             unoptimized={shouldUnoptimize}
             sizes="(max-width: 768px) 100vw, 728px"
-            style={{ transition: "none" }}
+            style={{ transition: "none", objectFit: "cover" }}
             onError={(e) => {
               // If optimization failed, try unoptimized version
               if (!imageOptimizationFailed && !shouldUnoptimize) {

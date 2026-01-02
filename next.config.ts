@@ -94,12 +94,50 @@ const nextConfig: NextConfig = {
           ],
         },
         {
-          // Cache static assets aggressively
+          // CSS files - must come before general static path
+          source: "/_next/static/:path*\\.css",
+          headers: [
+            {
+              key: "Cache-Control",
+              value: "public, max-age=31536000, immutable",
+            },
+            {
+              key: "Content-Type",
+              value: "text/css; charset=utf-8",
+            },
+          ],
+        },
+        {
+          // JavaScript files - must come before general static path
+          source: "/_next/static/:path*\\.js",
+          headers: [
+            {
+              key: "Cache-Control",
+              value: "public, max-age=31536000, immutable",
+            },
+            {
+              key: "Content-Type",
+              value: "application/javascript; charset=utf-8",
+            },
+          ],
+        },
+        {
+          // Cache static assets aggressively (general fallback)
           source: "/_next/static/:path*",
           headers: [
             {
               key: "Cache-Control",
               value: "public, max-age=31536000, immutable",
+            },
+          ],
+        },
+        {
+          // JavaScript map files
+          source: "/_next/static/:path*\\.js.map",
+          headers: [
+            {
+              key: "Content-Type",
+              value: "application/json; charset=utf-8",
             },
           ],
         },
