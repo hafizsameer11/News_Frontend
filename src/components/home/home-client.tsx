@@ -11,7 +11,6 @@ import { StructuredData as StructuredDataType } from "@/types/seo.types";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { TickerAd } from "@/components/ads/ticker-ad";
 import { useNewsInfinite } from "@/lib/hooks/useNews";
-import { Loading } from "@/components/ui/loading";
 import { HomepageSection } from "@/lib/api/modules/homepage.api";
 import { HomepageSections } from "./homepage-sections";
 import { HeroSection } from "./sections/hero-section";
@@ -167,11 +166,15 @@ export function HomeClient({
           {sections && sections.length > 0 ? (
             <>
               <HomepageSections sections={sections} />
-              {/* Infinite Scroll Trigger */}
-              <div ref={loadMoreRef} className="container mx-auto px-4 mt-8">
+              {/* Infinite Scroll Trigger - Fixed height to prevent footer jumping */}
+              <div 
+                ref={loadMoreRef} 
+                className="container mx-auto px-4 mt-8 min-h-[120px] flex items-center justify-center"
+              >
                 {isFetchingNextPage && (
-                  <div className="flex justify-center py-8">
-                    <Loading />
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
+                    <p className="mt-4 text-sm text-gray-500">{t("news.loading") || "Loading more articles..."}</p>
                   </div>
                 )}
               </div>
@@ -255,11 +258,15 @@ export function HomeClient({
                 </>
               )}
 
-              {/* Infinite Scroll Trigger */}
-              <div ref={loadMoreRef} className="mt-8">
+              {/* Infinite Scroll Trigger - Fixed height to prevent footer jumping */}
+              <div 
+                ref={loadMoreRef} 
+                className="mt-8 min-h-[120px] flex items-center justify-center"
+              >
                 {isFetchingNextPage && (
-                  <div className="flex justify-center py-8">
-                    <Loading />
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
+                    <p className="mt-4 text-sm text-gray-500">{t("news.loading") || "Loading more articles..."}</p>
                   </div>
                 )}
               </div>

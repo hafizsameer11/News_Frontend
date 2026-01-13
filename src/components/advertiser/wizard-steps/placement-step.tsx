@@ -8,6 +8,7 @@ import { calculateAdPrice, calculateDurationDays, formatPrice, getDailyRate, MIN
 import { adsApi } from "@/lib/api/modules/ads.api";
 import { AdCalendarModal } from "@/components/admin/ad-calendar-modal";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { RateCard } from "../rate-card";
 
 interface PlacementStepProps {
   formData: WizardFormData;
@@ -18,8 +19,10 @@ interface PlacementStepProps {
 
 const SLOT_OPTIONS = [
   { value: "HEADER", label: "Header", labelIt: "Intestazione", compatibleTypes: ["BANNER_TOP"] },
+  { value: "HEADER_LEADERBOARD", label: "Header Leaderboard", labelIt: "Header Leaderboard", compatibleTypes: ["BANNER_TOP"] },
   { value: "SIDEBAR", label: "Sidebar", labelIt: "Barra Laterale", compatibleTypes: ["BANNER_SIDE", "STICKY"] },
-  { value: "INLINE", label: "Inline", labelIt: "In Linea", compatibleTypes: ["INLINE"] },
+  { value: "SIDEBAR_RECT", label: "Sidebar Rectangle", labelIt: "Barra Laterale Rettangolo", compatibleTypes: ["BANNER_SIDE", "STICKY"] },
+  { value: "INLINE_ARTICLE", label: "Inline Article", labelIt: "In Linea Articolo", compatibleTypes: ["INLINE"] },
   { value: "FOOTER", label: "Footer", labelIt: "Piè di Pagina", compatibleTypes: ["FOOTER"] },
   { value: "MOBILE", label: "Mobile", labelIt: "Mobile", compatibleTypes: ["BANNER_SIDE", "STICKY"] },
 ];
@@ -29,6 +32,7 @@ export function PlacementStep({ formData, updateFormData, errors, setConflictErr
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isCheckingConflict, setIsCheckingConflict] = useState(false);
   const [conflictError, setConflictError] = useState<string>("");
+  const [availabilityStatus, setAvailabilityStatus] = useState<Record<string, { isAvailable: boolean; conflictingAd?: { title: string } }>>({});
 
   // Derive dates from formData instead of using effects
   const startDate = useMemo(() => {
@@ -39,14 +43,74 @@ export function PlacementStep({ formData, updateFormData, errors, setConflictErr
     return formData.endDate ? new Date(formData.endDate) : null;
   }, [formData.endDate]);
 
-  const { durationDays, calculatedPrice } = useMemo(() => {
+  const { durationDays, calculatedPrice, durationMonths } = useMemo(() => {
     if (startDate && endDate && startDate < endDate) {
       const days = calculateDurationDays(startDate, endDate);
       const price = calculateAdPrice(formData.type, startDate, endDate);
-      return { durationDays: days, calculatedPrice: price };
+      const months = Math.ceil(days / 30); // Approximate months for rate card
+      return { durationDays: days, calculatedPrice: price, durationMonths: months };
     }
-    return { durationDays: 0, calculatedPrice: 0 };
+    return { durationDays: 0, calculatedPrice: 0, durationMonths: 0 };
   }, [startDate, endDate, formData.type]);
+
+  // Map rate card IDs to slots
+  const RATE_CARD_SLOTS: Record<string, string> = {
+    TOP_BANNER: "HEADER",
+    SIDE_BANNER: "SIDEBAR",
+    INLINE_BANNER: "INLINE_ARTICLE",
+    FOOTER_BANNER: "FOOTER",
+    TOP_SLIDER: "HEADER",
+    FIXED_SIDE_BANNER: "SIDEBAR",
+  };
+
+  // Check availability for all rate card items
+  const checkAllAvailability = useCallback(async () => {
+    if (!formData.startDate || !formData.endDate) {
+      setAvailabilityStatus({});
+      return;
+    }
+
+    const start = new Date(formData.startDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    if (start < now) {
+      setAvailabilityStatus({});
+      return;
+    }
+
+    const rateCardIds = ["TOP_BANNER", "SIDE_BANNER", "INLINE_BANNER", "FOOTER_BANNER", "TOP_SLIDER", "FIXED_SIDE_BANNER"];
+    const status: Record<string, { isAvailable: boolean; conflictingAd?: { title: string } }> = {};
+
+    try {
+      await Promise.all(
+        rateCardIds.map(async (rateCardId) => {
+          const slot = RATE_CARD_SLOTS[rateCardId];
+          if (!slot) return;
+
+          try {
+            const response = await adsApi.checkConflict({
+              startDate: new Date(formData.startDate).toISOString(),
+              endDate: new Date(formData.endDate).toISOString(),
+              position: slot,
+            });
+
+            status[rateCardId] = {
+              isAvailable: !response.data.data.isConflict,
+              conflictingAd: response.data.data.conflictingAd,
+            };
+          } catch (error) {
+            // Assume available if check fails
+            status[rateCardId] = { isAvailable: true };
+          }
+        })
+      );
+
+      setAvailabilityStatus(status);
+    } catch (error) {
+      console.error("Failed to check availability:", error);
+    }
+  }, [formData.startDate, formData.endDate]);
 
   // Check for booking conflicts
   const checkBookingConflict = useCallback(async () => {
@@ -104,10 +168,19 @@ export function PlacementStep({ formData, updateFormData, errors, setConflictErr
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       checkBookingConflict();
+      checkAllAvailability();
     }, 500); // Debounce conflict check
 
     return () => clearTimeout(timeoutId);
-  }, [checkBookingConflict]);
+  }, [checkBookingConflict, checkAllAvailability]);
+
+  // Handle rate card selection
+  const handleRateCardSelect = useCallback((rateCardId: string, adType: string, slot: string) => {
+    updateFormData({ 
+      type: adType as WizardFormData["type"],
+      position: slot,
+    });
+  }, [updateFormData]);
 
   const handleStartDateChange = (date: Date | null) => {
     if (date) {
@@ -170,43 +243,99 @@ export function PlacementStep({ formData, updateFormData, errors, setConflictErr
       {/* Calendar Modal */}
       <AdCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
 
+      {/* Rate Card */}
+      <RateCard
+        selectedSlot={selectedSlot}
+        selectedType={formData.type}
+        durationMonths={durationMonths > 0 ? durationMonths : undefined}
+        onSelect={handleRateCardSelect}
+        startDate={formData.startDate}
+        endDate={formData.endDate}
+        availabilityStatus={availabilityStatus}
+      />
+
       {/* Slot Selection */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {language === "it" ? "Slot Annuncio" : "Ad Slot"} *
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">
+            {language === "it" ? "Slot Annuncio" : "Ad Slot"} *
+          </label>
+          {selectedSlot && (
+            <span className="text-xs text-gray-500">
+              {language === "it"
+                ? "Selezionato dal tariffario"
+                : "Selected from rate card"}
+            </span>
+          )}
+        </div>
         <div className="space-y-2">
-          {compatibleSlots.map((slot) => (
-            <label
-              key={slot.value}
-              className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition"
-            >
-              <input
-                type="radio"
-                name="slot"
-                value={slot.value}
-                checked={selectedSlot === slot.value}
-                onChange={(e) => handlePositionChange(e.target.value)}
-                className="mr-3"
-              />
-              <div className="flex-1">
-                <div className="font-medium text-gray-900">
-                  {language === "it" ? slot.labelIt : slot.label}
+          {compatibleSlots.map((slot) => {
+            const isSelected = selectedSlot === slot.value;
+            const slotAvailability = Object.entries(availabilityStatus).find(
+              ([rateCardId]) => RATE_CARD_SLOTS[rateCardId] === slot.value
+            )?.[1];
+            const isSlotBooked = slotAvailability && !slotAvailability.isAvailable;
+
+            return (
+              <label
+                key={slot.value}
+                className={`flex items-center p-3 border rounded-lg cursor-pointer transition ${
+                  isSelected
+                    ? "border-red-500 bg-red-50"
+                    : isSlotBooked
+                    ? "border-yellow-300 bg-yellow-50 opacity-75"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="slot"
+                  value={slot.value}
+                  checked={isSelected}
+                  onChange={(e) => handlePositionChange(e.target.value)}
+                  className="mr-3"
+                  disabled={isSlotBooked}
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <div className="font-medium text-gray-900">
+                      {language === "it" ? slot.labelIt : slot.label}
+                    </div>
+                    {isSlotBooked && (
+                      <span className="px-2 py-0.5 bg-yellow-500 text-white text-xs font-semibold rounded">
+                        {language === "it" ? "Prenotato" : "Booked"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {language === "it"
+                      ? `Compatibile con ${formData.type}`
+                      : `Compatible with ${formData.type}`}
+                  </div>
+                  {isSlotBooked && slotAvailability?.conflictingAd && (
+                    <div className="text-xs text-yellow-700 mt-1 font-medium">
+                      {language === "it"
+                        ? `Prenotato da: "${slotAvailability.conflictingAd.title}"`
+                        : `Booked by: "${slotAvailability.conflictingAd.title}"`}
+                    </div>
+                  )}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {language === "it"
-                    ? `Compatibile con ${formData.type}`
-                    : `Compatible with ${formData.type}`}
-                </div>
-              </div>
-            </label>
-          ))}
+              </label>
+            );
+          })}
         </div>
         {compatibleSlots.length === 0 && (
           <p className="text-sm text-yellow-600 mt-2">
             {language === "it"
               ? `Nessuno slot compatibile trovato per ${formData.type}. Seleziona un tipo di annuncio diverso.`
               : `No compatible slots found for ${formData.type}. Please select a different ad type.`}
+          </p>
+        )}
+        {selectedSlot && (
+          <p className="text-xs text-gray-500 mt-2">
+            {language === "it"
+              ? "💡 Suggerimento: Seleziona un'opzione dal tariffario sopra per aggiornare automaticamente tipo e slot."
+              : "💡 Tip: Select an option from the rate card above to automatically update type and slot."}
           </p>
         )}
       </div>

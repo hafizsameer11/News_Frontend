@@ -137,15 +137,35 @@ export function NewsFormModal({
   );
 
   // Fetch connected social accounts
-  const { data: socialAccountsData } = useSocialAccounts();
-  const connectedAccounts = socialAccountsData?.accounts || [];
+  const { data: socialAccountsData, isLoading: isLoadingAccounts, error: accountsError, refetch: refetchAccounts } = useSocialAccounts();
+  const connectedAccounts = Array.isArray(socialAccountsData?.accounts) ? socialAccountsData.accounts : [];
   const facebookAccount = connectedAccounts.find(
     (acc) => acc.platform === "FACEBOOK" && acc.isActive
   );
   const instagramAccount = connectedAccounts.find(
     (acc) => acc.platform === "INSTAGRAM" && acc.isActive
   );
-  const hasConnectedAccounts = connectedAccounts.some((acc) => acc.isActive);
+  const hasConnectedAccounts = connectedAccounts.length > 0 && connectedAccounts.some((acc) => acc.isActive);
+  
+  // Refetch accounts when modal opens
+  useEffect(() => {
+    refetchAccounts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only on mount
+  
+  // Debug logging (remove in production)
+  useEffect(() => {
+    if (socialAccountsData !== undefined) {
+      console.log("Social accounts data:", socialAccountsData);
+      console.log("Connected accounts:", connectedAccounts);
+      console.log("Has connected accounts:", hasConnectedAccounts);
+      console.log("Facebook account:", facebookAccount);
+      console.log("Instagram account:", instagramAccount);
+    }
+    if (accountsError) {
+      console.error("Error loading social accounts:", accountsError);
+    }
+  }, [socialAccountsData, connectedAccounts, hasConnectedAccounts, accountsError, facebookAccount, instagramAccount]);
 
   // Reset form when news changes - use key prop pattern by resetting when dependencies change
   useEffect(() => {
@@ -261,15 +281,19 @@ export function NewsFormModal({
       const normalizedMainImage = formData.mainImage ? normalizeImageUrl(formData.mainImage) : "";
       
       // Convert scheduled date and published date to ISO string if set
-      const submitData = {
+      const submitData: any = {
         ...formData,
         mainImage: normalizedMainImage,
         scheduledFor: scheduledDate ? scheduledDate.toISOString() : undefined,
         publishedAt: publishedDate ? publishedDate.toISOString() : undefined,
       };
 
-      // Store social posting preference before submitting
-      // The actual posting will happen after news creation/update in the parent component
+      // Include social media platforms if posting to social and status is PUBLISHED
+      if (postToSocial && selectedPlatforms.length > 0 && formData.status === "PUBLISHED") {
+        submitData.socialMediaPlatforms = selectedPlatforms;
+      }
+
+      // Also call the callback for backward compatibility (if parent component handles it separately)
       if (onSocialPost && postToSocial && selectedPlatforms.length > 0) {
         onSocialPost(
           "", // newsId will be available after creation/update

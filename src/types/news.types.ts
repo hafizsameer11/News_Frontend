@@ -81,6 +81,7 @@ export interface CreateNewsInput {
   isTG?: boolean;
   scheduledFor?: string;
   publishedAt?: string; // Retroactive publishing date (allows past dates)
+  socialMediaPlatforms?: ("FACEBOOK" | "INSTAGRAM")[]; // Platforms to post to when publishing
 }
 
 export interface UpdateNewsInput extends Partial<CreateNewsInput> {
@@ -98,5 +99,6 @@ export interface UpdateNewsInput extends Partial<CreateNewsInput> {
   isTG?: boolean;
   scheduledFor?: string;
   publishedAt?: string; // Retroactive publishing date (allows past dates)
+  socialMediaPlatforms?: ("FACEBOOK" | "INSTAGRAM")[]; // Platforms to post to when publishing
 }
 

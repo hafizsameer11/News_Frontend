@@ -10,6 +10,7 @@ import { Loading } from "@/components/ui/loading";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { formatPrice, calculateAdPrice } from "@/lib/helpers/ad-pricing";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface PaymentStepProps {
   formData: WizardFormData;
@@ -20,17 +21,19 @@ interface PaymentStepProps {
 export function PaymentStep({ formData, onComplete, onBack }: PaymentStepProps) {
   const router = useRouter();
   const { language } = useLanguage();
+  const { user } = useAuth();
   const { stripe, loading: stripeLoading } = useStripe();
   const createAdMutation = useCreateAd();
   const createPaymentMutation = useCreatePayment();
   const [error, setError] = useState<string>("");
   const [processing, setProcessing] = useState(false);
   
-  const bypassPayment = isPaymentBypassEnabled();
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const bypassPayment = isPaymentBypassEnabled() || isAdmin;
 
   const startDate = formData.startDate ? new Date(formData.startDate + "T00:00:00") : new Date();
   const endDate = formData.endDate ? new Date(formData.endDate + "T23:59:59") : new Date();
-  const calculatedPrice = calculateAdPrice(formData.type, startDate, endDate);
+  const calculatedPrice = isAdmin ? 0 : calculateAdPrice(formData.type, startDate, endDate);
 
   const handlePayment = async () => {
     setError("");
@@ -185,8 +188,8 @@ export function PaymentStep({ formData, onComplete, onBack }: PaymentStepProps) 
           <div className="border-t border-gray-300 pt-2 mt-2">
             <div className="flex justify-between">
               <span className="font-semibold text-gray-900">Total Price:</span>
-              <span className="font-bold text-lg text-red-600">
-                {formatPrice(calculatedPrice)}
+              <span className={`font-bold text-lg ${isAdmin ? "text-green-600" : "text-red-600"}`}>
+                {isAdmin ? (language === "it" ? "GRATIS" : "FREE") : formatPrice(calculatedPrice)}
               </span>
             </div>
           </div>
@@ -197,19 +200,35 @@ export function PaymentStep({ formData, onComplete, onBack }: PaymentStepProps) 
 
       {/* Payment Bypass Notice */}
       {bypassPayment && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className={`border rounded-lg p-4 ${isAdmin ? "bg-green-50 border-green-200" : "bg-yellow-50 border-yellow-200"}`}>
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
+              {isAdmin ? (
+                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              )}
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">
-                {language === "it" ? "Modalità Sviluppo" : "Development Mode"}
+              <h3 className={`text-sm font-medium ${isAdmin ? "text-green-800" : "text-yellow-800"}`}>
+                {isAdmin
+                  ? language === "it"
+                    ? "Account Amministratore"
+                    : "Administrator Account"
+                  : language === "it"
+                  ? "Modalità Sviluppo"
+                  : "Development Mode"}
               </h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                {language === "it"
+              <p className={`text-sm mt-1 ${isAdmin ? "text-green-700" : "text-yellow-700"}`}>
+                {isAdmin
+                  ? language === "it"
+                    ? "Come amministratore, tutti gli annunci sono gratuiti. L'annuncio verrà creato senza pagamento."
+                    : "As an administrator, all ads are free. The ad will be created without payment."
+                  : language === "it"
                   ? "Il pagamento è stato disabilitato per i test. L'annuncio verrà creato senza pagamento."
                   : "Payment is disabled for testing. The ad will be created without payment."}
               </p>
@@ -234,7 +253,7 @@ export function PaymentStep({ formData, onComplete, onBack }: PaymentStepProps) 
           {processing || createAdMutation.isPending || createPaymentMutation.isPending
             ? (language === "it" ? "Elaborazione..." : "Processing...")
             : bypassPayment
-              ? (language === "it" ? `Crea Annuncio (${formatPrice(calculatedPrice)})` : `Create Ad (${formatPrice(calculatedPrice)})`)
+              ? (language === "it" ? "Crea Annuncio (GRATIS)" : "Create Ad (FREE)")
               : (language === "it" ? `Paga ${formatPrice(calculatedPrice)}` : `Pay ${formatPrice(calculatedPrice)}`)}
         </button>
       </div>

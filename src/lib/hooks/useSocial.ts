@@ -6,11 +6,25 @@ export const useSocialAccounts = () => {
   return useQuery({
     queryKey: ["social", "accounts"],
     queryFn: async () => {
-      const response = await socialApi.getAccounts();
-      // Response is ApiResponse<{ accounts: SocialAccount[] }>
-      // So response.data is { accounts: SocialAccount[] }
-      return (response.data as { accounts?: unknown[] })?.accounts || [];
+      try {
+        const response = await socialApi.getAccounts();
+        // Response structure from apiClient: { success: true, message: string, data: { accounts: SocialAccount[] } }
+        // apiClient.get returns ApiResponse<T> where T is the type passed to get<>
+        // So response is ApiResponse<{ accounts: SocialAccount[] }>
+        // Which means response.data is { accounts: SocialAccount[] }
+        console.log("Social API response:", response);
+        const accounts = (response.data as { accounts?: unknown[] })?.accounts || [];
+        console.log("Extracted accounts:", accounts);
+        return { accounts };
+      } catch (error) {
+        console.error("Error fetching social accounts:", error);
+        return { accounts: [] };
+      }
     },
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0, // Always consider data stale to ensure fresh data
+    cacheTime: 0, // Don't cache to ensure fresh data
   });
 };
 
